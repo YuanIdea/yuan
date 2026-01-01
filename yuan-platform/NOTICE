@@ -15,4 +15,9 @@ Lists of 6 third-party dependencies.
      (GNU Lesser General Public License, version 2.1) docking-frames-core (org.dockingframes:docking-frames-core:1.1.1 - http://dock.javaforge.com//docking-frames-core/)
      (Apache License, Version 2.0) yuan-common (yuan:yuan-common:1.0.5)
 
+This product includes Apache Maven 3.9.0,
+which is available under the Apache License 2.0.
+See: https://www.apache.org/licenses/LICENSE-2.0
+
+
 For details of third-party licenses, see the licenses/ directory
