@@ -1,0 +1,18 @@
+Copyright 2025-2026 [杨国梁/北京力控元通科技有限公司山东分公司]
+
+This product includes software developed by:
+- [杨国梁 Guoliang-Yang@hotmail.com]
+
+This project is based on the Apache-2.0 license, but includes the following components licensed under LGPL-2.1:
+ - docking-frames-common (org.dockingframes:docking-frames-common:1.1.1)
+  - docking-frames-core (org.dockingframes:docking-frames-core:1.1.1)
+
+Lists of 6 third-party dependencies.
+     (BSD-3-Clause) rsyntaxtextarea (com.fifesoft:rsyntaxtextarea:3.6.0 - https://github.com/bobbylight/rsyntaxtextarea)
+     (Apache-2.0) Maven Model (org.apache.maven:maven-model:3.9.0 - https://maven.apache.org/ref/3.9.0/maven-model/)
+     (Apache License, Version 2.0) Plexus Common Utilities (org.codehaus.plexus:plexus-utils:3.4.2 - https://codehaus-plexus.github.io/plexus-utils/)
+     (GNU Lesser General Public License, version 2.1) docking-frames-common (org.dockingframes:docking-frames-common:1.1.1 - http://dock.javaforge.com//docking-frames-common/)
+     (GNU Lesser General Public License, version 2.1) docking-frames-core (org.dockingframes:docking-frames-core:1.1.1 - http://dock.javaforge.com//docking-frames-core/)
+     (Apache License, Version 2.0) yuan-common (yuan:yuan-common:1.0.5)
+
+For details of third-party licenses, see the licenses/ directory
