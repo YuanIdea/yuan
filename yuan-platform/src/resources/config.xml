@@ -1,0 +1,234 @@
+<?xml version='1.0'?>
+<config>
+	<resources>
+		<resource name="dock.ui.ThemeMap">
+			<key>eclipse</key>
+		</resource>
+		<resource name="CLookAndFeelMenuPiece">
+			<index>1</index>
+		</resource>
+		<resource name="ccontrol.preferences">
+			<child name="dock">
+				<child name="DockableSelector">
+					<child name="INIT_SELECTION">
+						<value type="javax.swing.KeyStroke">shift ctrl pressed E</value>
+					</child>
+				</child>
+				<child name="DockRelocatorMode">
+					<child name="NO_COMBINATION_MASK">
+						<value type="dock.modifier_mask" on="512" off="8640"/>
+					</child>
+					<child name="SCREEN_MASK">
+						<value type="dock.modifier_mask" on="64" off="9088"/>
+					</child>
+				</child>
+				<child name="common">
+					<child name="control">
+						<child name="maximize_change">
+							<value type="javax.swing.KeyStroke">ctrl pressed M</value>
+						</child>
+						<child name="maximize"/>
+						<child name="normalize">
+							<value type="javax.swing.KeyStroke">ctrl pressed N</value>
+						</child>
+						<child name="minimize"/>
+						<child name="externalize">
+							<value type="javax.swing.KeyStroke">ctrl pressed E</value>
+						</child>
+					</child>
+				</child>
+				<child name="layout">
+					<child name="ButtonContent">
+						<value type="dock.choice">ito</value>
+					</child>
+				</child>
+				<child name="theme">
+					<child name="bubble">
+						<child name="colorscheme"/>
+					</child>
+					<child name="eclipse">
+						<child name="tab">
+							<value type="dock.choice">round</value>
+						</child>
+						<child name="icons">
+							<value type="java.lang.Boolean">false</value>
+						</child>
+					</child>
+				</child>
+			</child>
+		</resource>
+		<resource name="ccontrol.frontend">
+			<frontend>
+				<current>
+					<base>
+						<roots>
+							<root name="ccontrol center">
+								<layout factory="predefined">
+								<replacement id="rootccontrol center"/>
+									<delegate id="delegate_CommonDockStationFactory">
+										<root>true</root>
+										<content delegate="SplitDockStationFactory">
+											<node orientation="HORIZONTAL" divider="0.2">
+												<leaf id="1">
+													<placeholders>
+														<placeholder>dock.single.TreeDockable</placeholder>
+													</placeholders>
+												</leaf>
+												<node orientation="VERTICAL" divider="0.8">
+													<node orientation="HORIZONTAL" divider="0.8">
+														<leaf id="0">
+															<placeholders>
+																<placeholder>dock.single.picture\ area</placeholder>
+															</placeholders>
+														</leaf>
+														<leaf id="3">
+															<placeholders>
+																<placeholder>dock.single.PackDockable</placeholder>
+															</placeholders>
+														</leaf>
+													</node>
+													<leaf id="2">
+														<placeholders>
+															<placeholder>dock.single.OutputDockable</placeholder>
+														</placeholders>
+													</leaf>
+												</node>
+											</node>
+										</content>
+									</delegate>
+								</layout>
+								<children ignore="false">
+									<child>
+										<layout factory="predefined" placeholder="dock.single.picture\ area">
+											<replacement id="dockablesingle WorkingArea"/>
+											<delegate id="delegate_CommonDockStationFactory">
+												<id>WorkingArea</id>
+												<root>true</root>
+												<content delegate="SplitDockStationFactory">
+												</content>
+											</delegate>
+										</layout>
+									</child>
+									<child>
+										<layout factory="predefined" placeholder="dock.single.TreeDockable">
+											<replacement id="dockablesingle TreeDockable"/>
+											<delegate id="delegate_ccontrol backup factory id">
+												<id>TreeDockable</id>
+											</delegate>
+										</layout>
+									</child>
+									<child>
+										<layout factory="predefined" placeholder="dock.single.OutputDockable">
+											<replacement id="dockablesingle OutputDockable"/>
+											<id>OutputDockable</id>
+										</layout>
+									</child>
+								</children>
+							</root>
+							<root name="ccontrol west">
+								<layout factory="predefined">
+									<replacement id="rootccontrol west"/>
+									<delegate id="delegate_flap dock">
+										<window auto="false" direction="EAST"/>
+										<children>
+											<child id="0" hold="false" size="400"/>
+										</children>
+									</delegate>
+								</layout>
+							</root>
+							<root name="ccontrol east">
+								<layout factory="predefined">
+									<replacement id="rootccontrol east"/>
+									<delegate id="delegate_flap dock">
+										<window auto="false" direction="WEST"/>
+										<children>
+											<child id="0" hold="false" size="400"/>
+										</children>
+									</delegate>
+								</layout>
+								<children ignore="false">
+									<child>
+										<layout factory="predefined">
+											<replacement id="dockablesingle PackDockable"/>
+											<id>PackDockable</id>
+										</layout>
+									</child>
+								</children>
+							</root>
+							<root name="ccontrol south">
+								<layout factory="predefined">
+									<replacement id="rootccontrol south"/>
+									<delegate id="delegate_flap dock">
+										<window auto="false" direction="NORTH"/>
+										<children>
+											<child id="0" hold="false" size="400"/>
+										</children>
+									</delegate>
+								</layout>
+							</root>
+						</roots>
+					</base>
+					<modes>
+						<dockables>
+							<entry id="single TreeDockable" current="dock.mode.normal">
+								<history>
+									<mode>dock.mode.minimized</mode>
+									<mode>dock.mode.normal</mode>
+								</history>
+								<properties>
+									<property id="dock.mode.minimized">
+										<mode>dock.mode.minimized</mode>
+										<root>ccontrol west</root>
+										<location/>
+									</property>
+								</properties>
+							</entry>
+							<entry id="single OutputDockable" current="dock.mode.normal">
+								<history>
+									<mode>dock.mode.minimized</mode>
+									<mode>dock.mode.normal</mode>
+								</history>
+								<properties>
+									<property id="dock.mode.minimized">
+										<mode>dock.mode.minimized</mode>
+										<root>ccontrol south</root>
+										<location/>
+									</property>
+								</properties>
+							</entry>
+							<entry id="single PackDockable" current="dock.mode.minimized">
+								<history>
+									<mode>dock.mode.normal</mode>
+									<mode>dock.mode.minimized</mode>
+								</history>
+								<properties>
+									<property id="dock.mode.normal">
+										<mode>dock.mode.normal</mode>
+										<root>ccontrol east</root>
+										<location>
+											<property factory="SplitDockPlaceholderProperty">
+												<placeholder>dock.single.PackDockable</placeholder>
+											</property>
+										</location>
+									</property>
+								</properties>
+							</entry>
+							<entry id="single WorkingArea" current="dock.mode.normal">
+								<history>
+									<mode>dock.mode.normal</mode>
+								</history>
+								<properties>
+									<property id="dock.mode.normal">
+										<mode>dock.mode.normal</mode>
+										<root>ccontrol center</root>
+										<location/>
+									</property>
+								</properties>
+							</entry>
+						</dockables>
+					</modes>
+				</current>
+			</frontend>
+		</resource>
+	</resources>
+</config>
