@@ -1,0 +1,9 @@
+Copyright 2025-2026 [杨国梁/北京力控元通科技有限公司山东分公司]
+
+This product includes software developed by:
+- [杨国梁 Guoliang-Yang@hotmail.com]
+
+Lists of 3 third-party dependencies.
+     (The Apache Software License, Version 2.0) Jackson-annotations (com.fasterxml.jackson.core:jackson-annotations:2.19.0 - https://github.com/FasterXML/jackson)
+     (The Apache Software License, Version 2.0) Jackson-core (com.fasterxml.jackson.core:jackson-core:2.19.0 - https://github.com/FasterXML/jackson-core)
+     (The Apache Software License, Version 2.0) jackson-databind (com.fasterxml.jackson.core:jackson-databind:2.19.0 - https://github.com/FasterXML/jackson)
