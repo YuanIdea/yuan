@@ -1,6 +1,7 @@
 package com.gly.platform.regin.tree.modify;
 
 import com.gly.platform.regin.tree.FileTreeNode;
+import com.gly.util.VideoFileUtil;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -10,19 +11,19 @@ import java.io.File;
 
 
 /**
- * 文件节点渲染器。
+ * Document node renderer.
  */
 public class FileTreeCellRenderer extends DefaultTreeCellRenderer {
-    // 目录打开
+    // open folder.
     private final Icon openFolderIcon = getIcon("/icons/folder_open.png");
 
-    // 目录关闭
+    // close folder.
     private final Icon folderIcon = getIcon("/icons/folder_close.png");
 
-    // 普通文件图标。
+    // icon of a regular file.
     private final Icon fileIcon = getIcon("/icons/file.png");
 
-    // word图标
+    // word
     private final Icon wordIcon = getIcon("/icons/word.png");
 
     // text
@@ -37,7 +38,7 @@ public class FileTreeCellRenderer extends DefaultTreeCellRenderer {
     // code
     private final Icon codeIcon = getIcon("/icons/code.png");
 
-    // m图标
+    // m
     private final Icon mIcon = getIcon("/icons/m.png");
 
      // json
@@ -73,10 +74,13 @@ public class FileTreeCellRenderer extends DefaultTreeCellRenderer {
     // zip
     private final Icon zipIcon = getIcon("/icons/zip.png");
 
+    // video
+    private final Icon videoIcon = getIcon("/icons/video.png");
+
     // model
     private final Icon modelIcon =getIcon("/icons/model.png");
 
-    // 入口文件上标
+    // The small icon on the entry file.
     private final Icon entryBadge = getIcon("/icons/badge.png");
 
     @Override
@@ -84,16 +88,16 @@ public class FileTreeCellRenderer extends DefaultTreeCellRenderer {
             boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
         super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 
-        if (value instanceof FileTreeNode) {// 仅处理 FileTreeNode 实例
+        if (value instanceof FileTreeNode) {
             FileTreeNode node = (FileTreeNode) value;
             if (node.isRoot()) {
-                setText(node.getFile().getAbsolutePath()); //根目录显示完整路径
+                setText(node.getFile().getAbsolutePath());
             }
             if (node.isFile()) {
                 File file = node.getFile();
                 String name = file.getName().toLowerCase();
                 if (name.endsWith(".doc") || name.endsWith(".docx")) {
-                    setIcon(wordIcon);// 文件图标
+                    setIcon(wordIcon);
                 } else if(name.endsWith(".txt")) {
                     setIcon(textIcon);
                 } else if(name.endsWith(".csv") || name.endsWith(".xlsx")) {
@@ -134,11 +138,14 @@ public class FileTreeCellRenderer extends DefaultTreeCellRenderer {
                     setIcon(zipIcon);
                 } else if (name.endsWith(".pt")) {
                     setIcon(modelIcon);
+                } else if (VideoFileUtil.isVideo(name)) {
+                    setIcon(videoIcon);
                 } else {
-                    setIcon(fileIcon);// 文件图标
+                    setIcon(fileIcon);// file icon.
                 }
             } else {
-                setIcon(expanded ? openFolderIcon : folderIcon);// 目录展开状态不同图标
+                // When the directory is expanded, set the icon for the directory node.
+                setIcon(expanded ? openFolderIcon : folderIcon);
             }
         }
         return this;
@@ -153,17 +160,22 @@ public class FileTreeCellRenderer extends DefaultTreeCellRenderer {
         return new ImageIcon(getClass().getResource(file));
     }
 
-    // 将 badge 叠加到 baseIcon 的右下角，返回新的 Icon
-    private static Icon createOverlayIcon(Icon baseIcon, Icon badge) {
-        int w = Math.max(baseIcon.getIconWidth(), badge.getIconWidth());
-        int h = Math.max(baseIcon.getIconHeight(), badge.getIconHeight());
+    /**
+     * Overlay the small icon onto the bottom right corner of the base icon to return a new icon.
+     * @param baseIcon Under the small icon is the base icon.
+     * @param smallIcon The small icon above the base icon.
+     * @return Base icon and small icon combined icon.
+     */
+    private static Icon createOverlayIcon(Icon baseIcon, Icon smallIcon) {
+        int w = Math.max(baseIcon.getIconWidth(), smallIcon.getIconWidth());
+        int h = Math.max(baseIcon.getIconHeight(), smallIcon.getIconHeight());
         BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = img.createGraphics();
         baseIcon.paintIcon(null, g, 0, 0);
-        int bx = baseIcon.getIconWidth() - badge.getIconWidth(); // 右上角
+        int bx = baseIcon.getIconWidth() - smallIcon.getIconWidth(); // 右上角
         int by = 0;
         if (bx < 0) bx = 0;
-        badge.paintIcon(null, g, bx, by);
+        smallIcon.paintIcon(null, g, bx, by);
         g.dispose();
         return new ImageIcon(img);
     }
