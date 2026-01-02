@@ -4,14 +4,15 @@ import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import javax.swing.*;
+import javax.swing.ImageIcon;
+import javax.swing.JScrollPane;
 
 import bibliothek.gui.dock.common.DefaultSingleCDockable;
 import com.gly.event.GlobalBus;
 import com.gly.platform.regin.auxiliary.maven.MavenToolWindow;
 
 /**
- * maven面板
+ * Maven panel
  */
 public class PackDockable extends DefaultSingleCDockable{
     private Container content;
@@ -23,16 +24,19 @@ public class PackDockable extends DefaultSingleCDockable{
      */
     public PackDockable(){
         super( "PackDockable" );
-        GlobalBus.register(this); // 注册到事件总线
+        GlobalBus.register(this); // Registered to the event bus.
         setCloseable( true );
         setMinimizable( true );
         setMaximizable( true );
         setExternalizable( true );
         setTitleText( "Maven" );
-        setTitleIcon(new ImageIcon(getClass().getResource("/icons/m.png")));
+        setTitleIcon(new ImageIcon(getClass().getResource("/icons/m2.png")));
         content = getContentPane();
     }
 
+    /**
+     * Add maven.
+     */
     public void addMaven() {
         if (mavenToolWindow == null) {
             content.setLayout( new GridBagLayout() );
@@ -47,6 +51,9 @@ public class PackDockable extends DefaultSingleCDockable{
         }
     }
 
+    /**
+     * Remove maven.
+     */
     public void removeMaven() {
         if (scrollMaven != null) {
             content.remove(scrollMaven);
@@ -54,6 +61,10 @@ public class PackDockable extends DefaultSingleCDockable{
         }
     }
 
+    /**
+     * Get the root directory of the current project.
+     * @return the root directory of the current project.
+     */
     public String getCurrentProjectRoot() {
         if (mavenToolWindow != null) {
            return mavenToolWindow.getCurrentProjectRoot();
