@@ -1,14 +1,15 @@
 package com.gly.platform.regin.tree.modify;
 
 import com.gly.platform.regin.tree.FileTreeNode;
+import com.gly.util.IconUtil;
 import com.gly.util.VideoFileUtil;
 
-import javax.swing.*;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
-import java.awt.*;
-import java.awt.image.BufferedImage;
+import java.awt.Component;
 import java.io.File;
-
 
 /**
  * Document node renderer.
@@ -78,10 +79,13 @@ public class FileTreeCellRenderer extends DefaultTreeCellRenderer {
     private final Icon videoIcon = getIcon("/icons/video.png");
 
     // model
-    private final Icon modelIcon =getIcon("/icons/model.png");
+    private final Icon modelIcon = getIcon("/icons/model.png");
 
     // The small icon on the entry file.
     private final Icon entryBadge = getIcon("/icons/badge.png");
+
+    // The entry file icon.
+    private final Icon entryIcon = IconUtil.createOverlayIcon(codeIcon, entryBadge);
 
     @Override
     public Component getTreeCellRendererComponent(JTree tree, Object value,
@@ -106,7 +110,7 @@ public class FileTreeCellRenderer extends DefaultTreeCellRenderer {
                     setIcon(powerpointIcon);
                 } else if(name.endsWith(".java")) {
                     if (node.isEntry()) {
-                        setIcon(createOverlayIcon(codeIcon, entryBadge));
+                        setIcon(entryIcon);
                     } else {
                         setIcon(codeIcon);
                     }
@@ -158,25 +162,5 @@ public class FileTreeCellRenderer extends DefaultTreeCellRenderer {
 
     private ImageIcon getIcon(String file) {
         return new ImageIcon(getClass().getResource(file));
-    }
-
-    /**
-     * Overlay the small icon onto the bottom right corner of the base icon to return a new icon.
-     * @param baseIcon Under the small icon is the base icon.
-     * @param smallIcon The small icon above the base icon.
-     * @return Base icon and small icon combined icon.
-     */
-    private static Icon createOverlayIcon(Icon baseIcon, Icon smallIcon) {
-        int w = Math.max(baseIcon.getIconWidth(), smallIcon.getIconWidth());
-        int h = Math.max(baseIcon.getIconHeight(), smallIcon.getIconHeight());
-        BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g = img.createGraphics();
-        baseIcon.paintIcon(null, g, 0, 0);
-        int bx = baseIcon.getIconWidth() - smallIcon.getIconWidth(); // 右上角
-        int by = 0;
-        if (bx < 0) bx = 0;
-        smallIcon.paintIcon(null, g, bx, by);
-        g.dispose();
-        return new ImageIcon(img);
     }
 }
