@@ -1,14 +1,21 @@
 package com.gly.platform.regin.auxiliary.maven;
 
-import javax.swing.*;
+import com.gly.util.IconUtil;
+
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
-import java.awt.*;
+import java.awt.Component;
 
-// 自定义树渲染器
+/**
+ * Custom tree renderer.
+ */
 class MavenTreeCellRenderer extends DefaultTreeCellRenderer {
-    private final Icon projectIcon = new ImageIcon(getClass().getResource("/icons/folder_close.png"));
-    private final Icon moduleIcon = new ImageIcon(getClass().getResource("/icons/file.png"));
+    private final Icon m2Icon = getIcon("/icons/m2.png");
+    private final Icon projectIcon = IconUtil.createOverlayIcon(getIcon("/icons/folder_close.png"), m2Icon, 0.5, 9, 0);
+    private final Icon moduleIcon = IconUtil.createOverlayIcon(getIcon("/icons/file.png"), m2Icon, 0.5, 9, 0);
 
     @Override
     public Component getTreeCellRendererComponent(JTree tree, Object value,
@@ -19,7 +26,6 @@ class MavenTreeCellRenderer extends DefaultTreeCellRenderer {
         if (value instanceof DefaultMutableTreeNode) {
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
             Object userObject = node.getUserObject();
-
             if (userObject instanceof MavenProject) {
                 MavenProject project = (MavenProject) userObject;
                 setText(project.toString());
@@ -29,11 +35,13 @@ class MavenTreeCellRenderer extends DefaultTreeCellRenderer {
                 } else {
                     setIcon(moduleIcon);
                 }
-            } else if ("Maven Projects".equals(userObject)) {
-                setIcon(new ImageIcon(getClass().getResource("/icons/file.png")));
             }
         }
 
         return this;
+    }
+
+    private ImageIcon getIcon(String file) {
+        return new ImageIcon(getClass().getResource(file));
     }
 }
