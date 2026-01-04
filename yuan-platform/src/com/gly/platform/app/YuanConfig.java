@@ -17,7 +17,7 @@ public class YuanConfig {
         if (val == null) {
             val = System.getProperty("user.dir");
         }
-        YUAN_PATH = Paths.get(val); // 给类的静态 final 字段赋值
+        YUAN_PATH = Paths.get(val);
     }
 
     /**
