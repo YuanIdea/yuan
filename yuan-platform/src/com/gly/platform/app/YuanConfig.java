@@ -1,14 +1,15 @@
 package com.gly.platform.app;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * 平台配置文件
+ * Platform configuration file.
  */
 public class YuanConfig {
     /**
-     * 平台根目录。
+     * Root directory of the platform.
      */
     public static final Path YUAN_PATH;
     static {
@@ -20,17 +21,37 @@ public class YuanConfig {
     }
 
     /**
-     * 默认JDK根目录。
+     * Default JDK root directory.
+     * If a built-in JDK exists, prioritize its use;
+     * otherwise, select the JDK configured in JAVA_HOME.
      */
-    public static final Path DEFAULT_JAVA_HOME = YUAN_PATH.resolve("jdk-11");
+    public static final Path DEFAULT_JAVA_HOME;
+    static {
+        Path inlineJavaPath = YUAN_PATH.resolve("jdk-11");
+        Path inlineJavaExe = inlineJavaPath.resolve("bin/java.exe");
+        if (Files.exists(inlineJavaExe)) {
+            DEFAULT_JAVA_HOME = inlineJavaPath;
+        } else {
+            String javaHome = System.getenv("JAVA_HOME");
+            if (javaHome == null) {
+                System.err.println("JDK configuration path not found.");
+                DEFAULT_JAVA_HOME = null;
+            } else {
+                DEFAULT_JAVA_HOME = Paths.get(javaHome);
+                if (!Files.exists(DEFAULT_JAVA_HOME.resolve("bin/java.exe"))) {
+                    System.err.println("JDK configuration path not found:"+DEFAULT_JAVA_HOME);
+                }
+            }
+        }
+    }
 
     /**
-     * 工程配置目录
+     * Project configuration directory.
      */
     public static final String YUAN_PROJECT = ".yuan";
 
     /**
-     * 工程配置文件。
+     * Project configuration file.
      */
     public static final String PROJECT_CONFIG = YUAN_PROJECT + "/project.xml";
 }
