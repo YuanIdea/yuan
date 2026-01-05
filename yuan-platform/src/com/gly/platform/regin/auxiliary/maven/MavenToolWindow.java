@@ -30,6 +30,7 @@ public class MavenToolWindow extends JPanel {
     private List<MavenProject> mavenProjects;
     private Platform platform;
     private JTree dependenciesTree;
+
     public MavenToolWindow() {
         platform = Platform.getInstance();
         initUI();
@@ -166,8 +167,8 @@ public class MavenToolWindow extends JPanel {
     }
 
     /**
-     * 创建生命周期面板。
-     * @return 生命周期面板。
+     * Create a lifecycle panel.
+     * @return Lifecycle panel。
      */
     private JPanel createLifecyclePanel() {
         JPanel panel = new JPanel(new BorderLayout());
@@ -297,13 +298,13 @@ public class MavenToolWindow extends JPanel {
     }
 
     /**
-     * 更新工程树�?
+     * Update the project tree.
      */
     private void updateProjectTree() {
         rootNode.removeAllChildren();
         for (MavenProject project : mavenProjects) {
             DefaultMutableTreeNode projectNode = new DefaultMutableTreeNode(project);
-            // 添加模块（�?�果有）
+            // If there are modules, add them to the project tree.
             if (project.getModules() != null) {
                 for (MavenProject module : project.getModules()) {
                     projectNode.add(new DefaultMutableTreeNode(module));
