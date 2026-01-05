@@ -155,12 +155,22 @@ public class FileTreeCellRenderer extends DefaultTreeCellRenderer {
         return this;
     }
 
-    private boolean isPicture(String name) {
-        return name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg")
-                || name.endsWith(".gif")|| name.endsWith(".bmp");
+    /**
+     * Determine whether the file is an image based on its extension.
+     * @param fileName Pathname of the file with extension.
+     * @return Return true if it is an image, false otherwise.
+     */
+    private boolean isImage(String fileName) {
+        return fileName.endsWith(".png") || fileName.endsWith(".jpg") || fileName.endsWith(".jpeg")
+                || fileName.endsWith(".gif")|| fileName.endsWith(".bmp");
     }
 
+    /**
+     * Obtain the icon resource based on the path name.
+     * @param file Pathname of the file with extension.
+     * @return ImageIcon.
+     */
     private ImageIcon getIcon(String file) {
-        return new ImageIcon(getClass().getResource(file));
+        return IconUtil.getIcon(getClass(), file);
     }
 }
