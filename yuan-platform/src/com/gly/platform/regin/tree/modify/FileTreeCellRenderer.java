@@ -118,7 +118,7 @@ public class FileTreeCellRenderer extends DefaultTreeCellRenderer {
                     setIcon(vsIcon);
                 } else if(name.endsWith(".c")) {
                     setIcon(cIcon);
-                } else if(isPicture(name)) {
+                } else if(isImage(name)) {
                     setIcon(pictureIcon);
                 } else if(name.endsWith(".h")) {
                     setIcon(hIcon);
