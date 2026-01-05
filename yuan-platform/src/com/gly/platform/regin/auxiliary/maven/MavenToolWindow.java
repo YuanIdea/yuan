@@ -19,16 +19,14 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- *  Maven工具窗口面板�?
+ *  Maven Tool Window panel.
  */
 public class MavenToolWindow extends JPanel {
-    // 组件
     private JTree projectTree;
     private DefaultTreeModel treeModel;
     private DefaultMutableTreeNode rootNode;
     private JTabbedPane lifecycleTabbedPane;
     private MavenProject currentProject;
-    // 数据模型
     private List<MavenProject> mavenProjects;
     private Platform platform;
     private JTree dependenciesTree;
@@ -38,28 +36,26 @@ public class MavenToolWindow extends JPanel {
     }
 
     /**
-     * 初��化界面�?
+     * Initialize the interface.
      */
     private void initUI() {
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        // 创建主分割面�?
+        // Create the main split panel.
         JSplitPane mainSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         mainSplitPane.setDividerLocation(300);
         mainSplitPane.setResizeWeight(0.5);
 
-        // 创建左侧面板（项�?和生命周期）
         JPanel leftPanel = new JPanel(new BorderLayout());
 
-        // 项目�?
+        // project tree.
         refreshProjectTree();
         JScrollPane treeScrollPane = new JScrollPane(projectTree);
 
-        // 生命周期选项�?
+        // Create the lifecycle tab.
         createLifecycleTabs();
 
-        // 左侧使用分割面板
         JSplitPane leftSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         leftSplitPane.setDividerLocation(200);
         leftSplitPane.setResizeWeight(0.5);
