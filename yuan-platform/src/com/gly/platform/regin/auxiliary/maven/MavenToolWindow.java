@@ -1,6 +1,7 @@
 package com.gly.platform.regin.auxiliary.maven;
 
 import com.gly.platform.app.Platform;
+import com.gly.util.IconUtil;
 import org.apache.maven.model.Model;
 
 import javax.swing.*;
