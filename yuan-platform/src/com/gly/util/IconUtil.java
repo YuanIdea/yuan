@@ -160,4 +160,14 @@ public class IconUtil {
             g2.dispose();
         }
     }
+
+    /**
+     * Obtain the icon resource based on the path name.
+     * @param nativeClass the runtime class of this code Object.
+     * @param file Pathname of the file.
+     * @return ImageIcon.
+     */
+    public static ImageIcon getIcon(Class<?> nativeClass, String file) {
+        return new ImageIcon(nativeClass.getResource(file));
+    }
 }
