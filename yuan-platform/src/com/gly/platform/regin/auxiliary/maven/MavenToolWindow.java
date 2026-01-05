@@ -19,7 +19,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- *  Maven工具窗口面板。
+ *  Maven工具窗口面板�?
  */
 public class MavenToolWindow extends JPanel {
     // 组件
@@ -38,25 +38,25 @@ public class MavenToolWindow extends JPanel {
     }
 
     /**
-     * 初始化界面。
+     * 初��化界面�?
      */
     private void initUI() {
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        // 创建主分割面板
+        // 创建主分割面�?
         JSplitPane mainSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         mainSplitPane.setDividerLocation(300);
         mainSplitPane.setResizeWeight(0.5);
 
-        // 创建左侧面板（项目和生命周期）
+        // 创建左侧面板（项�?和生命周期）
         JPanel leftPanel = new JPanel(new BorderLayout());
 
-        // 项目树
+        // 项目�?
         refreshProjectTree();
         JScrollPane treeScrollPane = new JScrollPane(projectTree);
 
-        // 生命周期选项卡
+        // 生命周期选项�?
         createLifecycleTabs();
 
         // 左侧使用分割面板
@@ -72,7 +72,7 @@ public class MavenToolWindow extends JPanel {
     }
 
     /**
-     * 刷新工程目录。
+     * Refresh project folder.
      */
     public void refreshProjectTree() {
         String root = platform.getRoot();
@@ -100,12 +100,12 @@ public class MavenToolWindow extends JPanel {
         treeModel = new DefaultTreeModel(rootNode);
         if (projectTree == null) {
             projectTree = new JTree(treeModel);
-            // 添加选中监听器
+            // Add selection listener.
             projectTree.addTreeSelectionListener(e -> {
-                // 获取当前选中的路径
+                // Get the currently selected path.
                 TreePath selectedPath = projectTree.getSelectionPath();
                 if (selectedPath != null) {
-                    // 获取选中的节点
+                    // Get the selected node.
                     Object selectedNode = selectedPath.getLastPathComponent();
                     if (selectedNode instanceof DefaultMutableTreeNode) {
                         Object userObject = ((DefaultMutableTreeNode) selectedNode).getUserObject();
@@ -113,13 +113,20 @@ public class MavenToolWindow extends JPanel {
                             currentProject = (MavenProject)userObject;
 
                             refreshDependencies();
-                            System.out.println("选中了:"+currentProject.getArtifactId());
+                            System.out.println("selected:"+currentProject.getArtifactId());
                         }
                     }
                 }
             });
-            // 设置树渲染器
-            projectTree.setCellRenderer(new MavenTreeCellRenderer());
+
+            // Set the tree renderer.
+            Class<?> nativeClass = this.getClass();
+            Icon m2Icon = IconUtil.getIcon(nativeClass,"/icons/m2.png");
+            Icon closeFolder = IconUtil.getIcon(nativeClass,"/icons/folder_close.png");
+            Icon file = IconUtil.getIcon(nativeClass,"/icons/file.png");
+            Icon folderIcon = IconUtil.createOverlayIcon(closeFolder, m2Icon, 0.5, 9, 0);
+            Icon fileIcon = IconUtil.createOverlayIcon(file, m2Icon, 0.5, 9, 0);
+            projectTree.setCellRenderer(new MavenTreeCellRenderer(folderIcon, fileIcon));
         } else {
             projectTree.setModel(treeModel);
         }
@@ -139,7 +146,7 @@ public class MavenToolWindow extends JPanel {
     private void addModulesProject(Model model) {
         mavenProjects = new ArrayList<>();
         List<String> modules = model.getModules();
-        Collections.sort(modules); //排序
+        Collections.sort(modules);
         for (String mName : modules) {
             MavenProject mavenProject = new MavenProject(mName);
             mavenProject.setPomPath(mName + "/pom.xml");
@@ -148,16 +155,16 @@ public class MavenToolWindow extends JPanel {
     }
 
     /**
-     * 创建生命周期Tab。
+     * Create a tab at the bottom of the panel.
      */
     private void createLifecycleTabs() {
         lifecycleTabbedPane = new JTabbedPane();
 
-        // 生命周期选项卡
+        // Lifecycle tab.
         JPanel lifecyclePanel = createLifecyclePanel();
         lifecycleTabbedPane.addTab("Lifecycle", lifecyclePanel);
 
-        // Dependencies选项卡
+        // Dependencies tab.
         JPanel dependenciesPanel = createDependenciesPanel();
         lifecycleTabbedPane.addTab("Dependencies", dependenciesPanel);
     }
@@ -168,9 +175,7 @@ public class MavenToolWindow extends JPanel {
      */
     private JPanel createLifecyclePanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        // 生命周期树
         DefaultMutableTreeNode lifecycle = new DefaultMutableTreeNode("Lifecycle");
-        // 示例依赖
         String[] phases = {
                 "clean", "validate", "compile", "test", "package",
                 "verify", "install", "site", "deploy"
@@ -195,21 +200,28 @@ public class MavenToolWindow extends JPanel {
         });
 
         panel.add(new JScrollPane(lifecycleTree), BorderLayout.CENTER);
+
+        // Set the tree renderer.
+        Class<?> nativeClass = this.getClass();
+        Icon closeFolder = IconUtil.getIcon(nativeClass,"/icons/folder_close.png");
+        Icon fileIcon = IconUtil.getIcon(nativeClass,"/icons/m_cmd.png");
+        Icon folderIcon = IconUtil.createOverlayIcon(closeFolder, fileIcon, 0.6, 9, 0);
+        lifecycleTree.setCellRenderer(new MavenTreeCellRenderer(folderIcon, fileIcon));
         return panel;
     }
 
     /**
-     * 执行生命周期操作。
-     * @param cmd 操作命令。
+     * Execute the Lifecycle operation command.
+     * @param cmd operation command.
      */
     private void executeLifecycleCmd(String cmd) {
         String root = platform.getRoot();
         if (root.isEmpty()) {
-            System.err.println(cmd+"命令失败,没有找到打开的项目.");
+            System.err.println(cmd+"Command failed. No open project was found.");
             return;
         }
         Path pomPath = getPomPath();
-        System.out.println("执行:"+pomPath);
+        System.out.println("execute:"+pomPath);
         Pom pom = new Pom(pomPath);
         pom.parseProjectInfo();
         Executor comp = new Executor(cmd, "-Dfile.encoding=" + pom.sourceEncoding);
@@ -219,8 +231,8 @@ public class MavenToolWindow extends JPanel {
     }
 
     /**
-     * 获取选中工程的pom.xml路径。
-     * @return 选中工程的pom.xml路径。
+     * Get the path of the pom.xml file for the selected project.
+     * @return The path of the pom.xml file for the selected project.
      */
     private Path getPomPath() {
         String root = platform.getRoot();
@@ -234,13 +246,13 @@ public class MavenToolWindow extends JPanel {
     }
 
     /**
-     * 创建依赖面板。
-     * @return 依赖面板。
+     * Create the dependency JAR panel.
+     * @return The dependency JAR panel.
      */
     private JPanel createDependenciesPanel() {
         JPanel panel = new JPanel(new BorderLayout());
         refreshDependencies();
-        // 添加右键菜单
+        // Add a right-click context menu.
         JPopupMenu depPopup = new JPopupMenu();
         JMenuItem findUsagesItem = new JMenuItem("Find Usages");
         depPopup.add(findUsagesItem);
@@ -262,7 +274,7 @@ public class MavenToolWindow extends JPanel {
     }
 
     /**
-     * 刷新依赖面板。
+     * Refresh the dependency panel.
      */
     public void refreshDependencies() {
         Path pomPath = getPomPath();
@@ -270,7 +282,6 @@ public class MavenToolWindow extends JPanel {
             return;
         }
         Model model = Pom.readPom(pomPath.toString());
-        // 依赖树
         DefaultMutableTreeNode dependenciesRoot = new DefaultMutableTreeNode("Dependencies");
         List<String> deps = DependencyManager.getAllDependenciesAsString(model);
 
@@ -290,13 +301,13 @@ public class MavenToolWindow extends JPanel {
     }
 
     /**
-     * 更新工程树。
+     * 更新工程树�?
      */
     private void updateProjectTree() {
         rootNode.removeAllChildren();
         for (MavenProject project : mavenProjects) {
             DefaultMutableTreeNode projectNode = new DefaultMutableTreeNode(project);
-            // 添加模块（如果有）
+            // 添加模块（�?�果有）
             if (project.getModules() != null) {
                 for (MavenProject module : project.getModules()) {
                     projectNode.add(new DefaultMutableTreeNode(module));
@@ -311,8 +322,8 @@ public class MavenToolWindow extends JPanel {
     }
 
     /**
-     * 展开树。
-     * @param tree 树控件。
+     * Expand all nodes of the tree.
+     * @param tree Project tree with nodes that need to be expanded.
      */
     private void expandAll(JTree tree) {
         for (int i = 0; i < tree.getRowCount(); i++) {
