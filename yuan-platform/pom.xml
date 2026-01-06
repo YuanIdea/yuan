@@ -14,19 +14,21 @@
         <main.class>com.gly.platform.app.Yuan</main.class>
     </properties>
     <dependencies>
-        <!-- 平台通用依赖库 -->
+        <!-- Platform's common dependency library. -->
         <dependency>
             <groupId>yuan</groupId>
             <artifactId>yuan-common</artifactId>
             <version>1.0.5</version>
         </dependency>
-        <!-- 解析pom.xml文件 -->
+
+        <!-- Library for parsing pom.xml files. -->
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-model</artifactId>
             <version>3.9.0</version>
         </dependency>
-        <!-- 停靠窗口 -->
+
+        <!-- Docking window library. -->
         <dependency>
             <groupId>org.dockingframes</groupId>
             <artifactId>docking-frames-core</artifactId>
@@ -38,7 +40,7 @@
             <version>1.1.1</version>
         </dependency>
 
-        <!-- 文本编辑器核心库：语法高亮、代码折叠等基础功能 -->
+        <!-- Text editor core library: Basic features such as syntax highlighting, code folding, etc. -->
         <dependency>
             <groupId>com.fifesoft</groupId>
             <artifactId>rsyntaxtextarea</artifactId>
@@ -59,7 +61,7 @@
             </resource>
         </resources>
         <plugins>
-            <!-- 1. 复制所有依赖到lib目录 -->
+            <!-- Copy all dependencies to the lib directory. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -76,19 +78,20 @@
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>false</overWriteSnapshots>
                             <overWriteIfNewer>true</overWriteIfNewer>
-                            <!-- 使用 includeScope 明确指定要包含的作用域 -->
+                            <!-- Explicitly specify the scope to be included using includeScope. -->
                             <includeScope>runtime</includeScope>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
 
-            <!-- 2. 创建可执行JAR，不包含依赖 -->
+            <!-- Create an executable JAR. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.3.0</version>
                 <configuration>
+                    <outputDirectory>${project.build.directory}/artifacts/yuan</outputDirectory>
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
