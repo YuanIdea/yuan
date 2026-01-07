@@ -12,7 +12,8 @@ import java.awt.image.BufferedImage;
 public class IconUtil {
     /**
      * Overlay the small icon onto the bottom right corner of the base icon to return a new icon.
-     * @param baseIcon Under the small icon is the base icon.
+     *
+     * @param baseIcon  Under the small icon is the base icon.
      * @param smallIcon The small icon above the base icon.
      * @return Base icon and small icon combined icon.
      */
@@ -35,21 +36,21 @@ public class IconUtil {
 
     /**
      * Overlay the scaled small icon onto the base icon with customizable position and scaling.
-     * @param baseIcon The base icon.
-     * @param smallIcon The small icon to overlay.
-     * @param scaleFactor Scale factor for the small icon (e.g., 0.5 = 50% size).
-     * @param position Position of the small icon (1-9 for grid positions, like numpad).
-     *                  1=top-left,         2=top-center,       3=top-right
-     *                  4=middle-left,      5=middle-center,    6=middle-right,
-     *                  7=bottom-left,      8=bottom-center,    9=bottom-right,
      *
-     * @param margin Margin in pixels around the small icon.
+     * @param baseIcon    The base icon.
+     * @param smallIcon   The small icon to overlay.
+     * @param scaleFactor Scale factor for the small icon (e.g., 0.5 = 50% size).
+     * @param position    Position of the small icon (1-9 for grid positions, like numpad).
+     *                    1=top-left,         2=top-center,       3=top-right
+     *                    4=middle-left,      5=middle-center,    6=middle-right,
+     *                    7=bottom-left,      8=bottom-center,    9=bottom-right,
+     * @param margin      Margin in pixels around the small icon.
      * @return Combined icon.
      */
-    public static Icon createOverlayIcon(Icon baseIcon, Icon smallIcon, double scaleFactor, int position, int margin) {
+    public static Icon createOverlayIcon(Icon baseIcon, Icon smallIcon, float scaleFactor, int position, int margin) {
         // Parameter validation.
         if (scaleFactor <= 0) {
-            scaleFactor = 1.0;
+            scaleFactor = 1.0f;
         }
         if (position < 1 || position > 9) {
             position = 9; // bottom-right
@@ -85,9 +86,7 @@ public class IconUtil {
 
         //  draw the scaled small icon.
         drawScaledIcon(g, smallIcon, x, y, scaleFactor);
-
         g.dispose();
-
         return new ImageIcon(img);
     }
 
@@ -107,13 +106,19 @@ public class IconUtil {
     private static int calculateX(int baseWidth, int smallWidth, int position, int margin) {
         int x;
         switch (position) {
-            case 1: case 4: case 7: // Left-aligned
+            case 1:
+            case 4:
+            case 7: // Left-aligned
                 x = margin;
                 break;
-            case 2: case 5: case 8: // Horizontal centering
+            case 2:
+            case 5:
+            case 8: // Horizontal centering
                 x = (baseWidth - smallWidth) / 2;
                 break;
-            case 3: case 6: case 9: // Right-aligned
+            case 3:
+            case 6:
+            case 9: // Right-aligned
             default:
                 x = baseWidth - smallWidth - margin;
                 if (x < margin) x = margin;
@@ -128,12 +133,18 @@ public class IconUtil {
     private static int calculateY(int baseHeight, int smallHeight, int position, int margin) {
         int y;
         switch (position) {
-            case 1: case 2: case 3: // Top-aligned
+            case 1:
+            case 2:
+            case 3: // Top-aligned
 
-            case 4: case 5: case 6: // vertical centering
+            case 4:
+            case 5:
+            case 6: // vertical centering
                 y = (baseHeight - smallHeight) / 2;
                 break;
-            case 7: case 8: case 9: // Bottom-aligned
+            case 7:
+            case 8:
+            case 9: // Bottom-aligned
                 y = baseHeight - smallHeight - margin;
                 if (y < margin) y = margin;
                 break;
@@ -163,8 +174,9 @@ public class IconUtil {
 
     /**
      * Obtain the icon resource based on the path name.
+     *
      * @param nativeClass the runtime class of this code Object.
-     * @param file Pathname of the file.
+     * @param file        Pathname of the file.
      * @return ImageIcon.
      */
     public static ImageIcon getIcon(Class<?> nativeClass, String file) {

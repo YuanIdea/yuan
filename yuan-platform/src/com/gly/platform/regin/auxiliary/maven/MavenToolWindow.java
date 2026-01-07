@@ -8,7 +8,7 @@ import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
-import java.awt.*;
+import java.awt.BorderLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.nio.file.Files;
@@ -19,17 +19,18 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- *  Maven Tool Window panel.
+ * Maven Tool Window panel.
  */
 public class MavenToolWindow extends JPanel {
     private JTree projectTree;
-    private DefaultTreeModel treeModel;
+    private DefaultTreeModel projectTreeModel;
+    private MavenProject currentProject;
+
+    private JTree dependenciesTree;
     private DefaultMutableTreeNode rootNode;
     private JTabbedPane lifecycleTabbedPane;
-    private MavenProject currentProject;
     private List<MavenProject> mavenProjects;
     private Platform platform;
-    private JTree dependenciesTree;
 
     public MavenToolWindow() {
         platform = Platform.getInstance();
@@ -54,8 +55,8 @@ public class MavenToolWindow extends JPanel {
         refreshProjectTree();
         JScrollPane treeScrollPane = new JScrollPane(projectTree);
 
-        // Create the lifecycle tab.
-        createLifecycleTabs();
+        // Create operation tabs.
+        createOperationTabs();
 
         JSplitPane leftSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         leftSplitPane.setDividerLocation(200);
@@ -94,9 +95,9 @@ public class MavenToolWindow extends JPanel {
         rootProject.setModules(mavenProjects);
 
         rootNode = new DefaultMutableTreeNode(rootProject);
-        treeModel = new DefaultTreeModel(rootNode);
+        projectTreeModel = new DefaultTreeModel(rootNode);
         if (projectTree == null) {
-            projectTree = new JTree(treeModel);
+            projectTree = new JTree(projectTreeModel);
             // Add selection listener.
             projectTree.addTreeSelectionListener(e -> {
                 // Get the currently selected path.
@@ -107,10 +108,10 @@ public class MavenToolWindow extends JPanel {
                     if (selectedNode instanceof DefaultMutableTreeNode) {
                         Object userObject = ((DefaultMutableTreeNode) selectedNode).getUserObject();
                         if (userObject instanceof MavenProject) {
-                            currentProject = (MavenProject)userObject;
+                            currentProject = (MavenProject) userObject;
 
                             refreshDependencies();
-                            System.out.println("selected:"+currentProject.getArtifactId());
+                            System.out.println("selected:" + currentProject.getArtifactId());
                         }
                     }
                 }
@@ -118,18 +119,23 @@ public class MavenToolWindow extends JPanel {
 
             // Set the tree renderer.
             Class<?> nativeClass = this.getClass();
-            Icon m2Icon = IconUtil.getIcon(nativeClass,"/icons/m2.png");
-            Icon closeFolder = IconUtil.getIcon(nativeClass,"/icons/folder_close.png");
-            Icon file = IconUtil.getIcon(nativeClass,"/icons/file.png");
-            Icon folderIcon = IconUtil.createOverlayIcon(closeFolder, m2Icon, 0.5, 9, 0);
-            Icon fileIcon = IconUtil.createOverlayIcon(file, m2Icon, 0.5, 9, 0);
+            Icon m2Icon = IconUtil.getIcon(nativeClass, "/icons/m2.png");
+            Icon closeFolder = IconUtil.getIcon(nativeClass, "/icons/folder_close.png");
+            Icon file = IconUtil.getIcon(nativeClass, "/icons/file.png");
+            Icon folderIcon = IconUtil.createOverlayIcon(closeFolder, m2Icon, 0.5f, 9, 0);
+            Icon fileIcon = IconUtil.createOverlayIcon(file, m2Icon, 0.5f, 9, 0);
             projectTree.setCellRenderer(new MavenTreeCellRenderer(folderIcon, fileIcon));
         } else {
-            projectTree.setModel(treeModel);
+            projectTree.setModel(projectTreeModel);
         }
         updateProjectTree();
     }
 
+    /**
+     * Get the root directory of the current project.
+     *
+     * @return The root directory of the current project.
+     */
     public String getCurrentProjectRoot() {
         String root = platform.getRoot();
         if (currentProject != null && !currentProject.isRoot()) {
@@ -140,6 +146,11 @@ public class MavenToolWindow extends JPanel {
         }
     }
 
+    /**
+     * Add modules of the project.
+     *
+     * @param model The model of the project.
+     */
     private void addModulesProject(Model model) {
         mavenProjects = new ArrayList<>();
         List<String> modules = model.getModules();
@@ -152,9 +163,9 @@ public class MavenToolWindow extends JPanel {
     }
 
     /**
-     * Create a tab at the bottom of the panel.
+     * Create operation tabs.
      */
-    private void createLifecycleTabs() {
+    private void createOperationTabs() {
         lifecycleTabbedPane = new JTabbedPane();
 
         // Lifecycle tab.
@@ -168,7 +179,8 @@ public class MavenToolWindow extends JPanel {
 
     /**
      * Create a lifecycle panel.
-     * @return Lifecycle panel。
+     *
+     * @return Lifecycle panel.
      */
     private JPanel createLifecyclePanel() {
         JPanel panel = new JPanel(new BorderLayout());
@@ -197,28 +209,23 @@ public class MavenToolWindow extends JPanel {
         });
 
         panel.add(new JScrollPane(lifecycleTree), BorderLayout.CENTER);
-
-        // Set the tree renderer.
-        Class<?> nativeClass = this.getClass();
-        Icon closeFolder = IconUtil.getIcon(nativeClass,"/icons/folder_close.png");
-        Icon fileIcon = IconUtil.getIcon(nativeClass,"/icons/m_cmd.png");
-        Icon folderIcon = IconUtil.createOverlayIcon(closeFolder, fileIcon, 0.6, 9, 0);
-        lifecycleTree.setCellRenderer(new MavenTreeCellRenderer(folderIcon, fileIcon));
+        lifecycleTree.setCellRenderer(simpleMavenCellRender(0.6f, "/icons/m_cmd.png"));
         return panel;
     }
 
     /**
      * Execute the Lifecycle operation command.
+     *
      * @param cmd operation command.
      */
     private void executeLifecycleCmd(String cmd) {
         String root = platform.getRoot();
         if (root.isEmpty()) {
-            System.err.println(cmd+"Command failed. No open project was found.");
+            System.err.println(cmd + "Command failed. No open project was found.");
             return;
         }
         Path pomPath = getPomPath();
-        System.out.println("execute:"+pomPath);
+        System.out.println("execute:" + pomPath);
         Pom pom = new Pom(pomPath);
         pom.parseProjectInfo();
         Executor comp = new Executor(cmd, "-Dfile.encoding=" + pom.sourceEncoding);
@@ -229,6 +236,7 @@ public class MavenToolWindow extends JPanel {
 
     /**
      * Get the path of the pom.xml file for the selected project.
+     *
      * @return The path of the pom.xml file for the selected project.
      */
     private Path getPomPath() {
@@ -244,6 +252,7 @@ public class MavenToolWindow extends JPanel {
 
     /**
      * Create the dependency JAR panel.
+     *
      * @return The dependency JAR panel.
      */
     private JPanel createDependenciesPanel() {
@@ -289,12 +298,29 @@ public class MavenToolWindow extends JPanel {
         DefaultTreeModel treeModel = new DefaultTreeModel(dependenciesRoot);
         if (dependenciesTree == null) {
             dependenciesTree = new JTree(treeModel);
+            dependenciesTree.setCellRenderer(simpleMavenCellRender(0.7f, "/icons/depend.png"));
         } else {
             dependenciesTree.setModel(treeModel);
             treeModel.reload();
         }
 
         expandAll(dependenciesTree);
+    }
+
+    /**
+     * Generate Simple Renderer includes file icons and a new folder icon
+     * synthesized from the file and a standard folder.
+     *
+     * @param scaleFactor Scale factor for the small icon (e.g., 0.5 = 50% size).
+     * @param smallIcon   Small icon pathname.
+     * @return MavenTreeCellRenderer
+     */
+    private MavenTreeCellRenderer simpleMavenCellRender(float scaleFactor, String smallIcon) {
+        Class<?> nativeClass = this.getClass();
+        Icon closeFolder = IconUtil.getIcon(nativeClass, "/icons/folder_close.png");
+        Icon fileIcon = IconUtil.getIcon(nativeClass, smallIcon);
+        Icon folderIcon = IconUtil.createOverlayIcon(closeFolder, fileIcon, scaleFactor, 9, 0);
+        return new MavenTreeCellRenderer(folderIcon, fileIcon);
     }
 
     /**
@@ -310,16 +336,15 @@ public class MavenToolWindow extends JPanel {
                     projectNode.add(new DefaultMutableTreeNode(module));
                 }
             }
-
             rootNode.add(projectNode);
         }
-
-        treeModel.reload();
+        projectTreeModel.reload();
         expandAll(projectTree);
     }
 
     /**
      * Expand all nodes of the tree.
+     *
      * @param tree Project tree with nodes that need to be expanded.
      */
     private void expandAll(JTree tree) {
@@ -327,5 +352,4 @@ public class MavenToolWindow extends JPanel {
             tree.expandRow(i);
         }
     }
-
 }
