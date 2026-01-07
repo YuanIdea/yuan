@@ -14,13 +14,14 @@ import java.util.Map;
 
 
 /**
- * 运行类。
+ * Class for running various types of projects.
  */
 public class Run {
 
     /**
-     * 运行程序。
-     * @param platform 平台主程。
+     * Run the program.
+     *
+     * @param platform Platform's main program.
      */
     public static void run(Platform platform) {
         save(platform);
@@ -36,9 +37,10 @@ public class Run {
             root = platform.getRoot();
             if (ProjectType.isModel()) {
                 PluginManager pluginManager = platform.getPluginManager();
-                pluginManager.register("com.gly.PluginEntry");
-                pathName = getPathName(platform);
-                execute = getExecute(pluginManager, pathName);
+                if (pluginManager != null) {
+                    pathName = getPathName(platform);
+                    execute = getExecute(pluginManager, pathName);
+                }
             }
         }
         if (execute != null) {
@@ -58,14 +60,14 @@ public class Run {
                 }
             }
         }
-        System.err.println("未找到对应的插件实现");
         return null;
     }
 
 
     /**
-     * 保存内容到磁盘。
-     * @param platform 平台主程。
+     * Save content to disk.
+     *
+     * @param platform Platform's main program.
      */
     private static void save(Platform platform) {
         if (ProjectType.isMaven()) {
@@ -74,7 +76,7 @@ public class Run {
             PageDockable page = platform.getOpenPage();
             if (page != null) {
                 if (page instanceof Editor) {
-                    Editor editor = (Editor)page;
+                    Editor editor = (Editor) page;
                     editor.saveModified();
                 } else {
                     page.save(page.getPageInfo().getName());
@@ -86,12 +88,12 @@ public class Run {
     private static String getPathName(Platform platform) {
         PageDockable page = platform.getOpenPage();
         if (page == null) {
-            Logger.info("没有激活页面被选中");
+            Logger.info("No active page is selected.");
             return null;
         }
         PageInfo pageInfo = page.getPageInfo();
         if (pageInfo == null) {
-            Logger.warn("页面信息错误");
+            Logger.warn("Page information error.");
             return null;
         }
 

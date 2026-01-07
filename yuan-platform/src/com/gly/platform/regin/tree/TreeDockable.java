@@ -20,6 +20,7 @@ import com.gly.event.RefreshEvent;
 import com.gly.event.Subscribe;
 import com.gly.event.page.AddEvent;
 import com.gly.log.Logger;
+import com.gly.platform.app.Platform;
 import com.gly.platform.app.ProjectType;
 import com.gly.platform.app.YuanConfig;
 import com.gly.event.page.PageInfo;
@@ -29,6 +30,7 @@ import com.gly.platform.regin.tree.find.Select;
 import com.gly.platform.regin.tree.find.TreeSearch;
 import com.gly.platform.regin.tree.modify.*;
 import com.gly.run.Config;
+import com.gly.run.PluginManager;
 import com.gly.util.Resources;
 
 import java.util.LinkedList;
@@ -37,9 +39,10 @@ import java.util.*;
 
 /**
  * 工程目录资源管理的树形停靠窗口。
+ *
  * @author Guoliang Yang
  */
-public class TreeDockable extends DefaultSingleCDockable{
+public class TreeDockable extends DefaultSingleCDockable {
     // 树形资源管理器
     private JTree tree;
 
@@ -61,8 +64,8 @@ public class TreeDockable extends DefaultSingleCDockable{
     // 是否为剪切操作
     private boolean isCutOperation;
 
-    public TreeDockable(){
-        super( "TreeDockable" );
+    public TreeDockable() {
+        super("TreeDockable");
         GlobalBus.register(this); // 注册到事件总线
         setCloseable(true);
         setMinimizable(true);
@@ -91,6 +94,7 @@ public class TreeDockable extends DefaultSingleCDockable{
 
     /**
      * 刷新工程根目录。
+     *
      * @param root 工程根路径。
      */
     public void refreshRoot(String root) {
@@ -103,6 +107,12 @@ public class TreeDockable extends DefaultSingleCDockable{
         GlobalBus.dispatch(new RefreshEvent(change));
 
         if (!root.isEmpty()) {
+            if (ProjectType.isModel()) {
+                PluginManager pluginManager = Platform.getInstance().getPluginManager();
+                if (pluginManager != null) {
+                    pluginManager.register("com.gly.PluginEntry");
+                }
+            }
             FileTreeNode rootTreeNode;
             if (change) { // 根目录发生变化。
                 rootTreeNode = new FileTreeNode(new File(root), true);
@@ -114,7 +124,7 @@ public class TreeDockable extends DefaultSingleCDockable{
                     tree.setModel(model); // 变更到新目录
                 }
             } else { // 刷新当前目录
-                rootTreeNode = (FileTreeNode)model.getRoot();
+                rootTreeNode = (FileTreeNode) model.getRoot();
                 refreshNode(rootTreeNode);
             }
         }
@@ -127,7 +137,6 @@ public class TreeDockable extends DefaultSingleCDockable{
         if (root.isEmpty()) {
             return;
         }
-
 
         Path projectPathName = Paths.get(root).resolve(YuanConfig.PROJECT_CONFIG);
         if (!Files.exists(projectPathName)) {
@@ -148,6 +157,7 @@ public class TreeDockable extends DefaultSingleCDockable{
 
     /**
      * 创建树形控件。
+     *
      * @param rootNode 默认根节点。
      */
     private void createTree(SortedTreeModel rootNode) {
@@ -175,6 +185,7 @@ public class TreeDockable extends DefaultSingleCDockable{
 
     /**
      * 创建文件节点。
+     *
      * @param title 创建标题。
      */
     public void newFile(String title) {
@@ -253,7 +264,8 @@ public class TreeDockable extends DefaultSingleCDockable{
 
     /**
      * 添加新文件节点。
-     * @param file 文件名称。
+     *
+     * @param file        文件名称。
      * @param isDirectory 是否是目录。
      */
     private void addNewNode(File file, boolean isDirectory) {
@@ -261,7 +273,7 @@ public class TreeDockable extends DefaultSingleCDockable{
         if (parent == null) {
             parent = (FileTreeNode) model.getRoot();
         } else if (parent.isFile()) {
-            parent = (FileTreeNode)parent.getParent();
+            parent = (FileTreeNode) parent.getParent();
         }
 
         FileTreeNode newNode = new FileTreeNode(file, isDirectory);// 创建新节点
@@ -271,6 +283,7 @@ public class TreeDockable extends DefaultSingleCDockable{
 
     /**
      * 点击为双击时处理。
+     *
      * @param e 点击事件。
      */
     private void doubleHandler(MouseEvent e) {
@@ -285,11 +298,12 @@ public class TreeDockable extends DefaultSingleCDockable{
 
     /**
      * 开文件。
+     *
      * @param isDesign 是否以设计模式打开。
      */
     void openFile(boolean isDesign) {
         List<FileTreeNode> selectedNodes = Select.getSelectedTreeNodes(tree);
-        for (FileTreeNode selectedNode:selectedNodes) {
+        for (FileTreeNode selectedNode : selectedNodes) {
             if (selectedNode != null && selectedNode.isFile()) {
                 File file = selectedNode.getFile();
                 if (file.exists()) {
@@ -343,15 +357,16 @@ public class TreeDockable extends DefaultSingleCDockable{
 
     /**
      * 刷新所有子目录和文件。
+     *
      * @param foldNode 需要重新加载的当前目录节点。
      */
     private void refreshNode(FileTreeNode foldNode) {
-        if (foldNode != null ) {
+        if (foldNode != null) {
             FileTreeNode reloadNode;
             if (foldNode.isDirectory()) {
                 reloadNode = foldNode;
             } else {
-                reloadNode = (FileTreeNode)foldNode.getParent();
+                reloadNode = (FileTreeNode) foldNode.getParent();
             }
             if (reloadNode != null) {
                 state.saveExpansionState();
@@ -380,7 +395,7 @@ public class TreeDockable extends DefaultSingleCDockable{
         currentClipboardFileList = Select.getSelectedFiles(tree);
         isCutOperation = false;
         if (currentClipboardFileList != null) {
-            String  info = "已复制: " + currentClipboardFileList.get(0);
+            String info = "已复制: " + currentClipboardFileList.get(0);
             if (currentClipboardFileList.size() > 1) {
                 info += "等";
             }
@@ -422,7 +437,7 @@ public class TreeDockable extends DefaultSingleCDockable{
             return;
         }
 
-        for (File currentClipboardFile:currentClipboardFileList) {
+        for (File currentClipboardFile : currentClipboardFileList) {
             pasteOne(currentClipboardFile, targetDir);
         }
         refreshRoot(root);
@@ -430,8 +445,9 @@ public class TreeDockable extends DefaultSingleCDockable{
 
     /**
      * 粘贴一个文件到目标目录。
+     *
      * @param currentClipboardFile 当前文件。
-     * @param targetDir 目标目录。
+     * @param targetDir            目标目录。
      */
     private void pasteOne(File currentClipboardFile, Path targetDir) {
         try {
@@ -459,6 +475,7 @@ public class TreeDockable extends DefaultSingleCDockable{
 
     /**
      * 生成带编号的文件路径
+     *
      * @param originalPath 原始文件路径。
      * @return 用编号修正后的路径。
      */
