@@ -23,31 +23,31 @@ import java.io.File;
 import java.nio.file.Path;
 
 /**
- * 菜单管理器
+ * Menu Manager.
  */
 public class MenuManager {
-    // 平台主程序
+    // Platform's main program.
     private Platform platform;
 
-    // 控制
+    // control
     private CControl control;
 
-    // 主菜单
+    // main menu bar.
     private JMenuBar menuBar;
 
-    // 运行菜单
+    // run menu.
     private JMenu menuRun;
 
-    // 撤消
+    // undo operator.
     private JMenuItem undo;
 
-    // 重做
+    // redo operator.
     private JMenuItem redo;
 
-    // 全选
+    // select all
     private JMenuItem selectAllMenuItem;
 
-    // 查找和替换
+    // find and replace
     private JMenuItem findMenuItem;
 
     public MenuManager(Platform platform) {
@@ -57,21 +57,22 @@ public class MenuManager {
     }
 
     /**
-     * 生成所有菜单。
-     * @param control 控件
+     * Generate all menu bars.
+     *
+     * @param control Current control.
      */
     public void generateMenu(CControl control) {
         this.control = control;
 
-        generateFile();     // 生成文件菜单栏。
-        generateEdit();     // 生成编辑菜单栏。
-        generateRun();      // 生成运行菜单栏。
-        generateView();     // 生成视图主题菜单栏。
-        generateHelp();     // 生成帮助菜单栏。
+        generateFile();     // Generate the file menu bar.
+        generateEdit();     // Generate the edit menu bar.
+        generateRun();      // Generate the run menu bar.
+        generateView();     // Generate the theme menu bar.
+        generateHelp();     // Generate the help menu bar.
     }
 
     /**
-     * 生成文件菜单栏。
+     * Generate the file menu bar.
      */
     private void generateFile() {
         JMenu menuFile = new JMenu("文件(F)");
@@ -104,7 +105,7 @@ public class MenuManager {
     }
 
     /**
-     * 生成编辑菜单栏。
+     * Generate the edit menu bar.
      */
     private void generateEdit() {
         JMenu editMenu = new JMenu("编辑(E)");
@@ -115,7 +116,7 @@ public class MenuManager {
         undo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK));
         editMenu.add(undo);
         undo.addActionListener(e -> {
-            Editor editor = (Editor)platform.getOpenPage();
+            Editor editor = (Editor) platform.getOpenPage();
             if (editor != null) {
                 editor.undo();
             }
@@ -125,7 +126,7 @@ public class MenuManager {
         redo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, KeyEvent.CTRL_DOWN_MASK));
         editMenu.add(redo);
         redo.addActionListener(e -> {
-            Editor editor = (Editor)platform.getOpenPage();
+            Editor editor = (Editor) platform.getOpenPage();
             if (editor != null) {
                 editor.redo();
             }
@@ -134,7 +135,7 @@ public class MenuManager {
         selectAllMenuItem = new JMenuItem("全选");
         selectAllMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_DOWN_MASK));
         selectAllMenuItem.addActionListener(e -> {
-            Editor editor = (Editor)platform.getOpenPage();
+            Editor editor = (Editor) platform.getOpenPage();
             if (editor != null) {
                 RSyntaxTextArea textArea = editor.getTextArea();
                 textArea.selectAll();
@@ -146,14 +147,14 @@ public class MenuManager {
         findMenuItem = new JMenuItem("查找和替换");
         findMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_DOWN_MASK));
         findMenuItem.addActionListener(e -> {
-            Editor editor = (Editor)platform.getFocusedPage();
+            Editor editor = (Editor) platform.getFocusedPage();
             if (editor != null) {
                 FindReplaceDialog.showDialog(platform, editor.getTextArea());
             }
         });
         editMenu.add(findMenuItem);
 
-        // 添加监听菜单展开事件
+        // Add a listener for the menu expansion event.
         editMenu.addMenuListener(new MenuListener() {
             @Override
             public void menuSelected(MenuEvent e) {
@@ -162,18 +163,18 @@ public class MenuManager {
 
             @Override
             public void menuDeselected(MenuEvent e) {
-                // 菜单关闭时触发
+                // Triggered when the menu closes.
             }
 
             @Override
             public void menuCanceled(MenuEvent e) {
-                // 菜单取消时触发
+                // Triggered when the menu is canceled.
             }
         });
     }
 
     /**
-     * 生成运行菜单栏
+     * Generate the run menu bar.
      */
     private void generateRun() {
         menuRun = new JMenu("运行(R)");
@@ -191,42 +192,38 @@ public class MenuManager {
     }
 
     /**
-     * 生成视图主题菜单栏
+     * Generate the theme view menu bar.
      */
     private void generateView() {
-        RootMenuPiece settings = new RootMenuPiece("视图(V)", false );
+        RootMenuPiece settings = new RootMenuPiece("视图(V)", false);
         settings.getMenu().setMnemonic('V');
-        settings.add( new SingleCDockableListMenuPiece( control ));
-        menuBar.add( settings.getMenu() );
+        settings.add(new SingleCDockableListMenuPiece(control));
+        menuBar.add(settings.getMenu());
 
-        RootMenuPiece layout = new RootMenuPiece( "主题(L)", false );
+        RootMenuPiece layout = new RootMenuPiece("主题(L)", false);
         layout.getMenu().setMnemonic('L');
-        layout.add( new SubmenuPiece( "外观", true, new CLookAndFeelMenuPiece( control )));
-        layout.add( new SubmenuPiece( "风格", true, new CThemeMenuPiece( control )));
-        menuBar.add( layout.getMenu() );
+        layout.add(new SubmenuPiece("外观", true, new CLookAndFeelMenuPiece(control)));
+        layout.add(new SubmenuPiece("风格", true, new CThemeMenuPiece(control)));
+        menuBar.add(layout.getMenu());
     }
 
     /**
-     * 生成帮助菜单栏。
+     * Generate the help menu bar.
      */
     private void generateHelp() {
         JMenu helpModel = new JMenu("帮助(H)");
         helpModel.setMnemonic('H');
         menuBar.add(helpModel);
-        JMenuItem aboutFileBtn = new JMenuItem("关于平台(A)");
-        aboutFileBtn.setMnemonic('A');
-        aboutFileBtn.addActionListener(e -> AboutDialog.showAboutDialog(platform));
-        helpModel.add(aboutFileBtn);
 
         JMenuItem helpDocFileBtn = new JMenuItem("查看帮助(V)");
         helpDocFileBtn.setMnemonic('V');
         helpDocFileBtn.addActionListener(e -> {
-                File pdfFile = YuanConfig.YUAN_PATH.resolve("data/Yuan.pdf").toFile();
-                if (pdfFile.exists()) {
-                    OpenFile.open(pdfFile);
-                } else {
-                    Logger.error("帮助文档不存在"+pdfFile);
-                }
+            File pdfFile = YuanConfig.YUAN_PATH.resolve("data/Yuan.pdf").toFile();
+            if (pdfFile.exists()) {
+                OpenFile.open(pdfFile);
+            } else {
+                Logger.error("Help documentation not found:" + pdfFile);
+            }
         });
         helpModel.add(helpDocFileBtn);
 
@@ -238,10 +235,15 @@ public class MenuManager {
         JMenuItem installCoreBtn = new JMenuItem("算法安装到仓库");
         installCoreBtn.addActionListener(e -> installCore());
         helpModel.add(installCoreBtn);
+
+        JMenuItem aboutFileBtn = new JMenuItem("关于平台(A)");
+        aboutFileBtn.setMnemonic('A');
+        aboutFileBtn.addActionListener(e -> AboutDialog.showAboutDialog(platform));
+        helpModel.add(aboutFileBtn);
     }
 
     /**
-     * 安装核心算法库。
+     * Install the core algorithm to the repository.
      */
     private void installCore() {
         Path directory = YuanConfig.YUAN_PATH;
@@ -249,20 +251,20 @@ public class MenuManager {
         boolean compileSuccess = Executor.executeMaven(directory, YuanConfig.DEFAULT_JAVA_HOME,
                 "install:install-file", "-Dfile=" + coreFile);
         if (compileSuccess) {
-            Logger.info("算法库安装成功！");
+            Logger.info("Algorithm library installation successful!");
         } else {
-            Logger.error("算法库安装失败！");
+            Logger.error("Algorithm library installation failed!");
         }
     }
 
     /**
-     * 更新编辑子菜单项状态。
+     * Update the state of the edit submenu items.
      */
     private void updateEditItemState() {
-        Editor editor = (Editor)platform.getOpenPage(); //当前打开的文档窗口
+        Editor editor = (Editor) platform.getOpenPage(); //Currently open document windows.
         if (editor != null) {
             undo.setEnabled(editor.canUndo());
-            redo.setEnabled(editor.canRedo() );
+            redo.setEnabled(editor.canRedo());
             selectAllMenuItem.setEnabled(true);
             findMenuItem.setEnabled(true);
         } else {
@@ -274,7 +276,7 @@ public class MenuManager {
     }
 
     /**
-     * 刷新菜单栏
+     * Refresh run menu.
      */
     public void refresh() {
         if (ProjectType.isModel() || ProjectType.isMaven()) {
