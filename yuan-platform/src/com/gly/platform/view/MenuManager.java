@@ -232,7 +232,8 @@ public class MenuManager {
         regFileBtn.addActionListener(e -> new Registration(platform));
         helpModel.add(regFileBtn);
 
-        JMenuItem installCoreBtn = new JMenuItem("算法安装到仓库");
+        JMenuItem installCoreBtn = new JMenuItem("安装依赖库(I)");
+        installCoreBtn.setMnemonic('I');
         installCoreBtn.addActionListener(e -> installCore());
         helpModel.add(installCoreBtn);
 
@@ -243,17 +244,17 @@ public class MenuManager {
     }
 
     /**
-     * Install the core algorithm to the repository.
+     * Install yuan-common to the repository.
      */
     private void installCore() {
         Path directory = YuanConfig.YUAN_PATH;
-        String coreFile = directory.toString() + "\\yuan-common-1.0.5.jar";
-        boolean compileSuccess = Executor.executeMaven(directory, YuanConfig.DEFAULT_JAVA_HOME,
+        Path coreFile = directory.resolve("yuan-common-1.0.5.jar");
+        boolean installedSuccess = Executor.executeMaven(directory, YuanConfig.DEFAULT_JAVA_HOME,
                 "install:install-file", "-Dfile=" + coreFile);
-        if (compileSuccess) {
-            Logger.info("Algorithm library installation successful!");
+        if (installedSuccess) {
+            Logger.info("yuan-common-1.0.5.jar installed successfully.");
         } else {
-            Logger.error("Algorithm library installation failed!");
+            Logger.error("yuan-common-1.0.5.jar installation failed.");
         }
     }
 
