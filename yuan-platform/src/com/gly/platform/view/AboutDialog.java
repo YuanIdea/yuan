@@ -9,7 +9,7 @@ import java.net.URI;
  */
 class AboutDialog {
     private static final String APP_NAME = "yuan-1.0.5";
-    private static final String VERSION = "2026.01.06";
+    private static final String VERSION = "2026.01.08";
     private static final String WEB = "https://github.com/YuanIdea/yuan";
 
     static void showAboutDialog(JFrame parent) {
