@@ -42,10 +42,13 @@ public class FileTreeCellRenderer extends DefaultTreeCellRenderer {
     // m
     private final Icon mIcon = getIcon("/icons/m.png");
 
-     // json
-    private final Icon jsonIcon = getIcon("/icons/json.png");
+    // python
+    private final Icon pythonIcon = getIcon("/icons/python.png");
 
     // json
+    private final Icon jsonIcon = getIcon("/icons/json.png");
+
+    // xml
     private final Icon xmlIcon = getIcon("/icons/xml.png");
 
     // pdf
@@ -89,7 +92,7 @@ public class FileTreeCellRenderer extends DefaultTreeCellRenderer {
 
     @Override
     public Component getTreeCellRendererComponent(JTree tree, Object value,
-            boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+                                                  boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
         super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 
         if (value instanceof FileTreeNode) {
@@ -129,7 +132,7 @@ public class FileTreeCellRenderer extends DefaultTreeCellRenderer {
                 } else if(name.endsWith(".cs")) {
                     setIcon(cSharpIcon);
                 }  else if(name.endsWith(".pdf")) {
-                        setIcon(pdfIcon);
+                    setIcon(pdfIcon);
                 } else if (name.endsWith(".xml")) {
                     if (name.equals("pom.xml")) {
                         setIcon(mIcon);
@@ -138,7 +141,9 @@ public class FileTreeCellRenderer extends DefaultTreeCellRenderer {
                     }
                 } else if (name.endsWith(".json")) {
                     setIcon(jsonIcon);
-                } else if (name.endsWith(".zip") || name.endsWith(".rar") || name.endsWith(".jar")) {
+                } else if (name.endsWith(".py")) {
+                    setIcon(pythonIcon);
+                }else if (name.endsWith(".zip") || name.endsWith(".rar") || name.endsWith(".jar")) {
                     setIcon(zipIcon);
                 } else if (name.endsWith(".pt")) {
                     setIcon(modelIcon);
