@@ -23,81 +23,95 @@ import java.nio.file.Paths;
 
 
 /**
- * 编辑器。
+ * Text editor supporting code highlighting effects.
  */
 public class Editor extends PageDockable {
     // 页面
     private RSyntaxTextArea textArea;
 
-    // 文件编码
+    // Encoding method used by the current text.
     private String encoding;
 
-    // 加载文件路径。
+    // Path name where the current text is stored.
     private Path path;
 
-    // 是否被编辑过。
+    // Used to indicate whether the content has been edited.
     private boolean isModified;
 
-    // 未修改文档内容。
+    // Original unmodified document content.
     private String originalContent;
 
-    public Editor(MultipleCDockableFactory<PageDockable,?> factory, PageInfo pageInfo){
-        super( factory, pageInfo );
+    public Editor(MultipleCDockableFactory<PageDockable, ?> factory, PageInfo pageInfo) {
+        super(factory, pageInfo);
         encoding = StandardCharsets.UTF_8.toString();
         textArea = new RSyntaxTextArea(20, 60);
         textArea.setTabSize(4);
         textArea.setName(pageInfo.getFileName());
 
-        String type = PathUtil.getFileExtension(pageInfo.getName());
-        String syntaxStyle = "text/"+type;
+        String syntaxStyle = getStyleKey(pageInfo.getName());
         textArea.setSyntaxEditingStyle(syntaxStyle);
         textArea.setCodeFoldingEnabled(true);
-        textArea.setAutoIndentEnabled(true); // 设置自动缩进启用
-        // 启用抗锯齿获得更好效果
-        textArea.setAntiAliasingEnabled(true);
+        textArea.setAutoIndentEnabled(true);
+        textArea.setAntiAliasingEnabled(true);// Enable anti-aliasing for better results.
         textArea.setFractionalFontMetricsEnabled(true);
         addPopupMenu();
         RTextScrollPane sp = new RTextScrollPane(textArea);
         getContentPane().add(sp);
         path = Paths.get(pageInfo.getName());
         String checkEncoding = Encoding.detectCharset(path);
-        new EditorShortcutManager(textArea); // 快捷键。
+        new EditorShortcutManager(textArea); // Implement shortcut key functionality.
 
         if (!checkEncoding.equalsIgnoreCase(encoding)) {
-            Logger.info("检测到可能不是" + encoding + "编码，建议尝试"+checkEncoding+"编码方式打开。");
+            Logger.info("检测到可能不是" + encoding + "编码，建议尝试" + checkEncoding + "编码方式打开。");
         }
 
         setTextNoBack(FileUtil.loadFile(path, encoding));
-        SaveAction.bindSaveShortcut(textArea, new SaveAction(this)); // 创建保存操作并绑定
+        SaveAction.bindSaveShortcut(textArea, new SaveAction(this)); // Create and bind the save operation.
         Drop.setupDragAndDrop(textArea);
 
-        textArea.getDocument().addDocumentListener(generateDocumentListener());// 添加文档修改监听器
-        this.addVetoClosingListener(generateCVetoClosingListener());// 页面关闭处理
+        textArea.getDocument().addDocumentListener(generateDocumentListener());// Add a document modification listener.
+        this.addVetoClosingListener(generateCVetoClosingListener());// Page close handling.
     }
 
     /**
-     * 重新加载。
+     * Get the Style Key to achieve code highlighting.
+     *
+     * @param pathName Path name of the file.
+     * @return the Style Key.
+     */
+    private String getStyleKey(String pathName) {
+        String type = PathUtil.getFileExtension(pathName);
+        if (type.equals("py")) {
+            type = "python";
+        }
+        return "text/" + type;
+    }
+
+    /**
+     * Reload the text content.
      */
     public void reload() {
         setTextNoBack(FileUtil.loadFile(path, encoding));
     }
 
     /**
-     * 重新设置内容，并不允许撤销。
-     * @param t 要设置的内容。
+     * Reset the content without allowing undo.
+     *
+     * @param text Content to be set.
      */
-    private void setTextNoBack(String t) {
-        textArea.beginAtomicEdit(); // 暂停撤销记录
-        textArea.setText(t);
+    private void setTextNoBack(String text) {
+        textArea.beginAtomicEdit(); // Pause undo recording.
+        textArea.setText(text);
         textArea.discardAllEdits();
-        textArea.endAtomicEdit();// 恢复撤销记录
-        this.originalContent = t;
+        textArea.endAtomicEdit();// Resume undo recording.
+        this.originalContent = text;
         setModified(false);
     }
 
     /**
-     * 保存内容。
-     * @param pathName 保存路径。
+     * Save the document content.
+     *
+     * @param pathName Path name for saving the document.
      */
     @Override
     public void save(String pathName) {
@@ -107,7 +121,7 @@ public class Editor extends PageDockable {
     }
 
     /**
-     * 只有文件修改时能保存，否则不做保存。
+     * Save only when the file is modified; otherwise, no action is taken.
      */
     public void saveModified() {
         if (isModified) {
@@ -116,8 +130,9 @@ public class Editor extends PageDockable {
     }
 
     /**
-     * 创建文件监听器。
-     * @return 文件监听器。
+     * Generate a file listener.
+     *
+     * @return Generated file listener.
      */
     private DocumentListener generateDocumentListener() {
         return new DocumentListener() {
@@ -139,7 +154,7 @@ public class Editor extends PageDockable {
     }
 
     /**
-     * 通过内容检测是否发生改变。
+     * Detect changes through content comparison.
      */
     private void checkModifyByContent() {
         if (originalContent != null) {
@@ -152,12 +167,13 @@ public class Editor extends PageDockable {
     }
 
     /**
-     * 创建文件关闭监听处理器。
-     * @return 文件关闭监听处理器
+     * Generate a handler for the file close listener.
+     *
+     * @return A handler for the file close listener.
      */
     private CVetoClosingListener generateCVetoClosingListener() {
         return new CVetoClosingListener() {
-            public void closing( CVetoClosingEvent event ) {
+            public void closing(CVetoClosingEvent event) {
                 if (isModified) {
                     int option = JOptionPane.showOptionDialog(textArea,
                             textArea.getName() + "文件已修改，是否保存？", "保存文件",
@@ -167,14 +183,15 @@ public class Editor extends PageDockable {
                     if (option == JOptionPane.YES_OPTION) {
                         save(getPageInfo().getName());
                     } else if (option == JOptionPane.CANCEL_OPTION) {
-                        event.cancel();  // 关键：阻止关闭操作
+                        event.cancel();
                     }
                 }
             }
-            public void closed( CVetoClosingEvent event ){ }
+
+            public void closed(CVetoClosingEvent event) {
+            }
         };
     }
-
 
 
     public String getEncoding() {
@@ -186,7 +203,7 @@ public class Editor extends PageDockable {
     }
 
     /**
-     * 设置文档为被修改状态。
+     * Set the document's status to modified.
      */
     private void setModified(boolean modified) {
         isModified = modified;
@@ -202,23 +219,25 @@ public class Editor extends PageDockable {
     }
 
     /**
-     * 是否可被撤销。
-     * @return 是否可被撤销。
+     * Determine if the operation can be undone.
+     *
+     * @return if the operation can be undone.
      */
     public boolean canUndo() {
         return textArea.canUndo();
     }
 
     /**
-     * 是否可被重做
-     * @return 是否可被重做。
+     * Determine if it can be redone.
+     *
+     * @return if it can be redone.
      */
     public boolean canRedo() {
         return textArea.canRedo();
     }
 
     /**
-     * 撤销。
+     * Undo the most recent operation.
      */
     public void undo() {
         if (textArea.canUndo()) {
@@ -230,7 +249,7 @@ public class Editor extends PageDockable {
     }
 
     /**
-     * 重做。
+     * Redo the most recent operation.
      */
     public void redo() {
         if (textArea.canRedo()) {
@@ -250,12 +269,12 @@ public class Editor extends PageDockable {
     }
 
     /**
-     * 添加自定义右键。
+     * Add a custom right-click context menu bar.
      */
     private void addPopupMenu() {
-        // 获取默认的弹出菜单
+        // Get the default popup menu.
         JPopupMenu popupMenu = textArea.getPopupMenu();
-        // 添加分隔符
+        // Add a separator to the menu bar.
         popupMenu.addSeparator();
         JMenuItem open = new JMenuItem("在资源管理器中显示");
         open.addActionListener(e -> {
