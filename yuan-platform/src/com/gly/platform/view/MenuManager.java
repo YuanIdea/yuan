@@ -281,7 +281,7 @@ public class MenuManager {
      * Refresh run menu.
      */
     public void refresh() {
-        if (ProjectType.isModel() || ProjectType.isMaven()) {
+        if (ProjectType.isModel() || ProjectType.isMaven() || ProjectType.isPython()) {
             menuRun.setEnabled(true);
         } else {
             menuRun.setEnabled(false);
