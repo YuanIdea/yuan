@@ -17,7 +17,7 @@ public class Config {
     /**
      * Read the XML configuration file.
      *
-     * @param root Root directory.
+     * @param root Root directory of the current project.
      * @return XML file content.
      */
     public static XElement readElement(String root) {
@@ -41,37 +41,48 @@ public class Config {
     }
 
     /**
-     * Get the JDK path used in the current project configuration;
+     * Get the JDK path used in the current project configuration.
      * use the default configuration when no configuration is set.
      *
-     * @param root Root directory.
+     * @param root Root directory of the current project.
      * @return JDK path used in the current project configuration.
      */
     public static Path getProjectJavaHome(String root) {
-        XElement element = readElement(root);
-        if (element != null) {
-            try {
-                XElement jdk = element.getElement("jdk"); // 工程类型。
-                if (jdk != null) {
-                    return Paths.get(jdk.getValue());
-                }
-            } catch (Exception e) {
-                Logger.error("JDK configuration parsing error:" + e.getMessage());
-            }
+        Path javaHome = getPath(root, "jdk");
+        if (javaHome == null) {
+            return YuanConfig.DEFAULT_JAVA_HOME;
+        } else {
+            return javaHome;
         }
-        return YuanConfig.DEFAULT_JAVA_HOME;
     }
 
+    /**
+     * Get the python path used in the current project configuration.
+     *
+     * @param root Root directory of the current project.
+     * @return Path path used in the current project configuration.
+     */
     public static Path getProjectPythonHome(String root) {
+        return getPath(root, "pythonHome");
+    }
+
+    /**
+     * Parse the path based on the node..
+     *
+     * @param root Root directory of the current project.
+     * @param node A node in XML that configures a path.
+     * @return Path corresponding to the node.
+     */
+    private static Path getPath(String root, String node) {
         XElement element = readElement(root);
         if (element != null) {
             try {
-                XElement python = element.getElement("pythonHome"); // 工程类型。
+                XElement python = element.getElement(node);
                 if (python != null) {
                     return Paths.get(python.getValue());
                 }
             } catch (Exception e) {
-                Logger.error("Python configuration parsing error:" + e.getMessage());
+                Logger.error("Path parsing error:" + e.getMessage());
             }
         }
         return null;
