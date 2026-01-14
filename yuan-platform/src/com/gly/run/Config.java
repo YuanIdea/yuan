@@ -89,7 +89,7 @@ public class Config {
     }
 
     /**
-     * Write to the Maven configuration file.
+     * Write to the project configuration file.
      *
      * @param projectXml Write the path name of the XML file.
      */
@@ -97,8 +97,8 @@ public class Config {
         try {
             XElement project = new XElement("project");
             project.addElement("type").setValue("maven");
-            // 将 XElement 保存到文件（会覆盖已有文件）
-            FileOutputStream config = new FileOutputStream(projectXml); // 工程配置文件。
+            //Saving XElement to a file will overwrite any existing file.
+            FileOutputStream config = new FileOutputStream(projectXml); // the project configuration file
             OutputStream out = new BufferedOutputStream(config);
             XIO.writeUTF(project, out);
         } catch (IOException e) {
