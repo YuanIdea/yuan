@@ -10,11 +10,15 @@ import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+/**
+ * Project configuration class.
+ */
 public class Config {
     /**
-     * 读取xml配置文件。
-     * @param root 根目录。
-     * @return xml文件内容。
+     * Read the XML configuration file.
+     *
+     * @param root Root directory.
+     * @return XML file content.
      */
     public static XElement readElement(String root) {
         if (root.isEmpty()) {
@@ -25,21 +29,23 @@ public class Config {
             return null;
         }
         try {
-            FileInputStream config = new FileInputStream(projectPathName); // 工程配置文件。
+            FileInputStream config = new FileInputStream(projectPathName);
             InputStream in = new BufferedInputStream(config);
             XElement xElement = XIO.readUTF(in);
             config.close();
             return xElement;
         } catch (Exception e) {
-            Logger.error("配置文件读取错误:" + projectPathName + ", " + e.getMessage());
+            Logger.error("Configuration file read error:" + projectPathName + ", " + e.getMessage());
         }
         return null;
     }
 
     /**
-     * 获取当前工程配置使用的jdk路径，没有配置时使用默认配置。
-     * @param root 工程根目录。
-     * @return 当前工程配置使用的jdk路径。
+     * Get the JDK path used in the current project configuration;
+     * use the default configuration when no configuration is set.
+     *
+     * @param root Root directory.
+     * @return JDK path used in the current project configuration.
      */
     public static Path getProjectJavaHome(String root) {
         XElement element = readElement(root);
@@ -50,15 +56,31 @@ public class Config {
                     return Paths.get(jdk.getValue());
                 }
             } catch (Exception e) {
-                Logger.error("jdk配置解析错误:" + e.getMessage());
+                Logger.error("JDK configuration parsing error:" + e.getMessage());
             }
         }
         return YuanConfig.DEFAULT_JAVA_HOME;
     }
 
+    public static Path getProjectPythonHome(String root) {
+        XElement element = readElement(root);
+        if (element != null) {
+            try {
+                XElement python = element.getElement("pythonHome"); // 工程类型。
+                if (python != null) {
+                    return Paths.get(python.getValue());
+                }
+            } catch (Exception e) {
+                Logger.error("Python configuration parsing error:" + e.getMessage());
+            }
+        }
+        return null;
+    }
+
     /**
-     * 写入maven配置文件。
-     * @param projectXml 写入路径。
+     * Write to the Maven configuration file.
+     *
+     * @param projectXml Write the path name of the XML file.
      */
     public static void writeMavenXml(File projectXml) {
         try {
@@ -69,7 +91,7 @@ public class Config {
             OutputStream out = new BufferedOutputStream(config);
             XIO.writeUTF(project, out);
         } catch (IOException e) {
-            System.err.println("写入失败: " + e.getMessage());
+            System.err.println("Write failed: " + e.getMessage());
             e.printStackTrace();
         }
     }

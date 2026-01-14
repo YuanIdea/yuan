@@ -248,13 +248,14 @@ public class MenuManager {
      */
     private void installCore() {
         Path directory = YuanConfig.YUAN_PATH;
-        Path coreFile = directory.resolve("yuan-common-1.0.5.jar");
+        String jarName = "yuan-common-1.0.6.jar";
+        Path coreFile = directory.resolve(jarName);
         boolean installedSuccess = Executor.executeMaven(directory, YuanConfig.DEFAULT_JAVA_HOME,
                 "install:install-file", "-Dfile=" + coreFile);
         if (installedSuccess) {
-            Logger.info("yuan-common-1.0.5.jar installed successfully.");
+            Logger.info(jarName + " installed successfully.");
         } else {
-            Logger.error("yuan-common-1.0.5.jar installation failed.");
+            Logger.error(jarName + " installation failed.");
         }
     }
 

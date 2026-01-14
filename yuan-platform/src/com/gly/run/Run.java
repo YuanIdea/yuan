@@ -9,7 +9,9 @@ import com.gly.platform.regin.work.PageDockable;
 import com.gly.platform.thread.AlgorithmExecutor;
 import com.gly.platform.app.Platform;
 import com.gly.platform.app.ProjectType;
+import com.gly.python.PythonRunner;
 
+import java.nio.file.Path;
 import java.util.Map;
 
 
@@ -33,6 +35,15 @@ public class Run {
         if (ProjectType.isMaven()) {
             root = platform.getView().getPackDockable().getCurrentProjectRoot();
             execute = new ProcessExecutor();
+        } else if (ProjectType.isPython()) {
+            root = platform.getRoot();
+            Path pythonHome = Config.getProjectPythonHome(root);
+            if (pythonHome != null) {
+                pathName = getPathName(platform);
+                execute = new PythonRunner(pythonHome.toString());
+            } else {
+                Logger.error("Python home path not found.");
+            }
         } else {
             root = platform.getRoot();
             if (ProjectType.isModel()) {

@@ -8,8 +8,8 @@ import java.net.URI;
  * about dialog.
  */
 class AboutDialog {
-    private static final String APP_NAME = "yuan-1.0.5";
-    private static final String VERSION = "2026.01.08";
+    private static final String APP_NAME = "yuan-1.0.6";
+    private static final String VERSION = "2026.01.14";
     private static final String WEB = "https://github.com/YuanIdea/yuan";
 
     static void showAboutDialog(JFrame parent) {
@@ -59,8 +59,8 @@ class AboutDialog {
         JTextArea infoArea = new JTextArea();
         String base =
                 "Java runtime: " + System.getProperty("java.version") + "\n" +
-                "JVM version: " + System.getProperty("java.vm.version") + "\n" +
-                "Java home: " + System.getProperty("java.home") + "\n";
+                        "JVM version: " + System.getProperty("java.vm.version") + "\n" +
+                        "Java home: " + System.getProperty("java.home") + "\n";
         infoArea.setText(base);
         infoArea.setEditable(false);
         infoArea.setOpaque(false);
