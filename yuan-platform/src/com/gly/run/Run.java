@@ -11,6 +11,7 @@ import com.gly.platform.app.Platform;
 import com.gly.platform.app.ProjectType;
 import com.gly.python.PythonRunner;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Map;
 
@@ -40,7 +41,7 @@ public class Run {
             Path pythonHome = Config.getProjectPythonHome(root);
             if (pythonHome != null) {
                 pathName = getPathName(platform);
-                execute = new PythonRunner(pythonHome.toString());
+                execute = new PythonRunner(pythonHome.toString(), StandardCharsets.UTF_8);
             } else {
                 Logger.error("Python home path not found.");
             }
