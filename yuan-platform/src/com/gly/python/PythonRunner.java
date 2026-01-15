@@ -2,7 +2,6 @@ package com.gly.python;
 
 import com.gly.log.Logger;
 import com.gly.model.BaseExecutable;
-import com.gly.util.AnsiUtil;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -44,8 +43,7 @@ public class PythonRunner extends BaseExecutable {
                              new BufferedReader(new InputStreamReader(process.getInputStream(), encode))) {
                     String line;
                     while ((line = reader.readLine()) != null) {
-                        String cleanLine = AnsiUtil.removeAnsiEscapeCodes(line);
-                        System.out.println(cleanLine);
+                        System.out.println(line);
                     }
                 } catch (IOException e) {
                     System.err.println("Output read error:" + e.getMessage());
@@ -57,8 +55,7 @@ public class PythonRunner extends BaseExecutable {
                              new BufferedReader(new InputStreamReader(process.getErrorStream(), encode))) {
                     String line;
                     while ((line = reader.readLine()) != null) {
-                        String cleanLine = AnsiUtil.removeAnsiEscapeCodes(line);
-                        System.err.println(cleanLine);
+                        System.err.println(line);
                     }
                 } catch (IOException e) {
                     System.err.println("Error stream read error:" + e.getMessage());
