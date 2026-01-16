@@ -1,3 +1,9 @@
+# Overview
+Yuan is similar to a simplified version of IntelliJ IDEA, supporting both Java and Python languages. It has currently only been tested on the Windows operating system. 
+
+It supports basic functionalities such as editing, compiling, running, packaging, installing to repositories, and adding custom plugins for standard Maven projects. 
+
+It also supports Python editing, running, and other related features.
 # Yuan Open Source Repository
 
 This repository is the open-source part of the yuan IDEs codebase.
