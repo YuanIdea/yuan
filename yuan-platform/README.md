@@ -4,6 +4,8 @@ Yuan is similar to a simplified version of IntelliJ IDEA, supporting both Java a
 It supports basic functionalities such as editing, compiling, running, packaging, installing to repositories, and adding custom plugins for standard Maven projects. 
 
 It also supports Python editing, running, and other related features.
+
+---
 # Yuan Open Source Repository
 
 This repository is the open-source part of the yuan IDEs codebase.
@@ -43,14 +45,14 @@ These instructions will help you build yuan IDEA from source code, which is the 
 
 2.**Run the yuan IDEA Application from Source**
 
-Using the latest yuan.exe, click '**File | Open**', select the `<IDEA_HOME>` directory.
+Using the latest yuan.exe, click '**File | Open**', select the yuan-platform directory.
 
  - click '**Help | Install dependency libraries**'
 
  - To run the yuan IDEA that was built from source, choose '**Run | Run**' from the main menu. This will use the preconfigured run configuration `IDEA`.
 
+---
 # Other
-
 #### License
 
 This project is licensed under the Apache License 2.0.
