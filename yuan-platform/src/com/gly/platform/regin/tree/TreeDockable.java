@@ -38,30 +38,30 @@ import java.util.List;
 import java.util.*;
 
 /**
- * 工程目录资源管理的树形停靠窗口。
+ * Tree dock window for project directory resource management.
  *
  * @author Guoliang Yang
  */
 public class TreeDockable extends DefaultSingleCDockable {
-    // 树形资源管理器
+    // Tree resource manager.
     private JTree tree;
 
-    // 右键处理
+    // Right-click functionality.
     private RightMenu rightMenu;
 
-    // 根目录
+    // Root directory.
     private String root;
 
-    // 可排序树模型
+    // Sorted tree model.
     private SortedTreeModel model;
 
-    // 树的状态
+    // Tree state.
     private State state;
 
-    // 当前剪切板文件
+    // Current clipboard file.
     private List<File> currentClipboardFileList;
 
-    // 是否为剪切操作
+    // Is it a cut operation?
     private boolean isCutOperation;
 
     public TreeDockable() {
@@ -79,7 +79,7 @@ public class TreeDockable extends DefaultSingleCDockable {
     }
 
     /**
-     * 刷新选中功能。
+     * Refresh selected nodes.
      */
     void refresh() {
         final FileTreeNode fileNode = Select.getSelectedTreeNode(tree);
@@ -93,9 +93,9 @@ public class TreeDockable extends DefaultSingleCDockable {
     }
 
     /**
-     * 刷新工程根目录。
+     * Refresh the project's root directory.
      *
-     * @param root 工程根路径。
+     * @param root Root directory。
      */
     public void refreshRoot(String root) {
         boolean change = !this.root.equals(root);
@@ -114,16 +114,16 @@ public class TreeDockable extends DefaultSingleCDockable {
                 }
             }
             FileTreeNode rootTreeNode;
-            if (change) { // 根目录发生变化。
+            if (change) { // Root directory has changed.
                 rootTreeNode = new FileTreeNode(new File(root), true);
-                TreeInitializer.init(rootTreeNode); // 将File数组中的元素增加到节点上
-                model = new SortedTreeModel(rootTreeNode, new NodeComparator());// 创建排序模型
+                TreeInitializer.init(rootTreeNode); // Add elements from the File array to the nodes.
+                model = new SortedTreeModel(rootTreeNode, new NodeComparator());// Create a sorting model.
                 if (tree == null) {
-                    createTree(model);  // 创建树和目录
+                    createTree(model);  // Create tree and directory.
                 } else {
-                    tree.setModel(model); // 变更到新目录
+                    tree.setModel(model); // Change to new directory.
                 }
-            } else { // 刷新当前目录
+            } else { // Refresh current directory.
                 rootTreeNode = (FileTreeNode) model.getRoot();
                 refreshNode(rootTreeNode);
             }
@@ -131,7 +131,7 @@ public class TreeDockable extends DefaultSingleCDockable {
     }
 
     /**
-     * 创建工程配置文件目录。
+     * Create project configuration file directory.
      */
     private void generateProjectConfig() {
         if (root.isEmpty()) {
@@ -156,27 +156,28 @@ public class TreeDockable extends DefaultSingleCDockable {
     }
 
     /**
-     * 创建树形控件。
+     * Create tree control.
      *
-     * @param rootNode 默认根节点。
+     * @param rootNode Default root node.
      */
     private void createTree(SortedTreeModel rootNode) {
-        tree = new JTree(rootNode);// 使用节点创建树控件
-        tree.getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION); // 设置多选模式
+        tree = new JTree(rootNode);// Use nodes to create tree control.
+        // Set tree nodes to multiple selection mode.
+        tree.getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         tree.setEditable(false);
         tree.setCellRenderer(new FileTreeCellRenderer());
         tree.setCellEditor(new FileTreeCellEditor(tree));
         tree.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                doubleHandler(e); // 双击事件。
-                rightMenu.rightHandler(e);  // 右击事件。
+                doubleHandler(e); // Double-click event.
+                rightMenu.rightHandler(e);  // Right-click event.
             }
         });
-        rightMenu.createRightMenu(); // 创建右键菜单
+        rightMenu.createRightMenu(); // Create a right-click context menu.
         getContentPane().add(new JScrollPane(tree), BorderLayout.CENTER);
 
-        state.init(tree); // 展开状态初始化指定树。
+        state.init(tree); // Initialize the tree control in an expanded state.
 
         // 节点拖动功能。
         FileTreeDragHandler dragHandler = new FileTreeDragHandler(tree);
@@ -184,9 +185,9 @@ public class TreeDockable extends DefaultSingleCDockable {
     }
 
     /**
-     * 创建文件节点。
+     * Create file nodes.
      *
-     * @param title 创建标题。
+     * @param title Create title.
      */
     public void newFile(String title) {
         final Path selectFolder = getSelectedFolder();
@@ -198,14 +199,16 @@ public class TreeDockable extends DefaultSingleCDockable {
         nfc.showNewFileDialog(null);
         if (nfc.isOk()) {
             FileCreator node = new FileCreator(selectFolder);
-            node.createFile(nfc.getFileName(), null);
-            File file = node.getFile();
-            if (file != null) {
-                PageInfo pageInfo = new PageInfo(file);
-                addNewNode(file, false);
-                GlobalBus.dispatch(new AddEvent(pageInfo));
-            } else {
-                Logger.error("创建文件失败：" + nfc.getFileName());
+            boolean success = node.createFile(nfc.getFileName(), null);
+            if (success) {
+                File file = node.getFile();
+                if (file != null) {
+                    PageInfo pageInfo = new PageInfo(file);
+                    addNewNode(file, false);
+                    GlobalBus.dispatch(new AddEvent(pageInfo));
+                } else {
+                    Logger.error("创建文件失败：" + nfc.getFileName());
+                }
             }
         }
     }
@@ -238,7 +241,7 @@ public class TreeDockable extends DefaultSingleCDockable {
     }
 
     /**
-     * 创建目录节点。
+     * Create directory nodes.
      */
     void newFolder() {
         final Path selectFolder = getSelectedFolder();
@@ -263,10 +266,10 @@ public class TreeDockable extends DefaultSingleCDockable {
     }
 
     /**
-     * 添加新文件节点。
+     * Add new file nodes.
      *
-     * @param file        文件名称。
-     * @param isDirectory 是否是目录。
+     * @param file        File name.
+     * @param isDirectory Is it a directory?
      */
     private void addNewNode(File file, boolean isDirectory) {
         FileTreeNode parent = (FileTreeNode) tree.getLastSelectedPathComponent();
@@ -276,15 +279,15 @@ public class TreeDockable extends DefaultSingleCDockable {
             parent = (FileTreeNode) parent.getParent();
         }
 
-        FileTreeNode newNode = new FileTreeNode(file, isDirectory);// 创建新节点
-        model.insertNodeInto(newNode, parent, parent.getChildCount());// 通过模型插入节点
-        tree.expandPath(new TreePath(parent.getPath()));// 自动展开父节点（可选）
+        FileTreeNode newNode = new FileTreeNode(file, isDirectory);// Create new node.
+        model.insertNodeInto(newNode, parent, parent.getChildCount());// Insert nodes through the model.
+        tree.expandPath(new TreePath(parent.getPath()));// Automatically expand parent nodes.
     }
 
     /**
-     * 点击为双击时处理。
+     * Handle when it is a double-click.
      *
-     * @param e 点击事件。
+     * @param e Click event.
      */
     private void doubleHandler(MouseEvent e) {
         int selRow = tree.getRowForLocation(e.getX(), e.getY());
@@ -297,9 +300,9 @@ public class TreeDockable extends DefaultSingleCDockable {
     }
 
     /**
-     * 开文件。
+     * Open file.
      *
-     * @param isDesign 是否以设计模式打开。
+     * @param isDesign Whether to open in design mode.
      */
     void openFile(boolean isDesign) {
         List<FileTreeNode> selectedNodes = Select.getSelectedTreeNodes(tree);
@@ -318,7 +321,7 @@ public class TreeDockable extends DefaultSingleCDockable {
     }
 
     /**
-     * 从磁盘中打开文件。
+     * Open file from disk.
      */
     void openDiskFile() {
         FileTreeNode selectedNode = Select.getSelectedTreeNode(tree);
@@ -332,14 +335,14 @@ public class TreeDockable extends DefaultSingleCDockable {
     }
 
     /**
-     * 节点重命名
+     * Node rename.
      */
     void renameNode() {
         SwingUtilities.invokeLater(() -> {
             final FileTreeNode fileNode = Select.getSelectedTreeNode(tree);
-            tree.setEditable(true);// 临时启用编辑功能
-            tree.startEditingAtPath(tree.getSelectionPath());// 启动编辑
-            // 添加编辑器监听器，在编辑完成后禁用编辑功能
+            tree.setEditable(true);// Temporarily enable editing functionality.
+            tree.startEditingAtPath(tree.getSelectionPath());// Start editing functionality.
+            // Add an editor listener to disable editing functionality after editing is completed.
             tree.getCellEditor().addCellEditorListener(new CellEditorListener() {
                 @Override
                 public void editingStopped(ChangeEvent e) {
@@ -356,9 +359,9 @@ public class TreeDockable extends DefaultSingleCDockable {
     }
 
     /**
-     * 刷新所有子目录和文件。
+     * Refresh all subdirectories and files.
      *
-     * @param foldNode 需要重新加载的当前目录节点。
+     * @param foldNode Current directory node that needs to be reloaded.
      */
     private void refreshNode(FileTreeNode foldNode) {
         if (foldNode != null) {
@@ -371,7 +374,7 @@ public class TreeDockable extends DefaultSingleCDockable {
             if (reloadNode != null) {
                 state.saveExpansionState();
                 reloadNode.removeAllChildren();
-                TreeInitializer.init(reloadNode); // 将File数组中的元素增加到节点上
+                TreeInitializer.init(reloadNode); // Add elements from the File array to the nodes.
                 model.reload(reloadNode);
                 state.restoreExpansionState();
             }
@@ -389,7 +392,7 @@ public class TreeDockable extends DefaultSingleCDockable {
     }
 
     /**
-     * 复制
+     * Copy.
      */
     void copy() {
         currentClipboardFileList = Select.getSelectedFiles(tree);
@@ -406,7 +409,7 @@ public class TreeDockable extends DefaultSingleCDockable {
     }
 
     /**
-     * 剪切
+     * Cut.
      */
     void cut() {
         currentClipboardFileList = Select.getSelectedFiles(tree);
@@ -423,7 +426,7 @@ public class TreeDockable extends DefaultSingleCDockable {
     }
 
     /**
-     * 粘贴
+     * Paste.
      */
     void paste() {
         if (currentClipboardFileList == null) {
@@ -444,16 +447,16 @@ public class TreeDockable extends DefaultSingleCDockable {
     }
 
     /**
-     * 粘贴一个文件到目标目录。
+     * Paste a file to the target directory.
      *
-     * @param currentClipboardFile 当前文件。
-     * @param targetDir            目标目录。
+     * @param currentClipboardFile Current file.
+     * @param targetDir            Target directory.
      */
     private void pasteOne(File currentClipboardFile, Path targetDir) {
         try {
             Path destination = targetDir.resolve(currentClipboardFile.getName());
             if (isCutOperation) {
-                // 剪切操作（移动文件）
+                // Cut operation (move file).
                 Files.move(currentClipboardFile.toPath(), destination, StandardCopyOption.REPLACE_EXISTING);
                 Logger.info("已移动: " + currentClipboardFile + " -> " + destination);
             } else {
@@ -474,10 +477,10 @@ public class TreeDockable extends DefaultSingleCDockable {
     }
 
     /**
-     * 生成带编号的文件路径
+     * Generate a file path with a number.
      *
-     * @param originalPath 原始文件路径。
-     * @return 用编号修正后的路径。
+     * @param originalPath Original file path.
+     * @return Path corrected with numbering.
      */
     private Path getNumberedPath(Path originalPath) {
         if (!Files.exists(originalPath)) {
@@ -489,7 +492,7 @@ public class TreeDockable extends DefaultSingleCDockable {
         String extension = "";
         int dotIndex = fileName.lastIndexOf('.');
 
-        // 分离文件名和扩展名
+        // Separate file name and extension.
         if (dotIndex > 0) {
             baseName = fileName.substring(0, dotIndex);
             extension = fileName.substring(dotIndex);
@@ -497,7 +500,7 @@ public class TreeDockable extends DefaultSingleCDockable {
 
         Path parent = originalPath.getParent();
         int count = 2;
-        // 寻找可用的编号
+        // Find available numbering.
         while (true) {
             String newName = baseName + "(" + count + ")" + extension;
             Path newPath = parent.resolve(newName);
@@ -510,13 +513,13 @@ public class TreeDockable extends DefaultSingleCDockable {
     }
 
     private boolean copyFolder(Path source, Path target) throws IOException {
-        // 检查目标路径是否在源路径内（防止无限复制）
+        // Check if the target path is within the source path (to prevent infinite copying).
         if (target.startsWith(source)) {
             Logger.error("目标文件夹是源文件夹的子文件夹，操作失败: " + source + " -> " + target);
             return false;
         }
 
-        // 使用队列实现非递归复制
+        // Use a queue to implement non-recursive copying.
         Queue<Path[]> copyQueue = new LinkedList<>();
         copyQueue.add(new Path[]{source, target});
 
@@ -525,13 +528,13 @@ public class TreeDockable extends DefaultSingleCDockable {
             Path currentSource = paths[0];
             Path currentTarget = paths[1];
 
-            // 如果是目录，创建目标目录并添加子项到队列
+            // If it is a directory, create the target directory and add its sub-items to the queue.
             if (Files.isDirectory(currentSource)) {
                 if (!Files.exists(currentTarget)) {
                     Files.createDirectories(currentTarget);
                 }
 
-                // 遍历目录内容
+                // Traverse the directory contents.
                 try (DirectoryStream<Path> stream = Files.newDirectoryStream(currentSource)) {
                     for (Path entry : stream) {
                         Path newTarget = currentTarget.resolve(entry.getFileName());
@@ -539,7 +542,7 @@ public class TreeDockable extends DefaultSingleCDockable {
                     }
                 }
             }
-            // 如果是文件，直接复制
+            // If it is a file, copy it directly.
             else {
                 Files.copy(currentSource, currentTarget, StandardCopyOption.REPLACE_EXISTING);
             }
