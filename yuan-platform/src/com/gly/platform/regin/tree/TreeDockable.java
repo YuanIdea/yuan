@@ -185,7 +185,7 @@ public class TreeDockable extends DefaultSingleCDockable {
     }
 
     /**
-     * Create file nodes.
+     * Create a new file.
      *
      * @param title Create title.
      */
@@ -213,6 +213,9 @@ public class TreeDockable extends DefaultSingleCDockable {
         }
     }
 
+    /**
+     * Create a Java class file.
+     */
     void newJava() {
         final Path selectFolder = getSelectedFolder();
         if (selectFolder == null) {
@@ -227,15 +230,17 @@ public class TreeDockable extends DefaultSingleCDockable {
             if (!fileName.contains(".java")) {
                 fileName += ".java";
             }
-            node.createFile(fileName, null);
-            File file = node.getFile();
-            if (file != null) {
-                PageInfo pageInfo = new PageInfo(file);
-                pageInfo.setFileType(nfc.getFileType());
-                addNewNode(file, false);
-                GlobalBus.dispatch(new AddEvent(pageInfo));
-            } else {
-                Logger.error("创建文件失败：" + nfc.getFileName());
+            boolean success = node.createFile(fileName, null);
+            if (success) {
+                File file = node.getFile();
+                if (file != null) {
+                    PageInfo pageInfo = new PageInfo(file);
+                    pageInfo.setFileType(nfc.getFileType());
+                    addNewNode(file, false);
+                    GlobalBus.dispatch(new AddEvent(pageInfo));
+                } else {
+                    Logger.error("创建文件失败：" + nfc.getFileName());
+                }
             }
         }
     }
@@ -512,6 +517,14 @@ public class TreeDockable extends DefaultSingleCDockable {
         }
     }
 
+    /**
+     * Copy all files and sub folders within the folder.
+     *
+     * @param source Source folder directory.
+     * @param target Target folder directory.
+     * @return Whether the copy was successful.
+     * @throws IOException Exceptions that occurred during the copying process.
+     */
     private boolean copyFolder(Path source, Path target) throws IOException {
         // Check if the target path is within the source path (to prevent infinite copying).
         if (target.startsWith(source)) {
