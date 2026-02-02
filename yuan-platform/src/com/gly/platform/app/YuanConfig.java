@@ -12,6 +12,7 @@ public class YuanConfig {
      * Root directory of the platform.
      */
     public static final Path YUAN_PATH;
+
     static {
         String val = System.getenv("YUAN_HOME");
         if (val == null) {
@@ -26,6 +27,7 @@ public class YuanConfig {
      * otherwise, select the JDK configured in JAVA_HOME.
      */
     public static final Path DEFAULT_JAVA_HOME;
+
     static {
         Path inlineJavaPath = YUAN_PATH.resolve("jdk-11");
         Path inlineJavaExe = inlineJavaPath.resolve("bin/java.exe");
@@ -39,7 +41,7 @@ public class YuanConfig {
             } else {
                 DEFAULT_JAVA_HOME = Paths.get(javaHome);
                 if (!Files.exists(DEFAULT_JAVA_HOME.resolve("bin/java.exe"))) {
-                    System.err.println("JDK configuration path not found:"+DEFAULT_JAVA_HOME);
+                    System.err.println("JDK configuration path not found:" + DEFAULT_JAVA_HOME);
                 }
             }
         }
@@ -54,4 +56,13 @@ public class YuanConfig {
      * Project configuration file.
      */
     public static final String PROJECT_CONFIG = YUAN_PROJECT + "/project.xml";
+
+    /**
+     * Is it a Windows operating system?
+     */
+    public static final boolean isWin;
+
+    static {
+        isWin = System.getProperty("os.name").toLowerCase().contains("win");
+    }
 }
