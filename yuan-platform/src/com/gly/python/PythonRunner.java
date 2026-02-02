@@ -5,19 +5,27 @@ import com.gly.model.BaseExecutable;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 public class PythonRunner extends BaseExecutable {
-    private String pythonHome;
+    private final String pythonHome;
+
+    private final boolean isWin;
+
+    private final Charset encode;
 
     private Process process;
 
-    private boolean isWin;
-
-    private Charset encode;
-
+    /**
+     * Constructor.
+     *
+     * @param pythonHome Python home.
+     * @param encode     The encoding method used.
+     */
     public PythonRunner(String pythonHome, Charset encode) {
         this.pythonHome = pythonHome;
         isWin = System.getProperty("os.name").toLowerCase().contains("win");
@@ -28,6 +36,9 @@ public class PythonRunner extends BaseExecutable {
     public void start() {
         try {
             String pythonExecutable = pythonHome + (isWin ? "/python.exe" : "/bin/python");
+            if (!Files.exists(Paths.get(pythonExecutable))) {
+                System.err.println(pythonExecutable + " not found.");
+            }
             ProcessBuilder pb = new ProcessBuilder(pythonExecutable, "-X", "utf8", getName());
             pb.directory(new File(getRoot()));
 
@@ -68,7 +79,7 @@ public class PythonRunner extends BaseExecutable {
             System.out.println("Process exited with code: " + exitCode);
         } catch (Exception e) {
             System.err.println("Python execution failed: " + e.getMessage());
-            e.printStackTrace();
+
         }
     }
 

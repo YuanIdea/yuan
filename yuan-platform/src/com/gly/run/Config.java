@@ -4,6 +4,7 @@ import bibliothek.util.xml.XElement;
 import bibliothek.util.xml.XIO;
 import com.gly.log.Logger;
 import com.gly.platform.app.YuanConfig;
+import com.gly.python.PythonHomeFinder;
 import com.gly.util.PathUtil;
 
 import java.io.*;
@@ -60,14 +61,24 @@ public class Config {
      * Get the python path used in the current project configuration.
      *
      * @param root Root directory of the current project.
-     * @return Path path used in the current project configuration.
+     * @return Path used in the current project configuration.
      */
     public static Path getProjectPythonHome(String root) {
-        return getPath(root, "pythonHome");
+        Path pythonHome = getPath(root, "pythonHome");
+        if (pythonHome == null) {
+            String strPath = PythonHomeFinder.findPythonHome();
+            if (strPath != null) {
+                return Paths.get(strPath);
+            } else {
+                return null;
+            }
+        } else {
+            return pythonHome;
+        }
     }
 
     /**
-     * Parse the path based on the node..
+     * Parse the path based on the node.
      *
      * @param root Root directory of the current project.
      * @param node A node in XML that configures a path.
@@ -103,7 +114,6 @@ public class Config {
             XIO.writeUTF(project, out);
         } catch (IOException e) {
             System.err.println("Write failed: " + e.getMessage());
-            e.printStackTrace();
         }
     }
 }
