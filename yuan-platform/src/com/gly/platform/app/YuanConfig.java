@@ -56,13 +56,4 @@ public class YuanConfig {
      * Project configuration file.
      */
     public static final String PROJECT_CONFIG = YUAN_PROJECT + "/project.xml";
-
-//    /**
-//     * Is it a Windows operating system?
-//     */
-//    public static final boolean isWin;
-//
-//    static {
-//        isWin = System.getProperty("os.name").toLowerCase().contains("win");
-//    }
 }
