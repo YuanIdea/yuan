@@ -3,8 +3,8 @@ package com.gly.platform.regin.tree.modify;
 import com.gly.event.GlobalBus;
 import com.gly.event.page.RenameEvent;
 import com.gly.event.page.RenamePageInfo;
-import com.gly.platform.app.YuanConfig;
 import com.gly.util.NameValidator;
+import com.gly.os.OSUtils;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -95,7 +95,7 @@ public class FileTreeCellEditor extends DefaultCellEditor {
         }
 
         // File is locked (Windows system).
-        if (YuanConfig.isWin) {
+        if (OSUtils.isWindows()) {
             if (NameValidator.isFileLocked(src)) {
                 return "文件被其他程序占用";
             }

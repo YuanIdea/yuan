@@ -2,7 +2,7 @@ package com.gly.python;
 
 import com.gly.log.Logger;
 import com.gly.model.BaseExecutable;
-import com.gly.platform.app.YuanConfig;
+import com.gly.os.OSUtils;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -29,7 +29,7 @@ public class PythonRunner extends BaseExecutable {
      */
     public PythonRunner(String pythonHome, Charset encode) {
         this.pythonHome = pythonHome;
-        isWin = YuanConfig.isWin;
+        isWin = OSUtils.isWindows();
         this.encode = encode;
     }
 

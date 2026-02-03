@@ -1,6 +1,9 @@
 package com.gly.python;
 
+import com.gly.os.OSUtils;
+
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 
 /**
@@ -59,21 +62,8 @@ public class PythonHomeFinder {
      * @return The directory path containing the Python executable, or null if not found or command fails.
      */
     private static String whichPython() {
-        String os = System.getProperty("os.name").toLowerCase();
         try {
-            ProcessBuilder pb;
-            if (os.contains("win")) {
-                // Windows: use "where" command to locate python.exe
-                pb = new ProcessBuilder("cmd.exe", "/c", "where python");
-            } else {
-                // Unix-like systems: try "which python3" first, then "which python"
-                pb = new ProcessBuilder("bash", "-c", "which python3 || which python");
-            }
-
-            Process process = pb.start();
-            BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream()));
-            String line = reader.readLine();
+            String line = getLine();
             if (line != null) {
                 // Extract the directory part (remove the executable filename)
                 int lastSeparator = Math.max(line.lastIndexOf("\\"), line.lastIndexOf("/"));
@@ -85,6 +75,27 @@ public class PythonHomeFinder {
             return null;
         }
         return null;
+    }
+
+    /**
+     * Get the command to find Python on different operating systems.
+     * @return The command to find Python on different operating systems.
+     * @throws IOException Get command IO exception.
+     */
+    private static String getLine() throws IOException {
+        ProcessBuilder pb;
+        if (OSUtils.isWindows()) {
+            // Windows: use "where" command to locate python.exe
+            pb = new ProcessBuilder("cmd.exe", "/c", "where python");
+        } else {
+            // Unix-like systems: try "which python3" first, then "which python"
+            pb = new ProcessBuilder("bash", "-c", "which python3 || which python");
+        }
+
+        Process process = pb.start();
+        BufferedReader reader = new BufferedReader(
+                new InputStreamReader(process.getInputStream()));
+        return reader.readLine();
     }
 
     /**
