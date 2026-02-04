@@ -23,14 +23,11 @@ import java.util.List;
  */
 public class MavenToolWindow extends JPanel {
     private JTree projectTree;
-    private DefaultTreeModel projectTreeModel;
     private MavenProject currentProject;
-
     private JTree dependenciesTree;
     private DefaultMutableTreeNode rootNode;
     private JTabbedPane lifecycleTabbedPane;
-    private List<MavenProject> mavenProjects;
-    private Platform platform;
+    private final Platform platform;
 
     public MavenToolWindow() {
         platform = Platform.getInstance();
@@ -85,17 +82,13 @@ public class MavenToolWindow extends JPanel {
             return;
         }
 
-        MavenProject rootProject = new MavenProject(model.getArtifactId());
-        rootProject.setRoot(true);
-        rootProject.setGroupId(model.getGroupId());
-        rootProject.setVersion(model.getVersion());
-        rootProject.setPomPath(pomPath.toString());
-        currentProject = rootProject;
-        addModulesProject(model);
-        rootProject.setModules(mavenProjects);
-
-        rootNode = new DefaultMutableTreeNode(rootProject);
-        projectTreeModel = new DefaultTreeModel(rootNode);
+        currentProject = new MavenProject(model.getArtifactId());
+        currentProject.setRoot(true);
+        currentProject.setGroupId(model.getGroupId());
+        currentProject.setVersion(model.getVersion());
+        currentProject.setPomPath(pomPath.toString());
+        currentProject.setModules(getModulesProject(model));
+        DefaultTreeModel projectTreeModel = getProjectTreeModel(currentProject);
         if (projectTree == null) {
             projectTree = new JTree(projectTreeModel);
             // Add selection listener.
@@ -109,7 +102,6 @@ public class MavenToolWindow extends JPanel {
                         Object userObject = ((DefaultMutableTreeNode) selectedNode).getUserObject();
                         if (userObject instanceof MavenProject) {
                             currentProject = (MavenProject) userObject;
-
                             refreshDependencies();
                             System.out.println("selected:" + currentProject.getArtifactId());
                         }
@@ -128,7 +120,30 @@ public class MavenToolWindow extends JPanel {
         } else {
             projectTree.setModel(projectTreeModel);
         }
-        updateProjectTree();
+        expandAll(projectTree);
+    }
+
+    /**
+     * Get the model of the current project.
+     *
+     * @param rootProject The root of current project.
+     * @return he model of the current project.
+     */
+    private DefaultTreeModel getProjectTreeModel(MavenProject rootProject) {
+        DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(rootProject);
+        List<MavenProject> mavenProjects = rootProject.getModules();
+        for (MavenProject project : mavenProjects) {
+            DefaultMutableTreeNode projectNode = new DefaultMutableTreeNode(project);
+            // If there are modules, add them to the project tree.
+            List<MavenProject> modules = project.getModules();
+            if (modules != null) {
+                for (MavenProject module : modules) {
+                    projectNode.add(new DefaultMutableTreeNode(module));
+                }
+            }
+            rootNode.add(projectNode);
+        }
+        return new DefaultTreeModel(rootNode);
     }
 
     /**
@@ -150,9 +165,10 @@ public class MavenToolWindow extends JPanel {
      * Add modules of the project.
      *
      * @param model The model of the project.
+     * @return List of MavenProject objects parsed from pom.xml.
      */
-    private void addModulesProject(Model model) {
-        mavenProjects = new ArrayList<>();
+    private List<MavenProject> getModulesProject(Model model) {
+        List<MavenProject> mavenProjects = new ArrayList<>();
         List<String> modules = model.getModules();
         Collections.sort(modules);
         for (String mName : modules) {
@@ -160,6 +176,7 @@ public class MavenToolWindow extends JPanel {
             mavenProject.setPomPath(mName + "/pom.xml");
             mavenProjects.add(mavenProject);
         }
+        return mavenProjects;
     }
 
     /**
@@ -194,6 +211,13 @@ public class MavenToolWindow extends JPanel {
             lifecycle.add(new DefaultMutableTreeNode(phase));
         }
 
+        JTree lifecycleTree = getLifecycleTree(lifecycle);
+        panel.add(new JScrollPane(lifecycleTree), BorderLayout.CENTER);
+        lifecycleTree.setCellRenderer(simpleMavenCellRender(0.6f, "/icons/m_cmd.png"));
+        return panel;
+    }
+
+    private JTree getLifecycleTree(DefaultMutableTreeNode lifecycle) {
         JTree lifecycleTree = new JTree(lifecycle);
         lifecycleTree.addMouseListener(new MouseAdapter() {
             @Override
@@ -207,10 +231,7 @@ public class MavenToolWindow extends JPanel {
                 }
             }
         });
-
-        panel.add(new JScrollPane(lifecycleTree), BorderLayout.CENTER);
-        lifecycleTree.setCellRenderer(simpleMavenCellRender(0.6f, "/icons/m_cmd.png"));
-        return panel;
+        return lifecycleTree;
     }
 
     /**
@@ -240,12 +261,12 @@ public class MavenToolWindow extends JPanel {
      * @return The path of the pom.xml file for the selected project.
      */
     private Path getPomPath() {
-        String root = platform.getRoot();
+        Path path = Paths.get(platform.getRoot());
         Path pomPath;
         if (currentProject == null || currentProject.isRoot()) {
-            pomPath = Paths.get(root).resolve("pom.xml");
+            pomPath = path.resolve("pom.xml");
         } else {
-            pomPath = Paths.get(root).resolve(currentProject.getPomPath());
+            pomPath = path.resolve(currentProject.getPomPath());
         }
         return pomPath;
     }
@@ -324,32 +345,16 @@ public class MavenToolWindow extends JPanel {
     }
 
     /**
-     * Update the project tree.
-     */
-    private void updateProjectTree() {
-        rootNode.removeAllChildren();
-        for (MavenProject project : mavenProjects) {
-            DefaultMutableTreeNode projectNode = new DefaultMutableTreeNode(project);
-            // If there are modules, add them to the project tree.
-            if (project.getModules() != null) {
-                for (MavenProject module : project.getModules()) {
-                    projectNode.add(new DefaultMutableTreeNode(module));
-                }
-            }
-            rootNode.add(projectNode);
-        }
-        projectTreeModel.reload();
-        expandAll(projectTree);
-    }
-
-    /**
      * Expand all nodes of the tree.
      *
      * @param tree Project tree with nodes that need to be expanded.
      */
     private void expandAll(JTree tree) {
-        for (int i = 0; i < tree.getRowCount(); i++) {
-            tree.expandRow(i);
+        if (tree != null) {
+            int count = tree.getRowCount();
+            for (int i = 0; i < count; ++i) {
+                tree.expandRow(i);
+            }
         }
     }
 }
