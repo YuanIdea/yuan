@@ -28,29 +28,39 @@ import com.gly.util.FileUtil;
 
 
 /**
- * 可视化管理。
+ * Visualization manager.
  */
 public class ViewManager {
-    /** the controller of the whole framework */
-    private CControl control;
+    /**
+     * the controller of the whole framework.
+     */
+    private final CControl control;
 
-    /** 创建的所有页面信息列表 */
-    private List<PageDockable> pageDockables = new LinkedList<>();
+    /**
+     * List of all created page information.
+     */
+    private final List<PageDockable> pageDockables = new LinkedList<>();
 
-    private PageFactory pageFactory;
-    
-    /** 工作区 */
-    private CWorkingArea workingArea;
+    private final PageFactory pageFactory;
 
-    /** 树形工程管理 */
-    private TreeDockable treeDockable;
+    /**
+     * Workspace.
+     */
+    private final CWorkingArea workingArea;
 
-    private PackDockable packDockable;
+    /**
+     * Tree-based project management.
+     */
+    private final TreeDockable treeDockable;
+
+    private final PackDockable packDockable;
+
     /**
      * Creates a new manager.
+     *
      * @param control the center of the Docking-Framework
      */
-    public ViewManager(CControl control, boolean secure, String root){
+    public ViewManager(CControl control, boolean secure, String root) {
         GlobalBus.register(this); // 注册到事件总线
         this.control = control;
         control.getContentArea().setBackground(Color.LIGHT_GRAY);
@@ -61,30 +71,31 @@ public class ViewManager {
         packDockable.setLocation(CLocation.base().normalEast(0.2));
 
         pageFactory = new PageFactory();
-        control.addMultipleDockableFactory( "page", pageFactory );
+        control.addMultipleDockableFactory("page", pageFactory);
 
-        workingArea = control.createWorkingArea( "WorkingArea" );
-        workingArea.setLocation( CLocation.base().normalRectangle( 0, 0, 1, 1 ) );
+        workingArea = control.createWorkingArea("WorkingArea");
+        workingArea.setLocation(CLocation.base().normalRectangle(0, 0, 1, 1));
 
         treeDockable = new TreeDockable();
         control.addDockable(treeDockable);
         treeDockable.refreshRoot(root);
-        treeDockable.setLocation( CLocation.base().normalWest( 0.2 ) );
+        treeDockable.setLocation(CLocation.base().normalWest(0.2));
 
         OutputDockable outDock = new OutputDockable();
         control.addDockable(outDock);
-        outDock.setLocation(CLocation.base().normalSouth( 0.2 ));
+        outDock.setLocation(CLocation.base().normalSouth(0.2));
 
         readLayout(secure);
     }
 
     /**
-     * 焦点变化处理。
-     * @param newFocused 获得焦点的新停靠窗口。
+     * Focus change handling.
+     *
+     * @param newFocused Get the newly focused docking window.
      */
     private void handleFocusedChange(Dockable newFocused) {
-        if( newFocused instanceof CommonDockable ){
-            CDockable newC = ((CommonDockable)newFocused).getDockable();
+        if (newFocused instanceof CommonDockable) {
+            CDockable newC = ((CommonDockable) newFocused).getDockable();
             GlobalBus.dispatch(new FocusChangeEvent(newC));
         } else {
             GlobalBus.dispatch(new FocusChangeEvent(null));
@@ -92,8 +103,9 @@ public class ViewManager {
     }
 
     /**
-     * 添加页面事件处理。
-     * @param event 添加事件。
+     * Add page event handling.
+     *
+     * @param event Add events.
      */
     @Subscribe
     public void handleAddEvent(AddEvent event) {
@@ -101,10 +113,10 @@ public class ViewManager {
         PageDockable exist = find(pageInfo);
         if (exist != null) {
             if (exist.getPageInfo().isDesign() == pageInfo.isDesign()) {
-                reload(exist);// 如果存在且模式相同重新加载。
+                reload(exist);// If it exists and the mode is the same, reload it.
                 return;
             } else {
-                closeAll(pageInfo); // 模式不同，将存在的关闭。
+                closeAll(pageInfo); // If the mode is different, close the opened page.
             }
         }
         if (!pageInfo.isDesign()) {
@@ -113,13 +125,14 @@ public class ViewManager {
                 String init = CodeGenerator.generateJava(treeDockable.getRoot(), pageInfo.getFile(), pageInfo.getFileType());
                 editor.setText(init);
             }
-            open(editor) ;
+            open(editor);
         }
     }
 
     /**
-     * 移除页面事件处理。
-     * @param event 移除事件。
+     * Remove page event handling.
+     *
+     * @param event Remove events.
      */
     @Subscribe
     public void handleAddEvent(RemoveEvent event) {
@@ -128,8 +141,9 @@ public class ViewManager {
     }
 
     /**
-     * 重命名
-     * @param event 重命名事件。
+     * Rename event handling.
+     *
+     * @param event Rename event.
      */
     @Subscribe
     public void handleRenameEvent(RenameEvent event) {
@@ -137,16 +151,16 @@ public class ViewManager {
         //原文件在磁盘中不存在了，需要用新文件判断
         if (rpi.getFile().isFile()) {
             PageInfo old = new PageInfo(rpi.getOldFile());
-            Editor page = (Editor)find(old);
+            Editor page = (Editor) find(old);
             if (page != null) {
                 page.setPageInfo(rpi);
                 page.updateTitle(rpi.getFileName());
             }
         } else {
-            for(PageDockable pageDockable : pageDockables){
+            for (PageDockable pageDockable : pageDockables) {
                 File oldParent = rpi.getOldFile();
                 File openFile = pageDockable.getPageInfo().getFile();
-                if (FileUtil.isChildOf(oldParent, openFile)){
+                if (FileUtil.isChildOf(oldParent, openFile)) {
                     try {
                         File newFile = FileUtil.getChildParentRename(oldParent, rpi.getFile(), openFile);
                         pageDockable.updateName(new PageInfo(newFile));
@@ -170,32 +184,35 @@ public class ViewManager {
             }
             pageDockables.clear();
 
-            //  初始化maven
-            if (ProjectType.isMaven() && packDockable != null) {
-                packDockable.addMaven();
-            } else {
-                packDockable.removeMaven();
+            //  Initialize Maven.
+            if (packDockable != null) {
+                if (ProjectType.isMaven()) {
+                    packDockable.addMaven();
+                } else {
+                    packDockable.removeMaven();
+                }
             }
         }
     }
 
     private void open(PageDockable pageDockable) {
-        pageDockable.addCDockableStateListener(generateCDockableAdapter(pageDockable));// 页面变化处理。
-        pageDockable.setLocation(CLocation.working( workingArea ).rectangle( 0, 0, 1, 1 ));
+        pageDockable.addCDockableStateListener(generateCDockableAdapter(pageDockable));// Page change handling.
+        pageDockable.setLocation(CLocation.working(workingArea).rectangle(0, 0, 1, 1));
         workingArea.add(pageDockable);
         pageDockable.setVisible(true);
     }
 
     /**
-     * 页面可视化变化处理。
-     * @param pageDockable 要处理的页面。
-     * @return 页面可视化变化处理器。
+     * Page visualization change handling.
+     *
+     * @param pageDockable Page to be processed.
+     * @return Page visualization change handler.
      */
     private CDockableAdapter generateCDockableAdapter(PageDockable pageDockable) {
-        return new CDockableAdapter(){
+        return new CDockableAdapter() {
             @Override
             public void visibilityChanged(CDockable dockable) {
-                if(dockable.isVisible()){
+                if (dockable.isVisible()) {
                     pageDockables.add(pageDockable);
                     setFocused(pageDockable);
                 } else {
@@ -209,8 +226,9 @@ public class ViewManager {
     }
 
     /**
-     * 重新加载内容，并获得焦点。
-     * @param pageDockable 要加载激活的停靠窗口。
+     * Reload the content and gain focus.
+     *
+     * @param pageDockable Docking window to load and activate.
      */
     private void reload(DefaultMultipleCDockable pageDockable) {
         if (pageDockable instanceof Editor) {
@@ -221,16 +239,18 @@ public class ViewManager {
     }
 
     /**
-     * 指定停靠窗口获得焦点。
-     * @param pageDockable 要指定的停靠窗口。
+     * Specify the docking window to gain focus.
+     *
+     * @param pageDockable Docking window to be specified.
      */
     private void setFocused(DefaultMultipleCDockable pageDockable) {
         control.getController().setFocusedDockable(pageDockable.intern(), true);
     }
 
     /**
-     * 获得当前被激活的页面。
-     * @return 当前激活页。
+     * Get the currently activated page.
+     *
+     * @return Currently activated page.
      */
     public PageDockable getFocusedPage() {
         CDockable focusedDock = control.getFocusedCDockable();
@@ -238,38 +258,40 @@ public class ViewManager {
     }
 
     /**
-     * 获得当前工作区打开的页面。
-     * @return 当前打开的页面。
+     * Get the pages currently opened in the workspace.
+     *
+     * @return Currently opened pages.
      */
     public PageDockable getOpenPage() {
         CDockable openedDock = getOpenDock();
         return getPage(openedDock);
     }
 
-    private PageDockable getPage(CDockable dock ) {
+    private PageDockable getPage(CDockable dock) {
         if (dock instanceof PageDockable) {
-            PageDockable pageDockable = (PageDockable)dock;
-            Logger.info("当前页为："+pageDockable.getPageInfo().getName());
+            PageDockable pageDockable = (PageDockable) dock;
+            Logger.info("当前页为：" + pageDockable.getPageInfo().getName());
             return pageDockable;
         }
         return null;
     }
 
     /**
-     * 读取外部布局配置信息。
-     * @param secure 是否是安全状态。
+     * Read external layout configuration information.
+     *
+     * @param secure Is it a safe state?
      */
     private void readLayout(boolean secure) {
-        try{
+        try {
             InputStream in;
-            if(secure){
-                in = getClass().getResourceAsStream( "/config.xml" );
+            if (secure) {
+                in = getClass().getResourceAsStream("/config.xml");
             } else {
                 in = new BufferedInputStream(new FileInputStream(YuanConfig.YUAN_PATH.resolve("data/config.xml").toString()));
             }
             ReadLayout.read(control, in);
-        } catch( IOException ex ){
-            ex.printStackTrace();
+        } catch (IOException ex) {
+            System.err.println(ex.getMessage());
         }
     }
 
@@ -279,34 +301,35 @@ public class ViewManager {
 
     /**
      * Ensures that no view shows <code>PageInfo</code> anymore.
+     *
      * @param pageInfo the PageInfo which should not be painted anywhere
      */
-    private void closeAll( PageInfo pageInfo ){
+    private void closeAll(PageInfo pageInfo) {
         List<PageDockable> pagesToProcess = new ArrayList<>(pageDockables);
-        for(PageDockable pageDockable : pagesToProcess){
-            if (pageInfo.nameEqual(pageDockable.getPageInfo())){
-                pageDockable.setVisible( false );
+        for (PageDockable pageDockable : pagesToProcess) {
+            if (pageInfo.nameEqual(pageDockable.getPageInfo())) {
+                pageDockable.setVisible(false);
                 control.removeDockable(pageDockable);
             }
         }
     }
 
     /**
-     * 保存所有页面。
+     * Save all pages.
      */
     public void saveAll() {
         List<PageDockable> pagesToProcess = new ArrayList<>(pageDockables);
-        for(PageDockable pageDockable : pagesToProcess){
+        for (PageDockable pageDockable : pagesToProcess) {
             pageDockable.save(pageDockable.getPageInfo().getName());
         }
     }
 
     /**
-     * 保存所有修改过的页面。
+     * Save all modified pages.
      */
     public void saveAllModified() {
         List<PageDockable> pagesToProcess = new ArrayList<>(pageDockables);
-        for(PageDockable pageDockable : pagesToProcess){
+        for (PageDockable pageDockable : pagesToProcess) {
             if (pageDockable instanceof Editor) {
                 Editor editor = (Editor) pageDockable;
                 editor.saveModified();
@@ -315,13 +338,15 @@ public class ViewManager {
     }
 
     /**
-     * 查找工作区中存在的页面停靠。
-     * @param pageInfo 页面信息。
-     * @return 如果存在与页面信息一致的停靠空口，返回这个窗口，否则返回空。
+     * Find the page dockings present in the workspace.
+     *
+     * @param pageInfo Page information.
+     * @return If a docking window consistent with the page information exists,
+     * return this window; otherwise, return null.
      */
-    private PageDockable find(PageInfo pageInfo){
-        for(PageDockable pageDockable : pageDockables){
-            if (pageInfo.nameEqual(pageDockable.getPageInfo())){
+    private PageDockable find(PageInfo pageInfo) {
+        for (PageDockable pageDockable : pageDockables) {
+            if (pageInfo.nameEqual(pageDockable.getPageInfo())) {
                 return pageDockable;
             }
         }
