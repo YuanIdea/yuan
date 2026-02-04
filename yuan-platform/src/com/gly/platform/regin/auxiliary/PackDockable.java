@@ -4,6 +4,7 @@ import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.net.URL;
 import javax.swing.ImageIcon;
 import javax.swing.JScrollPane;
 
@@ -14,23 +15,27 @@ import com.gly.platform.regin.auxiliary.maven.MavenToolWindow;
 /**
  * Maven panel
  */
-public class PackDockable extends DefaultSingleCDockable{
-    private Container content;
+public class PackDockable extends DefaultSingleCDockable {
+    private final Container content;
     private JScrollPane scrollMaven;
     private MavenToolWindow mavenToolWindow;
+
     /**
      * Creates a new dockable.
      * dockables.
      */
-    public PackDockable(){
-        super( "PackDockable" );
+    public PackDockable() {
+        super("PackDockable");
         GlobalBus.register(this); // Registered to the event bus.
-        setCloseable( true );
-        setMinimizable( true );
-        setMaximizable( true );
-        setExternalizable( true );
-        setTitleText( "Maven" );
-        setTitleIcon(new ImageIcon(getClass().getResource("/icons/m2.png")));
+        setCloseable(true);
+        setMinimizable(true);
+        setMaximizable(true);
+        setExternalizable(true);
+        setTitleText("Maven");
+        URL url = getClass().getResource("/icons/m2.png");
+        if (url != null) {
+            setTitleIcon(new ImageIcon(url));
+        }
         content = getContentPane();
     }
 
@@ -39,7 +44,7 @@ public class PackDockable extends DefaultSingleCDockable{
      */
     public void addMaven() {
         if (mavenToolWindow == null) {
-            content.setLayout( new GridBagLayout() );
+            content.setLayout(new GridBagLayout());
             mavenToolWindow = new MavenToolWindow();
             scrollMaven = new JScrollPane(mavenToolWindow);
             content.add(scrollMaven, new GridBagConstraints(0, 0, 1, 1, 1.0, 100.0,
@@ -58,16 +63,18 @@ public class PackDockable extends DefaultSingleCDockable{
         if (scrollMaven != null) {
             content.remove(scrollMaven);
             scrollMaven = null;
+            mavenToolWindow = null;
         }
     }
 
     /**
      * Get the root directory of the current project.
+     *
      * @return the root directory of the current project.
      */
     public String getCurrentProjectRoot() {
         if (mavenToolWindow != null) {
-           return mavenToolWindow.getCurrentProjectRoot();
+            return mavenToolWindow.getCurrentProjectRoot();
         }
         return null;
     }
