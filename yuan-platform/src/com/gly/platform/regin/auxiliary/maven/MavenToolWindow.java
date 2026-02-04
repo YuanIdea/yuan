@@ -14,8 +14,6 @@ import java.awt.event.MouseEvent;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -82,12 +80,8 @@ public class MavenToolWindow extends JPanel {
             return;
         }
 
-        currentProject = new MavenProject(model.getArtifactId());
-        currentProject.setRoot(true);
-        currentProject.setGroupId(model.getGroupId());
-        currentProject.setVersion(model.getVersion());
+        currentProject = new MavenProject(model, true);
         currentProject.setPomPath(pomPath.toString());
-        currentProject.setModules(getModulesProject(model));
         DefaultTreeModel projectTreeModel = getProjectTreeModel(currentProject);
         if (projectTree == null) {
             projectTree = new JTree(projectTreeModel);
@@ -159,24 +153,6 @@ public class MavenToolWindow extends JPanel {
         } else {
             return root;
         }
-    }
-
-    /**
-     * Add modules of the project.
-     *
-     * @param model The model of the project.
-     * @return List of MavenProject objects parsed from pom.xml.
-     */
-    private List<MavenProject> getModulesProject(Model model) {
-        List<MavenProject> mavenProjects = new ArrayList<>();
-        List<String> modules = model.getModules();
-        Collections.sort(modules);
-        for (String mName : modules) {
-            MavenProject mavenProject = new MavenProject(mName);
-            mavenProject.setPomPath(mName + "/pom.xml");
-            mavenProjects.add(mavenProject);
-        }
-        return mavenProjects;
     }
 
     /**
