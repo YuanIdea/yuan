@@ -102,12 +102,13 @@ public class Config {
     /**
      * Write to the project configuration file.
      *
-     * @param projectXml Write the path name of the XML file.
+     * @param projectXml  Write the path name of the XML file.
+     * @param projectType Project type.
      */
-    public static void writeMavenXml(File projectXml) {
+    public static void writeProjectXml(File projectXml, String projectType) {
         try {
             XElement project = new XElement("project");
-            project.addElement("type").setValue("maven");
+            project.addElement("type").setValue(projectType);
             //Saving XElement to a file will overwrite any existing file.
             FileOutputStream config = new FileOutputStream(projectXml); // the project configuration file
             OutputStream out = new BufferedOutputStream(config);

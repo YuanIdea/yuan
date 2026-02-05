@@ -31,6 +31,7 @@ import com.gly.platform.regin.tree.find.TreeSearch;
 import com.gly.platform.regin.tree.modify.*;
 import com.gly.run.Config;
 import com.gly.run.PluginManager;
+import com.gly.util.FileSuffixChecker;
 import com.gly.util.Resources;
 
 import java.util.LinkedList;
@@ -43,20 +44,20 @@ import java.util.*;
  * @author Guoliang Yang
  */
 public class TreeDockable extends DefaultSingleCDockable {
+    // Right-click functionality.
+    private final RightMenu rightMenu;
+
+    // Tree state.
+    private final State state;
+
     // Tree resource manager.
     private JTree tree;
-
-    // Right-click functionality.
-    private RightMenu rightMenu;
 
     // Root directory.
     private String root;
 
     // Sorted tree model.
     private SortedTreeModel model;
-
-    // Tree state.
-    private State state;
 
     // Current clipboard file.
     private List<File> currentClipboardFileList;
@@ -131,26 +132,38 @@ public class TreeDockable extends DefaultSingleCDockable {
     }
 
     /**
-     * Create project configuration file directory.
+     * Generate project configuration file directory.
      */
     private void generateProjectConfig() {
         if (root.isEmpty()) {
             return;
         }
 
-        Path projectPathName = Paths.get(root).resolve(YuanConfig.PROJECT_CONFIG);
+        Path rootDir = Paths.get(root);
+        Path projectPathName = rootDir.resolve(YuanConfig.PROJECT_CONFIG);
         if (!Files.exists(projectPathName)) {
-            Path pom = Paths.get(root).resolve("pom.xml");
+            Path pom = rootDir.resolve("pom.xml");
             if (Files.exists(pom)) {
-                Path projectPath = Paths.get(root).resolve(YuanConfig.YUAN_PROJECT);
-                if (!Files.exists(projectPath)) {
-                    try {
-                        Files.createDirectories(projectPath);
-                    } catch (Exception e) {
-                        Logger.error("工程配置创建失败: " + e.getMessage());
-                    }
-                }
-                Config.writeMavenXml(projectPathName.toFile());
+                generateYuanFolder(rootDir);
+                Config.writeProjectXml(projectPathName.toFile(), "maven");
+            } else if (FileSuffixChecker.hasFileWithAnySuffix(rootDir.toFile(), ".py", ".pyc")) {
+                generateYuanFolder(rootDir);
+                Config.writeProjectXml(projectPathName.toFile(), "python");
+            }
+        }
+    }
+
+    /**
+     * Create project configuration file directory.
+     * @param rootDir Current root directory.
+     */
+    private void generateYuanFolder(Path rootDir) {
+        Path projectPath = rootDir.resolve(YuanConfig.YUAN_PROJECT);
+        if (!Files.exists(projectPath)) {
+            try {
+                Files.createDirectories(projectPath);
+            } catch (Exception e) {
+                Logger.error("工程配置创建失败: " + e.getMessage());
             }
         }
     }
@@ -290,7 +303,7 @@ public class TreeDockable extends DefaultSingleCDockable {
     }
 
     /**
-     * Handle when it is a double-click.
+     * Handle when it is a double click.
      *
      * @param e Click event.
      */
@@ -334,7 +347,7 @@ public class TreeDockable extends DefaultSingleCDockable {
             try {
                 FileExplorerUtil.showFileInExplorer(selectedNode.getFile());
             } catch (Exception e) {
-                e.printStackTrace();
+                System.err.println(e.getMessage());
             }
         }
     }
