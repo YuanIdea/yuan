@@ -5,11 +5,13 @@ It supports basic functionalities such as editing, compiling, running, packaging
 
 It also supports Python editing, running, and other related features.
 
+The detailed operation process of the yuan-platform can be found at yuan/yuan.pdf.
+
 ---
 # Yuan Open Source Repository
 
 This repository is the open-source part of the yuan IDEs codebase.
-It also serves as the basis for [yuan development](https://github.com/YuanIdea/yuan).
+It also serves as the basis for [yuan development](https://github.com/YuanIdea/yuan).
 
 These instructions will help you build and run open source parts of yuan.
 
