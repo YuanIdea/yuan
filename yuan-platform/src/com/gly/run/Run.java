@@ -41,7 +41,15 @@ public class Run {
             Path pythonHome = Config.getProjectPythonHome(root);
             if (pythonHome != null) {
                 pathName = getPathName(platform);
-                execute = new PythonRunner(pythonHome.toString(), StandardCharsets.UTF_8);
+                if (pathName != null) {
+                    String fileName = pathName.toLowerCase();
+                    boolean canRuan = fileName.endsWith(".py") || fileName.endsWith(".pyc");
+                    if (canRuan) {
+                        execute = new PythonRunner(pythonHome.toString(), StandardCharsets.UTF_8);
+                    } else {
+                        System.err.println("Not an executable python file: " + fileName);
+                    }
+                }
             } else {
                 Logger.error("Python home path not found.");
             }
