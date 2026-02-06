@@ -3,7 +3,6 @@ generated-sources/
 maven-archiver/
 maven-status/
 yuan-common/target/
-lib/
 .idea/
 .yuan/
 *.iml
