@@ -3,20 +3,21 @@ package com.gly.platform.view;
 import javax.swing.*;
 import java.awt.*;
 import java.net.URI;
+import java.net.URL;
 
 /**
  * about dialog.
  */
 class AboutDialog {
     private static final String APP_NAME = "yuan-1.0.6";
-    private static final String VERSION = "2026.01.14";
+    private static final String VERSION = "2026.02.06";
     private static final String WEB = "https://github.com/YuanIdea/yuan";
 
     static void showAboutDialog(JFrame parent) {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception ex) {
-            ex.printStackTrace();
+            System.err.println(ex.getMessage());
         }
 
         JDialog aboutDialog = new JDialog(parent, "About", true);
@@ -30,9 +31,12 @@ class AboutDialog {
         JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 
         // Load the 64x64 application icon file.
-        ImageIcon appIcon = new ImageIcon(AboutDialog.class.getResource("/icons/aif.png"));
-        JLabel iconLabel = new JLabel(new ImageIcon(appIcon.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH)));
-        headerPanel.add(iconLabel);
+        URL aif = AboutDialog.class.getResource("/icons/aif.png");
+        if (aif != null) {
+            ImageIcon appIcon = new ImageIcon(aif);
+            JLabel iconLabel = new JLabel(new ImageIcon(appIcon.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH)));
+            headerPanel.add(iconLabel);
+        }
 
         // Add homepage link information.
         JLabel linkLabel = new JLabel("<html><a href=''>" + WEB + "</a></html>");
@@ -42,7 +46,7 @@ class AboutDialog {
                 try {
                     Desktop.getDesktop().browse(new URI(WEB));
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    System.err.println(ex.getMessage());
                 }
             }
         });
