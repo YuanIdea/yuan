@@ -78,7 +78,7 @@ public class MenuManager {
      * Generate the file menu bar.
      */
     private void generateFile() {
-        JMenu menuFile = new JMenu(I18n.get("menu.file"));
+        JMenu menuFile = new JMenu(I18n.get("menu.file") + "(F)");
         menuFile.setMnemonic('F');
         menuBar.add(menuFile);
         JMenuItem newFileBtn = new JMenuItem(I18n.get("menuItem.newFile"));
@@ -111,7 +111,7 @@ public class MenuManager {
      * Generate the edit menu bar.
      */
     private void generateEdit() {
-        JMenu editMenu = new JMenu(I18n.get("menu.edit"));
+        JMenu editMenu = new JMenu(I18n.get("menu.edit") + "(E)");
         editMenu.setMnemonic('E');
         menuBar.add(editMenu);
 
@@ -180,7 +180,7 @@ public class MenuManager {
      * Generate the run menu bar.
      */
     private void generateRun() {
-        menuRun = new JMenu(I18n.get("menu.run"));
+        menuRun = new JMenu(I18n.get("menu.run") + "(R)");
         menuRun.setEnabled(false);
         menuRun.setMnemonic('R');
         menuBar.add(menuRun);
@@ -198,12 +198,12 @@ public class MenuManager {
      * Generate the theme view menu bar.
      */
     private void generateView() {
-        RootMenuPiece settings = new RootMenuPiece(I18n.get("menu.view"), false);
+        RootMenuPiece settings = new RootMenuPiece(I18n.get("menu.view") + "(V)", false);
         settings.getMenu().setMnemonic('V');
         settings.add(new SingleCDockableListMenuPiece(control));
         menuBar.add(settings.getMenu());
 
-        RootMenuPiece layout = new RootMenuPiece(I18n.get("menu.theme"), false);
+        RootMenuPiece layout = new RootMenuPiece(I18n.get("menu.theme") + "(L)", false);
         layout.getMenu().setMnemonic('L');
         layout.add(new SubmenuPiece(I18n.get("menuItem.appearance"), true, new CLookAndFeelMenuPiece(control)));
         layout.add(new SubmenuPiece(I18n.get("menuItem.style"), true, new CThemeMenuPiece(control)));
@@ -214,7 +214,7 @@ public class MenuManager {
      * Generate the help menu bar.
      */
     private void generateHelp() {
-        JMenu helpModel = new JMenu(I18n.get("menu.help"));
+        JMenu helpModel = new JMenu(I18n.get("menu.help") + "(H)");
         helpModel.setMnemonic('H');
         menuBar.add(helpModel);
 
