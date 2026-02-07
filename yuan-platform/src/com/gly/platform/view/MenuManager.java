@@ -4,6 +4,7 @@ import bibliothek.gui.dock.common.CControl;
 import bibliothek.gui.dock.common.menu.*;
 import bibliothek.gui.dock.facile.menu.RootMenuPiece;
 import bibliothek.gui.dock.facile.menu.SubmenuPiece;
+import com.gly.i18n.I18n;
 import com.gly.io.OpenFile;
 import com.gly.log.Logger;
 import com.gly.platform.app.ProjectType;
@@ -48,12 +49,14 @@ public class MenuManager {
     private JMenuItem selectAllMenuItem;
 
     // find and replace
-    private JMenuItem findMenuItem;
+    private JMenuItem findAndReplace;
+
 
     public MenuManager(Platform platform) {
         this.platform = platform;
         menuBar = new JMenuBar();
         this.platform.setJMenuBar(menuBar);
+
     }
 
     /**
@@ -75,31 +78,31 @@ public class MenuManager {
      * Generate the file menu bar.
      */
     private void generateFile() {
-        JMenu menuFile = new JMenu("文件(F)");
+        JMenu menuFile = new JMenu(I18n.get("menu.file"));
         menuFile.setMnemonic('F');
         menuBar.add(menuFile);
-        JMenuItem newFileBtn = new JMenuItem("新建文件");
+        JMenuItem newFileBtn = new JMenuItem(I18n.get("menuItem.newFile"));
 
         newFileBtn.addActionListener(e -> platform.netFile());
         menuFile.add(newFileBtn);
 
-        JMenuItem open = new JMenuItem("打开目录");
+        JMenuItem open = new JMenuItem(I18n.get("menuItem.openFolder"));
         menuFile.add(open);
         open.addActionListener(e -> new Dialog().Open(platform, platform.getRoot()));
 
-        JMenuItem save = new JMenuItem("保存文件");
+        JMenuItem save = new JMenuItem(I18n.get("menuItem.saveFile"));
         menuFile.add(save);
         save.addActionListener(e -> platform.save());
 
-        JMenuItem saveAll = new JMenuItem("全部保存");
+        JMenuItem saveAll = new JMenuItem(I18n.get("menuItem.saveAll"));
         menuFile.add(saveAll);
         saveAll.addActionListener(e -> platform.saveAll());
 
-        JMenuItem saveOther = new JMenuItem("文件另存为");
+        JMenuItem saveOther = new JMenuItem(I18n.get("menuItem.saveAs"));
         menuFile.add(saveOther);
         saveOther.addActionListener(e -> new Dialog().Save(platform, platform.getRoot()));
 
-        JMenuItem exit = new JMenuItem("退出");
+        JMenuItem exit = new JMenuItem(I18n.get("menuItem.exit"));
         menuFile.add(exit);
         exit.addActionListener(e -> platform.handleWindowClosing());
     }
@@ -108,11 +111,11 @@ public class MenuManager {
      * Generate the edit menu bar.
      */
     private void generateEdit() {
-        JMenu editMenu = new JMenu("编辑(E)");
+        JMenu editMenu = new JMenu(I18n.get("menu.edit"));
         editMenu.setMnemonic('E');
         menuBar.add(editMenu);
 
-        undo = new JMenuItem("撤消");
+        undo = new JMenuItem(I18n.get("menuItem.undo"));
         undo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK));
         editMenu.add(undo);
         undo.addActionListener(e -> {
@@ -122,7 +125,7 @@ public class MenuManager {
             }
         });
 
-        redo = new JMenuItem("重做");
+        redo = new JMenuItem(I18n.get("menuItem.redo"));
         redo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, KeyEvent.CTRL_DOWN_MASK));
         editMenu.add(redo);
         redo.addActionListener(e -> {
@@ -132,7 +135,7 @@ public class MenuManager {
             }
         });
 
-        selectAllMenuItem = new JMenuItem("全选");
+        selectAllMenuItem = new JMenuItem(I18n.get("menuItem.selectAll"));
         selectAllMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_DOWN_MASK));
         selectAllMenuItem.addActionListener(e -> {
             Editor editor = (Editor) platform.getOpenPage();
@@ -144,15 +147,15 @@ public class MenuManager {
         });
         editMenu.add(selectAllMenuItem);
 
-        findMenuItem = new JMenuItem("查找和替换");
-        findMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_DOWN_MASK));
-        findMenuItem.addActionListener(e -> {
+        findAndReplace = new JMenuItem(I18n.get("menuItem.findAndReplace"));
+        findAndReplace.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_DOWN_MASK));
+        findAndReplace.addActionListener(e -> {
             Editor editor = (Editor) platform.getFocusedPage();
             if (editor != null) {
                 FindReplaceDialog.showDialog(platform, editor.getTextArea());
             }
         });
-        editMenu.add(findMenuItem);
+        editMenu.add(findAndReplace);
 
         // Add a listener for the menu expansion event.
         editMenu.addMenuListener(new MenuListener() {
@@ -177,16 +180,16 @@ public class MenuManager {
      * Generate the run menu bar.
      */
     private void generateRun() {
-        menuRun = new JMenu("运行(R)");
+        menuRun = new JMenu(I18n.get("menu.run"));
         menuRun.setEnabled(false);
         menuRun.setMnemonic('R');
         menuBar.add(menuRun);
 
-        JMenuItem run = new JMenuItem("运行");
+        JMenuItem run = new JMenuItem(I18n.get("menuItem.run"));
         menuRun.add(run);
         run.addActionListener(e -> Run.run(platform));
 
-        JMenuItem stop = new JMenuItem("停止");
+        JMenuItem stop = new JMenuItem(I18n.get("menuItem.stop"));
         menuRun.add(stop);
         stop.addActionListener(e -> platform.stopCurSolver());
     }
@@ -195,15 +198,15 @@ public class MenuManager {
      * Generate the theme view menu bar.
      */
     private void generateView() {
-        RootMenuPiece settings = new RootMenuPiece("视图(V)", false);
+        RootMenuPiece settings = new RootMenuPiece(I18n.get("menu.view"), false);
         settings.getMenu().setMnemonic('V');
         settings.add(new SingleCDockableListMenuPiece(control));
         menuBar.add(settings.getMenu());
 
-        RootMenuPiece layout = new RootMenuPiece("主题(L)", false);
+        RootMenuPiece layout = new RootMenuPiece(I18n.get("menu.theme"), false);
         layout.getMenu().setMnemonic('L');
-        layout.add(new SubmenuPiece("外观", true, new CLookAndFeelMenuPiece(control)));
-        layout.add(new SubmenuPiece("风格", true, new CThemeMenuPiece(control)));
+        layout.add(new SubmenuPiece(I18n.get("menuItem.appearance"), true, new CLookAndFeelMenuPiece(control)));
+        layout.add(new SubmenuPiece(I18n.get("menuItem.style"), true, new CThemeMenuPiece(control)));
         menuBar.add(layout.getMenu());
     }
 
@@ -211,11 +214,11 @@ public class MenuManager {
      * Generate the help menu bar.
      */
     private void generateHelp() {
-        JMenu helpModel = new JMenu("帮助(H)");
+        JMenu helpModel = new JMenu(I18n.get("menu.help"));
         helpModel.setMnemonic('H');
         menuBar.add(helpModel);
 
-        JMenuItem helpDocFileBtn = new JMenuItem("查看帮助(V)");
+        JMenuItem helpDocFileBtn = new JMenuItem(I18n.get("menuItem.help"));
         helpDocFileBtn.setMnemonic('V');
         helpDocFileBtn.addActionListener(e -> {
             File pdfFile = YuanConfig.YUAN_PATH.resolve("data/Yuan.pdf").toFile();
@@ -227,18 +230,17 @@ public class MenuManager {
         });
         helpModel.add(helpDocFileBtn);
 
-        JMenuItem regFileBtn = new JMenuItem("注册平台(D)");
+        JMenuItem regFileBtn = new JMenuItem(I18n.get("menuItem.register"));
         helpDocFileBtn.setMnemonic('D');
         regFileBtn.addActionListener(e -> new Registration(platform));
         helpModel.add(regFileBtn);
 
-        JMenuItem installCoreBtn = new JMenuItem("安装依赖库(I)");
+        JMenuItem installCoreBtn = new JMenuItem(I18n.get("menuItem.installCommon"));
         installCoreBtn.setMnemonic('I');
         installCoreBtn.addActionListener(e -> installCore());
         helpModel.add(installCoreBtn);
 
-        JMenuItem aboutFileBtn = new JMenuItem("关于平台(A)");
-        aboutFileBtn.setMnemonic('A');
+        JMenuItem aboutFileBtn = new JMenuItem(I18n.get("menuItem.about"));
         aboutFileBtn.addActionListener(e -> AboutDialog.showAboutDialog(platform));
         helpModel.add(aboutFileBtn);
     }
@@ -268,12 +270,12 @@ public class MenuManager {
             undo.setEnabled(editor.canUndo());
             redo.setEnabled(editor.canRedo());
             selectAllMenuItem.setEnabled(true);
-            findMenuItem.setEnabled(true);
+            findAndReplace.setEnabled(true);
         } else {
             undo.setEnabled(false);
             redo.setEnabled(false);
             selectAllMenuItem.setEnabled(false);
-            findMenuItem.setEnabled(false);
+            findAndReplace.setEnabled(false);
         }
     }
 

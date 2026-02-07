@@ -3,6 +3,8 @@ package com.gly.platform.app;
 import bibliothek.gui.dock.common.CControl;
 import com.gly.event.Event;
 import com.gly.event.page.AddEvent;
+import com.gly.i18n.I18n;
+import com.gly.i18n.Language;
 import com.gly.log.Level;
 import com.gly.log.Logger;
 import com.gly.event.*;
@@ -24,12 +26,16 @@ import java.io.File;
 
 public class Platform extends JFrame {
     private static Platform instance;
-    /** the manager managing all the elements of the view */
+    /**
+     * the manager managing all the elements of the view
+     */
     private ViewManager view;
 
     private String root = "";
 
-    /** 安全模式 */
+    /**
+     * 安全模式
+     */
     private boolean secure;
 
     private CControl control;
@@ -44,7 +50,9 @@ public class Platform extends JFrame {
      * 构造平台。
      */
     private Platform() {
-        this.setTitle("元智能平台");
+        I18n.switchLanguage(Language.EN_US);
+        //I18n.switchLanguage(Language.ZH_CN);
+        this.setTitle(I18n.get("app.title"));
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
         this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         this.setIconImage(Resources.toImage(Resources.getIcon("aif")));
@@ -64,7 +72,7 @@ public class Platform extends JFrame {
     void startup(String[] args, boolean secure) {
         this.secure = secure;
         control = new CControl();
-        getContentPane().add(control.getContentArea() );
+        getContentPane().add(control.getContentArea());
         view = new ViewManager(control, secure, root);
         menu = new MenuManager(this);
         menu.generateMenu(control);
@@ -74,7 +82,7 @@ public class Platform extends JFrame {
         StatusBar bar = new StatusBar(this);
         bar.init();
 
-        addWindowListener(new WindowAdapter(){
+        addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
                 handleWindowClosing();
@@ -82,7 +90,7 @@ public class Platform extends JFrame {
         });
 
         if (args.length > 0) {
-            for (String f:args) {
+            for (String f : args) {
                 File fileToOpen = new File(f);
                 if (fileToOpen.exists() && fileToOpen.isFile()) {
                     PageInfo pageInfo = new PageInfo(fileToOpen);
@@ -99,22 +107,22 @@ public class Platform extends JFrame {
      * 窗口关闭处理。
      */
     public void handleWindowClosing() {
-        try{
-            if(!secure){
+        try {
+            if (!secure) {
                 WriteLayout.write(control);
             }
             GlobalBus.unregister(this);
             control.destroy();
             Platform.super.dispose();
             System.exit(0); // 这里判断是否需要系统退出
-        } catch(Exception ex){
-            ex.printStackTrace();
-            Logger.error("关闭窗口错误："+ ex.getMessage());
+        } catch (Exception ex) {
+            Logger.error("关闭窗口错误：" + ex.getMessage());
         }
     }
 
     /**
      * 通用总线数据处理。
+     *
      * @param event 事件。
      */
     @Subscribe
@@ -133,6 +141,7 @@ public class Platform extends JFrame {
 
     /**
      * 另存为。
+     *
      * @param savePath 保存路径。
      */
     private void saveAs(String savePath) {
@@ -173,6 +182,7 @@ public class Platform extends JFrame {
 
     /**
      * 刷新工程管理目录。
+     *
      * @param newRoot 新根目录。
      */
     private void refreshFiles(String newRoot) {
@@ -198,6 +208,7 @@ public class Platform extends JFrame {
 
     /**
      * 打开新目录。
+     *
      * @param newRoot 新目录根目录。
      */
     private void open(String newRoot) {
@@ -208,6 +219,7 @@ public class Platform extends JFrame {
 
     /**
      * 获得根目录。
+     *
      * @return 当前根目录。
      */
     public String getRoot() {
