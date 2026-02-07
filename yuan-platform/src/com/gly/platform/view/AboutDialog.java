@@ -6,11 +6,11 @@ import java.net.URI;
 import java.net.URL;
 
 /**
- * about dialog.
+ * About dialog.
  */
 class AboutDialog {
-    private static final String APP_NAME = "yuan-1.0.6";
-    private static final String VERSION = "2026.02.06";
+    private static final String APP_NAME = "yuan-1.0.7";
+    private static final String VERSION = "2026.02.07";
     private static final String WEB = "https://github.com/YuanIdea/yuan";
 
     static void showAboutDialog(JFrame parent) {

@@ -27,13 +27,13 @@ import java.nio.file.Path;
  */
 public class MenuManager {
     // Platform's main program.
-    private Platform platform;
+    private final Platform platform;
 
     // control
     private CControl control;
 
     // main menu bar.
-    private JMenuBar menuBar;
+    private final JMenuBar menuBar;
 
     // run menu.
     private JMenu menuRun;
@@ -248,7 +248,7 @@ public class MenuManager {
      */
     private void installCore() {
         Path directory = YuanConfig.YUAN_PATH;
-        String jarName = "yuan-common-1.0.6.jar";
+        String jarName = "yuan-common-1.0.7.jar";
         Path coreFile = directory.resolve(jarName);
         boolean installedSuccess = Executor.executeMaven(directory, YuanConfig.DEFAULT_JAVA_HOME,
                 "install:install-file", "-Dfile=" + coreFile);
