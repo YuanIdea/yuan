@@ -19,6 +19,7 @@ import com.gly.event.GlobalBus;
 import com.gly.event.RefreshEvent;
 import com.gly.event.Subscribe;
 import com.gly.event.page.AddEvent;
+import com.gly.i18n.I18n;
 import com.gly.log.Logger;
 import com.gly.platform.app.Platform;
 import com.gly.platform.app.ProjectType;
@@ -67,12 +68,12 @@ public class TreeDockable extends DefaultSingleCDockable {
 
     public TreeDockable() {
         super("TreeDockable");
-        GlobalBus.register(this); // 注册到事件总线
+        GlobalBus.register(this); // Register to event bus.
         setCloseable(true);
         setMinimizable(true);
         setMaximizable(true);
         setExternalizable(true);
-        setTitleText("工程");
+        setTitleText(I18n.get("project"));
         setTitleIcon(Resources.getIcon("dockable.hierarchy"));
         root = "";
         state = new State();
@@ -155,6 +156,7 @@ public class TreeDockable extends DefaultSingleCDockable {
 
     /**
      * Create project configuration file directory.
+     *
      * @param rootDir Current root directory.
      */
     private void generateYuanFolder(Path rootDir) {
