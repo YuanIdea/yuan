@@ -17,12 +17,12 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * 平台启动入口类。
+ * Processes that can be run and stopped within the platform.
  */
 public class ProcessExecutor extends BaseExecutable {
     private boolean enableDebug = false;
-    
-    // 添加控制变量
+
+    // Current process.
     private Process currentProcess;
     private Thread outputThread;
     private Thread errorThread;
@@ -30,7 +30,7 @@ public class ProcessExecutor extends BaseExecutable {
     private final AtomicBoolean shouldStop = new AtomicBoolean(false);
 
     private Pom pom;
-    
+
     ProcessExecutor() {
 
     }
@@ -46,17 +46,17 @@ public class ProcessExecutor extends BaseExecutable {
         boolean compileSuccess = Executor.executeMaven(rootPath,
                 javaHome,
                 "compile",
-                "-Dfile.encoding="+pom.sourceEncoding,
+                "-Dfile.encoding=" + pom.sourceEncoding,
                 "-q",
                 "dependency:build-classpath",
                 "-DincludeScope=compile",
                 "-Dmdep.outputFile=" + pom.absoluteClassPath().toString());
         if (compileSuccess) {
-            System.out.println("✓ 编译成功!");
+            System.out.println("✓ Execution succeeded!");
             GlobalBus.dispatch(new AddFileEvent(pom.getOutputRoot().toFile()));
             run(javaHome);
         } else {
-            System.err.println("✗ 编译失败! ");
+            System.err.println("✗ Execution failed!");
         }
         GlobalBus.dispatch(new DoneEvent(this));
     }
@@ -68,7 +68,7 @@ public class ProcessExecutor extends BaseExecutable {
         try {
             isRunning.set(true);
             shouldStop.set(false);
-            
+
             // 构建完整的命令参数列表
             List<String> command = new ArrayList<>();
             command.add(javaHome.resolve("bin/java.exe").toString()); // 完整的 Java 路径
@@ -77,7 +77,7 @@ public class ProcessExecutor extends BaseExecutable {
                 int debugPort = 57445; // 随机端口或固定端口
                 command.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=" + debugPort);
             }
-            command.add("-Dfile.encoding="+pom.sourceEncoding); // 编码强制指定
+            command.add("-Dfile.encoding=" + pom.sourceEncoding); // 编码强制指定
             command.add("-classpath");// 添加 classpath（保留完整路径）
             command.add(pom.getClassPath()); // 不再做路径替换
             command.add(pom.mainClass);// 添加主类名
@@ -90,31 +90,30 @@ public class ProcessExecutor extends BaseExecutable {
             if (YuanConfig.YUAN_PATH.toFile().exists()) {
                 // 获取环境变量并修改PATH
                 Map<String, String> env = pb.environment();
-                String currentPath = env.get("Path");
-                env.put("Path", YuanConfig.YUAN_PATH.toString() + File.pathSeparator + currentPath);
+                env.compute("Path", (k, currentPath) -> YuanConfig.YUAN_PATH + File.pathSeparator + currentPath);
             }
 
             currentProcess = pb.start();
             outputThread = new Thread(() -> readStream(currentProcess.getInputStream()));// 读取标准输出流
             outputThread.setDaemon(true);
             outputThread.start();
-            
+
             errorThread = new Thread(() -> readStream(currentProcess.getErrorStream()));// 读取标准错误流
             errorThread.setDaemon(true);
             errorThread.start();
 
             int exitCode = waitForProcess(); // 等待进程结束，同时检查停止标志
-            
+
             outputThread.join(1000); // 等待输出流读取完成，最多等待1秒
             errorThread.join(1000);  // 确保错误流读取完成，最多等待1秒
-            
+
             if (shouldStop.get()) {
-                System.out.println("进程已被主动停止");
+                System.out.println("Process has been actively stopped.");
             } else {
                 System.out.println("Process finished with exit code " + exitCode);
             }
         } catch (IOException | InterruptedException e) {
-            System.err.println("执行错误: " + e.getMessage());
+            System.err.println("Execution error: " + e.getMessage());
         } finally {
             isRunning.set(false);
             currentProcess = null;
@@ -124,20 +123,20 @@ public class ProcessExecutor extends BaseExecutable {
     }
 
     /**
-     * 等待进程结束，同时支持中断
+     * Wait for the process to end while supporting interruption.
      */
     private int waitForProcess() {
         while (isRunning.get()) {
             try {
-                // 使用带超时的waitFor，以便定期检查停止标志
+                // Use waitFor with a timeout to periodically check the stop flag.
                 if (currentProcess != null) {
-                    // 等待100ms检查一次
+                    // Check every 100ms while waiting.
                     Thread.sleep(100);
                     try {
-                        // 非阻塞方式检查进程是否结束
+                        // Check if the process has ended in a non-blocking manner.
                         return currentProcess.exitValue();
                     } catch (IllegalThreadStateException e) {
-                        // 进程还在运行，检查是否需要停止
+                        // Process is still running; check if it needs to be stopped.
                         if (shouldStop.get()) {
                             stopProcess();
                             return -1;
@@ -154,18 +153,18 @@ public class ProcessExecutor extends BaseExecutable {
     }
 
     /**
-     * 停止进程
+     * Stop process.
      */
     private void stopProcess() {
         if (currentProcess != null) {
-            System.out.println("正在停止进程...");
-            // 先尝试优雅关闭
+            System.out.println("Stopping process...");
+            // First attempt graceful shutdown.
             currentProcess.destroy();
             try {
-                // 等待进程优雅退出，最多等待3秒
+                // Wait for the process to exit gracefully, with a maximum wait of 3 seconds.
                 if (!currentProcess.waitFor(3, java.util.concurrent.TimeUnit.SECONDS)) {
-                    // 强制终止
-                    System.out.println("进程未正常退出，强制终止...");
+                    // Force termination.
+                    System.out.println("Process did not exit normally, forcing termination...");
                     currentProcess.destroyForcibly();
                     currentProcess.waitFor(2, java.util.concurrent.TimeUnit.SECONDS);
                 }
@@ -184,7 +183,7 @@ public class ProcessExecutor extends BaseExecutable {
             }
         } catch (IOException e) {
             if (!shouldStop.get()) {
-                System.err.println("流读取错误: " + e.getMessage());
+                System.err.println("Stream read error: " + e.getMessage());
             }
         }
     }
@@ -193,18 +192,18 @@ public class ProcessExecutor extends BaseExecutable {
     public void stop() {
         if (isRunning.get() && !shouldStop.get()) {
             shouldStop.set(true);
-            System.out.println("正在请求停止进程...");
-            // 停止进程
+            System.out.println("Requesting to stop the process...");
+            // Stop process.
             stopProcess();
-            // 中断读取线程
+            // Interrupt the read thread.
             if (outputThread != null && outputThread.isAlive()) {
                 outputThread.interrupt();
             }
             if (errorThread != null && errorThread.isAlive()) {
                 errorThread.interrupt();
             }
-            
-            // 等待状态更新
+
+            // Wait for status update.
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {
@@ -214,7 +213,7 @@ public class ProcessExecutor extends BaseExecutable {
     }
 
     /**
-     * 检查进程是否正在运行
+     * Check if the process is running.
      */
     public boolean isRunning() {
         return isRunning.get();

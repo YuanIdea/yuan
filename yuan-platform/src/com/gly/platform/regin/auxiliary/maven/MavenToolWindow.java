@@ -227,7 +227,7 @@ public class MavenToolWindow extends JPanel {
         Pom pom = new Pom(pomPath);
         pom.parseProjectInfo();
         Executor comp = new Executor(cmd, "-Dfile.encoding=" + pom.sourceEncoding);
-        comp.setOutFile(pom.getOutputRoot().toFile());
+        comp.setOutDirectory(pom.getOutputRoot().toFile());
         comp.init(pomPath.getParent().toString(), "", platform);
         comp.start();
     }

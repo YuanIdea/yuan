@@ -18,18 +18,19 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Maven命令执行器。
+ * Maven command executor.
  */
 public class Executor extends BaseExecutable {
-    // 命令集
-    private List<String> goals;
+    // List of commands to be executed.
+    private final List<String> goals;
 
-    // 输出目录。
-    private File outFile;
+    // Output directory.
+    private File outDirectory;
 
     /**
-     * 构造函数。
-     * @param goals 指定执行命令集。
+     * Constructor.
+     *
+     * @param goals Specify the command set to execute.
      */
     public Executor(String... goals) {
         this.goals = new ArrayList<>(Arrays.asList(goals));
@@ -41,25 +42,26 @@ public class Executor extends BaseExecutable {
         Path javaHome = Config.getProjectJavaHome(root);
         boolean success = Executor.executeMaven(Paths.get(root), javaHome, goals.toArray(new String[0]));
         if (success) {
-            System.out.println("✓ " + goals.get(0) + "成功!");
-            if (outFile!=null) {
-                GlobalBus.dispatch(new AddFileEvent(outFile));
+            System.out.println("✓ " + goals.get(0) + " succeeded!");
+            if (outDirectory != null) {
+                GlobalBus.dispatch(new AddFileEvent(outDirectory));
             }
         } else {
-            System.err.println("✗ " + goals.get(0) + "失败! ");
+            System.err.println("✗ " + goals.get(0) + " failed!");
         }
         GlobalBus.dispatch(new DoneEvent(this));
     }
 
     /**
-     * 使用系统Maven执行命令的简单封装。
-     * @param projectDir 项目根目录。
-     * @param goals 其它参数。
-     * @return 是否执行成功。
+     * Execute commands using Maven.
+     *
+     * @param projectDir Project root directory.
+     * @param goals      Other parameters.
+     * @return Whether the execution was successful.
      */
     public static boolean executeMaven(Path projectDir, Path javaHome, String... goals) {
         try {
-            String mavenCommand = YuanConfig.YUAN_PATH .resolve("apache-maven-3.9.0/bin/mvn.cmd").toString();
+            String mavenCommand = YuanConfig.YUAN_PATH.resolve("apache-maven-3.9.0/bin/mvn.cmd").toString();
             List<String> command = new ArrayList<>();
             command.add(mavenCommand);
             Collections.addAll(command, goals);
@@ -77,7 +79,7 @@ public class Executor extends BaseExecutable {
                 env.put("JAVA_HOME", javaHome.toString());
             }
 
-            System.out.println("执行 Maven 命令: " + String.join(" ", command));
+            System.out.println("Execute Maven commands: " + String.join(" ", command));
             Process process = pb.start();
 
             // 使用 CompletableFuture 处理输出
@@ -86,10 +88,10 @@ public class Executor extends BaseExecutable {
                         new InputStreamReader(process.getInputStream()))) {
                     String line;
                     while ((line = reader.readLine()) != null) {
-                        System.out.println("[Maven] " + line);
+                        System.out.println(line);
                     }
                 } catch (IOException e) {
-                    System.err.println("输出读取错误: " + e.getMessage());
+                    System.err.println("Read error: " + e.getMessage());
                 }
             });
 
@@ -98,14 +100,15 @@ public class Executor extends BaseExecutable {
             outputFuture.cancel(true); // 停止输出线程
             return success && process.exitValue() == 0;
         } catch (Exception e) {
-            System.err.println("Maven 执行失败: " + e.getMessage());
+            System.err.println("Maven execution failed: " + e.getMessage());
             return false;
         }
     }
 
     /**
-     * 获取编码。
-     * @param goals 命令集。
+     * Retrieve encoding information from the command set.
+     *
+     * @param goals Command set.
      */
     private static String getEncode(String... goals) {
         String encoding = "";
@@ -128,7 +131,7 @@ public class Executor extends BaseExecutable {
         return null;
     }
 
-    public void setOutFile(File outFile) {
-        this.outFile = outFile;
+    public void setOutDirectory(File outDirectory) {
+        this.outDirectory = outDirectory;
     }
 }

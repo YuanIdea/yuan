@@ -12,13 +12,14 @@ import java.util.*;
 public class TreeInitializer {
 
     /**
-     * 初始化树节点（广度优先遍历 + 实时排序）
-     * @param rootNode   根节点（需为 FileTreeNode 类型）
+     * Initialize tree nodes (breadth-first traversal + real-time sorting)
+     *
+     * @param rootNode Root node (must be of type FileTreeNode)
      */
     public static void init(FileTreeNode rootNode) {
         File rootFile = rootNode.getFile();
         List<File> entryList = new ArrayList<>();
-        // 使用队列进行 BFS 遍历
+        // Use a queue for BFS traversal.
         Queue<Map.Entry<FileTreeNode, File>> queue = new LinkedList<>();
         queue.add(new AbstractMap.SimpleEntry<>(rootNode, rootFile));
         Comparator<File> fileComparator = generateComparator(); // 创建比较器
@@ -36,9 +37,9 @@ public class TreeInitializer {
                     entryList.add(entryName);
                 }
                 for (File childFile : sortedChildren) {// 添加子节点（已排序）
-                    // 创建节点（标记是否为目录）
+                    // Create node (mark whether it's a directory).
                     FileTreeNode childNode = new FileTreeNode(childFile, childFile.isDirectory());
-                    for (File oneEntryName:entryList) {
+                    for (File oneEntryName : entryList) {
                         if (oneEntryName.equals(childFile)) {
                             childNode.setEntry(true);
                             entryList.remove(oneEntryName);
@@ -47,7 +48,8 @@ public class TreeInitializer {
                     }
                     currentNode.add(childNode);
 
-                    if (childFile.isDirectory()) {// 如果是目录，加入队列继续遍历
+                    if (childFile.isDirectory()) {
+                        // If it is a directory, add it to the queue for continued traversal.
                         queue.add(new AbstractMap.SimpleEntry<>(childNode, childFile));
                     }
                 }
@@ -56,26 +58,28 @@ public class TreeInitializer {
     }
 
     /**
-     * 创建比较器（与 SortedTreeModel 一致）
-     * @return 比较器。
+     * Create comparator (consistent with SortedTreeModel)
+     *
+     * @return Comparator.
      */
     private static Comparator<File> generateComparator() {
-       return  (f1, f2) -> {
-            // 文件夹优先
+        return (f1, f2) -> {
+            // Folders first.
             if (f1.isDirectory() && !f2.isDirectory()) {
                 return -1;
             } else if (!f1.isDirectory() && f2.isDirectory()) {
                 return 1;
             }
-            // 按名称排序（不区分大小写）
+            // Sort by name (case-insensitive).
             return f1.getName().compareToIgnoreCase(f2.getName());
         };
     }
 
     /**
-     * 入口类路径名
-     * @param root 根目录。
-     * @return 入口类路径名。
+     * Entry class path name
+     *
+     * @param root Root directory.
+     * @return Entry class path name.
      */
     private static File getEntry(String root) {
         Path rootPath = Paths.get(root);
@@ -84,14 +88,14 @@ public class TreeInitializer {
             if (Pom.hasEntry(pomPath)) {
                 File entry = Pom.quickGetEntryFile(rootPath, pomPath.toString());
                 if (entry != null && entry.exists()) {
-                    System.out.println("快速入口:"+entry.getPath());
+                    System.out.println("Quick access:" + entry.getPath());
                     return entry;
                 } else {
                     Pom pom = new Pom(pomPath);
                     pom.parseProjectInfo();
                     entry = pom.getEntryFile();
                     if (entry != null && entry.exists()) {
-                        System.out.println("解析入口:"+entry.getPath());
+                        System.out.println("Parse entry:" + entry.getPath());
                         return entry;
                     }
                 }
