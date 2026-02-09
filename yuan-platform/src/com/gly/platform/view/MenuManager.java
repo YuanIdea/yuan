@@ -51,12 +51,10 @@ public class MenuManager {
     // find and replace
     private JMenuItem findAndReplace;
 
-
     public MenuManager(Platform platform) {
         this.platform = platform;
         menuBar = new JMenuBar();
         this.platform.setJMenuBar(menuBar);
-
     }
 
     /**
@@ -161,7 +159,7 @@ public class MenuManager {
         editMenu.addMenuListener(new MenuListener() {
             @Override
             public void menuSelected(MenuEvent e) {
-                updateEditItemState(); // 编辑菜单被展开;
+                updateEditItemState(); // Edit menu expanded
             }
 
             @Override
@@ -283,11 +281,8 @@ public class MenuManager {
      * Refresh run menu.
      */
     public void refresh() {
-        if (ProjectType.isModel() || ProjectType.isMaven() || ProjectType.isPython()) {
-            menuRun.setEnabled(true);
-        } else {
-            menuRun.setEnabled(false);
-        }
+        boolean enable = ProjectType.isModel() || ProjectType.isMaven() || ProjectType.isPython();
+        menuRun.setEnabled(enable);
     }
 }
 
