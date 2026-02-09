@@ -1,5 +1,6 @@
 package com.gly.platform.regin.auxiliary.maven;
 
+import com.gly.i18n.I18n;
 import com.gly.platform.app.Platform;
 import com.gly.util.IconUtil;
 import org.apache.maven.model.Model;
@@ -163,11 +164,11 @@ public class MavenToolWindow extends JPanel {
 
         // Lifecycle tab.
         JPanel lifecyclePanel = createLifecyclePanel();
-        lifecycleTabbedPane.addTab("Lifecycle", lifecyclePanel);
+        lifecycleTabbedPane.addTab(I18n.get("maven.lifecycle"), lifecyclePanel);
 
         // Dependencies tab.
         JPanel dependenciesPanel = createDependenciesPanel();
-        lifecycleTabbedPane.addTab("Dependencies", dependenciesPanel);
+        lifecycleTabbedPane.addTab(I18n.get("maven.dependencies"), dependenciesPanel);
     }
 
     /**
@@ -177,7 +178,7 @@ public class MavenToolWindow extends JPanel {
      */
     private JPanel createLifecyclePanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        DefaultMutableTreeNode lifecycle = new DefaultMutableTreeNode("Lifecycle");
+        DefaultMutableTreeNode lifecycle = new DefaultMutableTreeNode(I18n.get("maven.lifecycle"));
         String[] phases = {
                 "clean", "validate", "compile", "test", "package",
                 "verify", "install", "site", "deploy"
@@ -285,7 +286,7 @@ public class MavenToolWindow extends JPanel {
             return;
         }
         Model model = Pom.readPom(pomPath.toString());
-        DefaultMutableTreeNode dependenciesRoot = new DefaultMutableTreeNode("Dependencies");
+        DefaultMutableTreeNode dependenciesRoot = new DefaultMutableTreeNode(I18n.get("maven.dependencies"));
         List<String> deps = DependencyManager.getAllDependenciesAsString(model);
 
         for (String dep : deps) {
