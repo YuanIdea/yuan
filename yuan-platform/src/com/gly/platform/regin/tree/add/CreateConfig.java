@@ -1,26 +1,28 @@
 package com.gly.platform.regin.tree.add;
 
+import com.gly.i18n.I18n;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 
 /**
- * 创建配置界面
+ * Create configuration interface.
  */
 public class CreateConfig {
-    // 标题名称
-    private String titleName;
+    // Title name.
+    private final String titleName;
 
-    //是否点击了ok
+    // Whether OK was clicked.
     private boolean ok = false;
 
-    // 创建文件名称。
+    // Create the name of the file.
     private String fileName;
 
-    // 对话框。
+    // Dialog.
     JDialog dialog;
 
-    // 上部分面板。
+    // Top panel.
     JPanel fieldPanel;
 
     public CreateConfig(String titleName) {
@@ -32,7 +34,7 @@ public class CreateConfig {
         dialog.setTitle(titleName);
         dialog.setModal(true);
         dialog.setBounds(600, 200, 300, 120);
-        dialog.setLayout(new BorderLayout());//布局管理器
+        dialog.setLayout(new BorderLayout());// Layout manager.
 
         fieldPanel = new JPanel();
         fieldPanel.setLayout(null);
@@ -40,8 +42,7 @@ public class CreateConfig {
         int height = 25;
         int y = 10;
 
-        // 文件名输入
-        JLabel nameLabel = new JLabel("名称:");
+        JLabel nameLabel = new JLabel(I18n.get("name") + ":");
         JTextField nameField = new JTextField();
 
         ActionListener doAction = e -> {
@@ -56,27 +57,29 @@ public class CreateConfig {
         fieldPanel.add(nameField);
         dialog.add(fieldPanel, "Center");
 
-        // 操作按钮
-        JButton okBtn = new JButton("确定");
-        JButton cancelBtn = new JButton("取消");
+        // Operation buttons.
+        JButton okBtn = new JButton(I18n.get("ok"));
+        JButton cancelBtn = new JButton(I18n.get("cancel"));
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new FlowLayout());
         buttonPanel.add(okBtn);
         buttonPanel.add(cancelBtn);
         dialog.add(buttonPanel, "South");
 
-        // 按钮事件
+        // Button event.
         cancelBtn.addActionListener(
                 e -> {
                     this.ok = false;
-                    dialog.dispose();});
+                    dialog.dispose();
+                });
         okBtn.addActionListener(doAction);
         dialog.setLocationRelativeTo(parent);
     }
 
     /**
-     * 显示新建文件对话框。
-     * @param parent 父容器。
+     * Show the new file dialog.
+     *
+     * @param parent Parent container.
      */
     public void showNewFileDialog(Component parent) {
         initializeUI(parent);
