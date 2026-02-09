@@ -9,6 +9,7 @@ import com.gly.log.Level;
 import com.gly.log.Logger;
 import com.gly.event.*;
 import com.gly.io.xml.WriteLayout;
+import com.gly.os.OSUtils;
 import com.gly.platform.thread.AlgorithmExecutor;
 import com.gly.platform.editor.Drop;
 import com.gly.event.page.PageInfo;
@@ -23,7 +24,9 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 
-
+/**
+ * yuan-platform frame.
+ */
 public class Platform extends JFrame {
     private static Platform instance;
     /**
@@ -33,9 +36,6 @@ public class Platform extends JFrame {
 
     private String root = "";
 
-    /**
-     * 安全模式
-     */
     private boolean secure;
 
     private CControl control;
@@ -44,21 +44,23 @@ public class Platform extends JFrame {
 
     private PluginManager pluginManager;
 
-    private String currentProjectRoot;
 
     /**
-     * 构造平台。
+     * Construct platform.
      */
     private Platform() {
-        I18n.switchLanguage(Language.EN_US);
-        //I18n.switchLanguage(Language.ZH_CN);
+        if (OSUtils.isChineseOS()) {
+            I18n.switchLanguage(Language.ZH_CN);
+        } else {
+            I18n.switchLanguage(Language.EN_US);
+        }
         this.setTitle(I18n.get("app.title"));
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
         this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         this.setIconImage(Resources.toImage(Resources.getIcon("aif")));
 
         System.setProperty("file.encoding", "UTF-8");
-        GlobalBus.register(this); // 注册到事件总线
+        GlobalBus.register(this);
         Logger.createLogger(Level.DEBUG, YuanConfig.YUAN_PATH.resolve("data/Yuan.log"));
     }
 
@@ -89,13 +91,11 @@ public class Platform extends JFrame {
             }
         });
 
-        if (args.length > 0) {
-            for (String f : args) {
-                File fileToOpen = new File(f);
-                if (fileToOpen.exists() && fileToOpen.isFile()) {
-                    PageInfo pageInfo = new PageInfo(fileToOpen);
-                    GlobalBus.dispatch(new AddEvent(pageInfo));
-                }
+        for (String f : args) {
+            File fileToOpen = new File(f);
+            if (fileToOpen.exists() && fileToOpen.isFile()) {
+                PageInfo pageInfo = new PageInfo(fileToOpen);
+                GlobalBus.dispatch(new AddEvent(pageInfo));
             }
         }
         Drop.setupDragAndDrop(this);
@@ -104,7 +104,7 @@ public class Platform extends JFrame {
     }
 
     /**
-     * 窗口关闭处理。
+     * Window close handling.
      */
     public void handleWindowClosing() {
         try {
@@ -114,25 +114,25 @@ public class Platform extends JFrame {
             GlobalBus.unregister(this);
             control.destroy();
             Platform.super.dispose();
-            System.exit(0); // 这里判断是否需要系统退出
+            System.exit(0);
         } catch (Exception ex) {
-            Logger.error("关闭窗口错误：" + ex.getMessage());
+            Logger.error("Window close error: " + ex.getMessage());
         }
     }
 
     /**
-     * 通用总线数据处理。
+     * Universal bus data processing.
      *
-     * @param event 事件。
+     * @param event Event
      */
     @Subscribe
     public void handleEvent(Event event) {
         SwingUtilities.invokeLater(() -> {
             switch (event.getType()) {
-                case saveFile: // 保存文件。
+                case saveFile: // Save file.
                     saveAs((String) event.getData());
                     break;
-                case openFold: // 打开方案。
+                case openFold: // Open solution.
                     open((String) event.getData());
                     break;
             }
@@ -140,9 +140,9 @@ public class Platform extends JFrame {
     }
 
     /**
-     * 另存为。
+     * Save As.
      *
-     * @param savePath 保存路径。
+     * @param savePath Save path.
      */
     private void saveAs(String savePath) {
         PageDockable page = getOpenPage();
@@ -151,7 +151,7 @@ public class Platform extends JFrame {
     }
 
     public void netFile() {
-        view.getTreeDockable().newFile("新建文件");
+        view.getTreeDockable().newFile(I18n.get("menuItem.newFile"));
     }
 
     /**
@@ -160,30 +160,30 @@ public class Platform extends JFrame {
     public void save() {
         PageDockable page = getOpenPage();
         if (page == null) {
-            Logger.info("没有激活页面被选中");
+            Logger.info("No active page is selected.");
         } else {
             page.save(page.getPageInfo().getName());
         }
     }
 
     /**
-     * 保存所有页面。
+     * Save all pages.
      */
     public void saveAll() {
         view.saveAll();
     }
 
     /**
-     * 保存所有修改过的页面。
+     * Save all modified pages.
      */
     public void saveAllModified() {
         view.saveAllModified();
     }
 
     /**
-     * 刷新工程管理目录。
+     * Refresh project management directory.
      *
-     * @param newRoot 新根目录。
+     * @param newRoot New root directory.
      */
     private void refreshFiles(String newRoot) {
         view.getTreeDockable().refreshRoot(newRoot);
@@ -199,7 +199,7 @@ public class Platform extends JFrame {
     }
 
     /**
-     * 终止当前排产任务。
+     * Terminate the current scheduling task.
      */
     public void stopCurSolver() {
         AlgorithmExecutor executor = AlgorithmExecutor.getInstance();
@@ -207,9 +207,9 @@ public class Platform extends JFrame {
     }
 
     /**
-     * 打开新目录。
+     * Open a new directory.
      *
-     * @param newRoot 新目录根目录。
+     * @param newRoot New directory root.
      */
     private void open(String newRoot) {
         root = newRoot;
@@ -218,9 +218,9 @@ public class Platform extends JFrame {
     }
 
     /**
-     * 获得根目录。
+     * Get the root directory.
      *
-     * @return 当前根目录。
+     * @return Current root directory.
      */
     public String getRoot() {
         return root;
@@ -232,17 +232,5 @@ public class Platform extends JFrame {
 
     public PluginManager getPluginManager() {
         return pluginManager;
-    }
-
-    public String getCurrentProjectRoot() {
-        if (currentProjectRoot != null && !currentProjectRoot.isEmpty()) {
-            return currentProjectRoot;
-        } else {
-            return root;
-        }
-    }
-
-    public void setCurrentProjectRoot(String currentProjectRoot) {
-        this.currentProjectRoot = currentProjectRoot;
     }
 }

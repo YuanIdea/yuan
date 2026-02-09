@@ -22,8 +22,6 @@ public class I18n {
             case EN_US:
                 currentLocale = Locale.US;
                 break;
-            default:
-                currentLocale = Locale.US;
         }
         saveLanguagePreference(language);
         loadBundle();

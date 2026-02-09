@@ -103,4 +103,12 @@ public final class OSUtils {
         return String.format("%s %s (%s) [%s]",
                 getOSName(), getOSVersion(), getOSArch(), OS_TYPE.getDisplayName());
     }
+
+    /**
+     * Check if the operating system is in a Chinese locale.
+     */
+    public static boolean isChineseOS() {
+        String userLanguage = System.getProperty("user.language");
+        return "zh".equals(userLanguage);
+    }
 }
