@@ -35,6 +35,11 @@ public class StatusBar {
         platform.add(createStatusBar(), BorderLayout.SOUTH);
     }
 
+    /**
+     * Create bottom status bar.
+     *
+     * @return Bottom status bar.
+     */
     private JPanel createStatusBar() {
         JPanel statusBar = new JPanel(new BorderLayout());
         statusBar.setBorder(BorderFactory.createEtchedBorder());
@@ -86,7 +91,7 @@ public class StatusBar {
         button.setBorderPainted(false);          // Remove border.
         button.setFocusPainted(false);           // Remove focus outline.
         button.setContentAreaFilled(false);      // Transparent background.
-        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)); // 手型光标
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)); // Hand-shaped cursor.
     }
 
     private void showEncodingMenu() {
@@ -99,7 +104,7 @@ public class StatusBar {
 
         JMenu moreItem = new JMenu("more");
         menu.add(moreItem);
-        MenuScroller.setScrollerFor(moreItem, 15); // 最多显示15项
+        MenuScroller.setScrollerFor(moreItem, 15); // Display a maximum of 15 items.
 
         moreItem.addMenuListener(new MenuListener() {
             @Override
@@ -111,7 +116,8 @@ public class StatusBar {
                             addEncodingMenu(moreItem, charsetName);
                         }
                     }
-                    moreItem.getPopupMenu().setPopupSize(200, 400); // 设置合适的大小，弹出方向为右侧
+                    // Set an appropriate size with the popup direction to the right.
+                    moreItem.getPopupMenu().setPopupSize(200, 400);
                 }
             }
 
@@ -159,7 +165,7 @@ public class StatusBar {
     private void addEncodingMenu(JComponent menu, String charset) {
         JMenuItem item = new JMenuItem(charset);
         if (charset.equals(getCurrentEncoding())) {
-            item.setFont(item.getFont().deriveFont(Font.BOLD)); // 当前编码加粗
+            item.setFont(item.getFont().deriveFont(Font.BOLD)); // The currently selected encoding uses bold styling.
         }
         item.addActionListener(e -> {
             encodingButton.setText(charset);
@@ -181,5 +187,4 @@ public class StatusBar {
             curPage.reload();
         }
     }
-
 }
