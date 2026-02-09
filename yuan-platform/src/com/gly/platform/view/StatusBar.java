@@ -4,6 +4,7 @@ import bibliothek.gui.dock.common.intern.CDockable;
 import com.gly.event.GlobalBus;
 import com.gly.event.Subscribe;
 import com.gly.event.FocusChangeEvent;
+import com.gly.i18n.I18n;
 import com.gly.platform.app.Platform;
 import com.gly.platform.editor.Editor;
 import com.gly.util.MenuScroller;
@@ -15,37 +16,42 @@ import java.awt.*;
 import java.nio.charset.Charset;
 import java.util.SortedMap;
 
+/**
+ * Status bar at the bottom of the platform.
+ */
 public class StatusBar {
+    private final Platform platform;
+    private final String[] common = {"UTF-8", "GBK", "ISO-8859-1", "US-ASCII", "UTF-16"};
     private JButton leftInfo;
-    private Platform platform;
-
     private JButton encodingButton;
-    private String[] common = {"UTF-8", "GBK", "ISO-8859-1", "US-ASCII", "UTF-16"};
+    private final String ready = I18n.get("status.ready");
 
     public StatusBar(Platform platform) {
         this.platform = platform;
-        GlobalBus.register(this); // 注册到事件总线
+        GlobalBus.register(this); // Register to event bus.
     }
+
     public void init() {
         platform.add(createStatusBar(), BorderLayout.SOUTH);
     }
+
     private JPanel createStatusBar() {
         JPanel statusBar = new JPanel(new BorderLayout());
         statusBar.setBorder(BorderFactory.createEtchedBorder());
 
-        // 左侧信息区域
+        // Information area on the left.
         JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        leftInfo = new JButton("Ready");
-        styleEncodingButton(leftInfo);// 设置按钮外观（类似标签）
+        leftInfo = new JButton(ready);
+        styleEncodingButton(leftInfo);// Set the button appearance to resemble a label.
         leftPanel.add(leftInfo);
 
-        // 右侧状态信息
+        // Status information on the right.
         JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         encodingButton = new JButton("");
-        styleEncodingButton(encodingButton);// 设置按钮外观（类似标签）
+        styleEncodingButton(encodingButton);// Set the button appearance to resemble a label.
         rightPanel.add(encodingButton);
 
-        // 添加编码选择功能
+        // Add the ability to select encoding types.
         encodingButton.addActionListener(e -> showEncodingMenu());
 
         statusBar.add(leftPanel, BorderLayout.WEST);
@@ -58,9 +64,9 @@ public class StatusBar {
     public void handleFocusChange(FocusChangeEvent event) {
         CDockable page = event.getFocusPage();
         if (page instanceof Editor) {
-            updateEncoding("", ((Editor)page).getEncoding());
+            updateEncoding("", ((Editor) page).getEncoding());
         } else {
-            updateEncoding("Ready", "");
+            updateEncoding(ready, "");
         }
     }
 
@@ -77,17 +83,17 @@ public class StatusBar {
     }
 
     private void styleEncodingButton(JButton button) {
-        button.setBorderPainted(false);          // 移除边框
-        button.setFocusPainted(false);           // 移除焦点框
-        button.setContentAreaFilled(false);      // 透明背景
+        button.setBorderPainted(false);          // Remove border.
+        button.setFocusPainted(false);           // Remove focus outline.
+        button.setContentAreaFilled(false);      // Transparent background.
         button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)); // 手型光标
     }
 
     private void showEncodingMenu() {
         JPopupMenu menu = new JPopupMenu();
-        for (String e:common) {
+        for (String e : common) {
             if (!e.equals(getCurrentEncoding())) {
-                addEncodingMenu(menu, e);// 添加常用编码到顶部
+                addEncodingMenu(menu, e);// Add common encodings to the top.
             }
         }
 
@@ -96,7 +102,8 @@ public class StatusBar {
         MenuScroller.setScrollerFor(moreItem, 15); // 最多显示15项
 
         moreItem.addMenuListener(new MenuListener() {
-            @Override public void menuSelected(MenuEvent e) {
+            @Override
+            public void menuSelected(MenuEvent e) {
                 if (moreItem.getItemCount() == 0) {
                     SortedMap<String, Charset> availableCharsets = Charset.availableCharsets();// 获取系统支持的所有编码
                     for (String charsetName : availableCharsets.keySet()) {
@@ -107,25 +114,33 @@ public class StatusBar {
                     moreItem.getPopupMenu().setPopupSize(200, 400); // 设置合适的大小，弹出方向为右侧
                 }
             }
-            @Override public void menuDeselected(MenuEvent e) {}
-            @Override public void menuCanceled(MenuEvent e) {}
+
+            @Override
+            public void menuDeselected(MenuEvent e) {
+            }
+
+            @Override
+            public void menuCanceled(MenuEvent e) {
+            }
         });
 
-        menu.show(encodingButton, 0, encodingButton.getHeight());// 显示菜单
+        menu.show(encodingButton, 0, encodingButton.getHeight());// Display menu.
     }
 
     /**
-     * 获取当前编码方式。
-     * @return 当前编码方式。
+     * Get the encoding method of the current text.
+     *
+     * @return The encoding method of the current text.
      */
     private String getCurrentEncoding() {
         return encodingButton.getText();
     }
 
     /**
-     * 当前编码是否在常用编码中。
-     * @param charset 当前编码。
-     * @return true是在常用码中，false不在常用编码中。
+     * Determine if the current encoding method is among the common encodings.
+     *
+     * @param charset Currently used encoding.
+     * @return Return true if it is among the common encodings; return false if it is not.
      */
     private boolean isCommonEncoding(String charset) {
         for (String enc : common) {
@@ -136,9 +151,10 @@ public class StatusBar {
     }
 
     /**
-     * 添加编码菜单。
-     * @param menu 父级菜单。
-     * @param charset 要添加的菜单的编码。
+     * Add encoding menu.
+     *
+     * @param menu    Parent menu.
+     * @param charset Encoding to add to the menu.
      */
     private void addEncodingMenu(JComponent menu, String charset) {
         JMenuItem item = new JMenuItem(charset);
@@ -154,11 +170,12 @@ public class StatusBar {
     }
 
     /**
-     * 按指定编码方式重新加载编辑器。
-     * @param charset 指定的编码方式。
+     * Reload the editor text content according to the specified encoding method.
+     *
+     * @param charset Specified encoding method.
      */
     private void updateEditor(String charset) {
-        Editor curPage = (Editor)platform.getOpenPage();
+        Editor curPage = (Editor) platform.getOpenPage();
         if (curPage != null) {
             curPage.setEncoding(charset);
             curPage.reload();
