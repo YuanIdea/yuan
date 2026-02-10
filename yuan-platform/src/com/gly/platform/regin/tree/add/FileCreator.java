@@ -17,7 +17,7 @@ public class FileCreator {
     /**
      * The project's root directory.
      */
-    private Path projectRoot;
+    private final Path projectRoot;
 
     /**
      * Path name of the created file.
@@ -45,8 +45,8 @@ public class FileCreator {
             if (Files.exists(filePath)) {
                 JOptionPane.showMessageDialog(
                         parentComponent,
-                        "文件 '" + fileName + "' 已存在！",
-                        "文件存在",
+                        "File '" + fileName + "' already exists.",
+                        "File exists",
                         JOptionPane.WARNING_MESSAGE
                 );
                 return false;
@@ -67,12 +67,12 @@ public class FileCreator {
 
                 @Override
                 protected void done() {
-                    Logger.info(filePath + "创建成功");
+                    Logger.info(filePath + "created successfully");
                 }
             }.execute();
 
         } catch (InvalidFileNameException ex) {
-            JOptionPane.showMessageDialog(parentComponent, ex.getMessage(), "输入错误", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(parentComponent, ex.getMessage(), "Input error", JOptionPane.ERROR_MESSAGE);
         }
         return true;
     }

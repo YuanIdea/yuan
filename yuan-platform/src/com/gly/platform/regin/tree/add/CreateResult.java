@@ -1,6 +1,8 @@
 package com.gly.platform.regin.tree.add;
 
-// 创建结果封装类
+/**
+ * Create result wrapper class.
+ */
 public class CreateResult {
     private final boolean success;
     private final String path;
@@ -20,7 +22,15 @@ public class CreateResult {
         return new CreateResult(false, null, error);
     }
 
-    public boolean isSuccess() { return success; }
-    public String getPath() { return path; }
-    public String getError() { return error; }
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public String getError() {
+        return error;
+    }
 }

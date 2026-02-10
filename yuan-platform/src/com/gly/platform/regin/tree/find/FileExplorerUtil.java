@@ -40,11 +40,11 @@ public class FileExplorerUtil {
                     String[] arrCmd2 = {"xdg-open", parentDir.getAbsolutePath()};
                     runtime.exec(arrCmd2);
                 } else {
-                    throw new IOException("无法打开文件的父目录");
+                    throw new IOException("Unable to open the parent directory of the file");
                 }
                 break;
             default:
-                throw new UnsupportedOperationException("不支持的操作系统: " + osType.getDisplayName());
+                throw new UnsupportedOperationException("Unsupported operating system:" + osType.getDisplayName());
         }
     }
 }
