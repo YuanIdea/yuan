@@ -12,18 +12,19 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * 树形选中工具类。
+ * Tree selection utility class.
  */
 public class Select {
 
     /**
-     * 获取当前选中的树节点
-     * @param fileTree 文件树组件
-     * @return 选中的节点，如果没有选中则返回空节点。
+     * Get the currently selected tree node
+     *
+     * @param fileTree File tree component
+     * @return Selected node; returns an empty node if none is selected.
      */
     public static FileTreeNode getSelectedTreeNode(JTree fileTree) {
         if (fileTree == null) {
-            Logger.warn("根目录不存在");
+            Logger.warn("Root directory does not exist.");
             return null;
         }
         TreePath selectionPath = fileTree.getSelectionPath();
@@ -33,20 +34,21 @@ public class Select {
     }
 
     /**
-     * 获取所有选中的树节点（支持多选）
-     * @param fileTree 文件树组件
-     * @return 选中的节点列表，如果没有选中则返回空列表
+     * Get all selected tree nodes (supports multiple selection)
+     *
+     * @param fileTree File tree component
+     * @return List of selected nodes; returns an empty list if none are selected
      */
     public static List<FileTreeNode> getSelectedTreeNodes(JTree fileTree) {
         List<FileTreeNode> selectedNodes = new ArrayList<>();
 
-        // 获取所有选中的路径
+        // Get all selected paths.
         TreePath[] selectionPaths = fileTree.getSelectionPaths();
-        if (selectionPaths == null || selectionPaths.length == 0) {
+        if (selectionPaths == null) {
             return selectedNodes;
         }
 
-        // 遍历所有选中的路径
+        // Traverse all selected paths.
         for (TreePath path : selectionPaths) {
             Object lastComponent = path.getLastPathComponent();
             if (lastComponent instanceof FileTreeNode) {
@@ -58,14 +60,15 @@ public class Select {
     }
 
     /**
-     * 获得选择的路径。
-     * @param tree 文件树组件。
-     * @return 被选中的路径。
+     * Get the selected path.
+     *
+     * @param tree File tree component.
+     * @return The selected path.
      */
     public static Path getSelectedPath(JTree tree) {
         FileTreeNode fileNode = getSelectedTreeNode(tree);
         if (fileNode != null) {
-            // 直接返回文件对应的路径
+            // Directly return the path corresponding to the file.
             return fileNode.getFile().toPath();
         } else {
             return null;
@@ -73,21 +76,18 @@ public class Select {
     }
 
     /**
-     * 获得选择的路径。
-     * @param tree 文件树组件。
-     * @return 被选中的路径。
+     * Get the selected path.
+     *
+     * @param tree File tree component.
+     * @return The selected path.
      */
     public static List<File> getSelectedFiles(JTree tree) {
         List<FileTreeNode> selectedNodes = getSelectedTreeNodes(tree);
-        if (selectedNodes != null) {
-            // 直接返回文件对应的路径
-            List<File> paths = new LinkedList<>();
-            for (FileTreeNode fileNode:selectedNodes) {
-                paths.add(fileNode.getFile());
-            }
-            return paths;
-        } else {
-            return null;
+        // Directly return the path corresponding to the file.
+        List<File> paths = new LinkedList<>();
+        for (FileTreeNode fileNode : selectedNodes) {
+            paths.add(fileNode.getFile());
         }
+        return paths;
     }
 }
