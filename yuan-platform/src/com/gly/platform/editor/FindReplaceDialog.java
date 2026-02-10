@@ -4,6 +4,7 @@ import bibliothek.gui.dock.common.intern.CDockable;
 import com.gly.event.GlobalBus;
 import com.gly.event.Subscribe;
 import com.gly.event.FocusChangeEvent;
+import com.gly.i18n.I18n;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rtextarea.SearchContext;
 import org.fife.ui.rtextarea.SearchEngine;
@@ -15,7 +16,7 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 
 /**
- * 查找和替换功能。
+ * Find and Replace functionality.
  */
 public class FindReplaceDialog extends JDialog {
     private RSyntaxTextArea textArea;
@@ -31,8 +32,8 @@ public class FindReplaceDialog extends JDialog {
     private JLabel statusLabel;
 
     FindReplaceDialog(JFrame owner, RSyntaxTextArea textArea) {
-        super(owner, "查找和替换", false);
-        GlobalBus.register(this); // 注册到事件总线
+        super(owner, I18n.get("menuItem.findAndReplace"), false);
+        GlobalBus.register(this);
         this.textArea = textArea;
         initializeUI();
         pack();
@@ -44,44 +45,43 @@ public class FindReplaceDialog extends JDialog {
         setLayout(new BorderLayout(10, 10));
         setResizable(false);
 
-        // 主面板
         JPanel mainPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // 查找标签和字段
+        // Find label and input field.
         gbc.gridx = 0;
         gbc.gridy = 0;
-        mainPanel.add(new JLabel("查找:"), gbc);
+        mainPanel.add(new JLabel(I18n.get("find") + ":"), gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 0;
         gbc.gridwidth = 3;
         gbc.weightx = 1.0;
         findField = new JTextField(30);
-        findField.setToolTipText("输入要查找的文本");
+        findField.setToolTipText(I18n.get("toolTip.find"));
         mainPanel.add(findField, gbc);
 
-        // 替换标签和字段
+        // Replace label and input field.
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.gridwidth = 1;
-        mainPanel.add(new JLabel("替换为:"), gbc);
+        mainPanel.add(new JLabel(I18n.get("replace") + ":"), gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 1;
         gbc.gridwidth = 3;
         replaceField = new JTextField(30);
-        replaceField.setToolTipText("输入替换文本");
+        replaceField.setToolTipText(I18n.get("toolTip.replace"));
         mainPanel.add(replaceField, gbc);
 
-        // 查找位置
+        // Search position
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.gridwidth = 1;
-        mainPanel.add(new JLabel("查找位置:"), gbc);
+        mainPanel.add(new JLabel(I18n.get("findPosition") + ":"), gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 2;
@@ -91,13 +91,13 @@ public class FindReplaceDialog extends JDialog {
         findPos.setEnabled(false);
         mainPanel.add(findPos, gbc);
 
-        // 选项面板
+        // Options panel
         JPanel optionsPanel = new JPanel(new GridLayout(0, 2, 5, 5));
-        matchCaseCheckBox = new JCheckBox("区分大小写");
-        wholeWordCheckBox = new JCheckBox("全字匹配");
-        regexCheckBox = new JCheckBox("正则表达式");
-        wrapSearchCheckBox = new JCheckBox("循环搜索", true);
-        markAllCheckBox = new JCheckBox("标记所有匹配项", true);
+        matchCaseCheckBox = new JCheckBox(I18n.get("findPosition"));
+        wholeWordCheckBox = new JCheckBox(I18n.get("wholeWordMatch"));
+        regexCheckBox = new JCheckBox(I18n.get("regularExpression"));
+        wrapSearchCheckBox = new JCheckBox(I18n.get("loopSearch"), true);
+        markAllCheckBox = new JCheckBox(I18n.get("markAllMatches"), true);
 
         optionsPanel.add(matchCaseCheckBox);
         optionsPanel.add(wholeWordCheckBox);
@@ -110,12 +110,12 @@ public class FindReplaceDialog extends JDialog {
         gbc.gridwidth = 4;
         mainPanel.add(optionsPanel, gbc);
 
-        // 按钮面板
+        // Button panel
         JPanel buttonPanel = new JPanel(new GridLayout(1, 4, 5, 5));
-        JButton findPrevButton = createButton("上一步", this::findPrevious, "查找上一个匹配项");
-        JButton findNextButton = createButton("下一步", this::findNext, "查找下一个匹配项");
-        JButton replaceButton = createButton("替换", this::replace, "替换当前匹配项");
-        JButton replaceAllButton = createButton("全部替换", this::replaceAll, "替换所有匹配项");
+        JButton findPrevButton = createButton(I18n.get("previousStep"), this::findPrevious, I18n.get("toolTip.previousStep"));
+        JButton findNextButton = createButton(I18n.get("nextStep"), this::findNext, I18n.get("toolTip.nextStep"));
+        JButton replaceButton = createButton(I18n.get("replace"), this::replace, I18n.get("toolTip.replace"));
+        JButton replaceAllButton = createButton(I18n.get("replaceAll"), this::replaceAll, I18n.get("toolTip.replaceAll"));
 
         buttonPanel.add(findPrevButton);
         buttonPanel.add(findNextButton);
@@ -127,8 +127,8 @@ public class FindReplaceDialog extends JDialog {
         gbc.gridwidth = 4;
         mainPanel.add(buttonPanel, gbc);
 
-        // 状态栏
-        statusLabel = new JLabel("就绪");
+        // Status bar
+        statusLabel = new JLabel(I18n.get("status.ready"));
         statusLabel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         statusLabel.setForeground(Color.GRAY);
 
@@ -137,10 +137,10 @@ public class FindReplaceDialog extends JDialog {
         add(mainPanel, BorderLayout.CENTER);
         add(southPanel, BorderLayout.SOUTH);
 
-        // 设置快捷键
+        // Set shortcut keys
         setupKeyBindings();
 
-        // 初始焦点
+        // Initial focus
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override
             public void windowOpened(java.awt.event.WindowEvent e) {
@@ -160,21 +160,21 @@ public class FindReplaceDialog extends JDialog {
     }
 
     private void setupKeyBindings() {
-        // 查找字段回车触发查找下一个
+        // Pressing Enter triggers "Find Next".
         findField.registerKeyboardAction(
                 e -> findNext(),
                 KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
                 JComponent.WHEN_FOCUSED
         );
 
-        // 替换字段回车触发替换
+        // Pressing Enter triggers "Replace".
         replaceField.registerKeyboardAction(
                 e -> replace(),
                 KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
                 JComponent.WHEN_FOCUSED
         );
 
-        // ESC键关闭对话框
+        // ESC key closes the dialog.
         getRootPane().registerKeyboardAction(
                 e -> setVisible(false),
                 KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
@@ -195,7 +195,7 @@ public class FindReplaceDialog extends JDialog {
     }
 
     /**
-     * 查找下一个。
+     * Find next.
      */
     private void findNext() {
         SearchContext context = createSearchContext();
@@ -205,12 +205,12 @@ public class FindReplaceDialog extends JDialog {
     }
 
     /**
-     * 查找上一个。
+     * Find previous.
      */
     private void findPrevious() {
         SearchContext context = createSearchContext();
         context.setSearchForward(false);
-        SearchResult result = SearchEngine.find(textArea, context); // 反向搜索
+        SearchResult result = SearchEngine.find(textArea, context); // Reverse search
         updateStatus(result);
     }
 
@@ -225,19 +225,19 @@ public class FindReplaceDialog extends JDialog {
         SearchResult result = SearchEngine.replaceAll(textArea, context);
 
         if (result.getCount() == 0) {
-            statusLabel.setText("未找到匹配项");
+            statusLabel.setText(I18n.get("noMatchesFound"));
         } else {
-            statusLabel.setText("已替换 " + result.getCount() + " 处匹配项");
+            statusLabel.setText(I18n.get("noMatchesFound") + ": " + result.getCount());
         }
     }
 
     private void updateStatus(SearchResult result) {
         if (!result.wasFound()) {
-            statusLabel.setText("未找到匹配项");
+            statusLabel.setText(I18n.get("noMatchesFound"));
         } else if (result.isWrapped()) {
-            statusLabel.setText("已循环搜索到开头");
+            statusLabel.setText(I18n.get("backBeginning"));
         } else {
-            statusLabel.setText("找到匹配项");
+            statusLabel.setText(I18n.get("matchesFound"));
         }
     }
 
