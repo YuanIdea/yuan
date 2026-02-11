@@ -227,12 +227,6 @@ public class MenuManager {
             }
         });
         helpModel.add(helpDocFileBtn);
-
-        JMenuItem regFileBtn = new JMenuItem(I18n.get("menuItem.register"));
-        helpDocFileBtn.setMnemonic('D');
-        regFileBtn.addActionListener(e -> new Registration(platform));
-        helpModel.add(regFileBtn);
-
         JMenuItem installCoreBtn = new JMenuItem(I18n.get("menuItem.installCommon"));
         installCoreBtn.setMnemonic('I');
         installCoreBtn.addActionListener(e -> installCore());
