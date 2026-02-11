@@ -5,7 +5,7 @@ It supports basic functionalities such as editing, compiling, running, packaging
 
 It also supports Python editing, running, and other related features.
 
-The detailed operation process of the yuan-platform can be found at yuan/yuan.pdf.
+The detailed operation process of the yuan-platform can be found at yuan/yuan.docx or yuan/yuan-platform/target/artifacts/yuan/yuan.pdf
 
 ---
 # Yuan Open Source Repository
