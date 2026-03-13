@@ -19,7 +19,7 @@ ___
 ## Getting the Source Code
 
 This section will guide you through getting the project sources and help avoid common issues in git config and other steps before opening it in the IDE.
-
+[README.md](../../gly/README.md)
 #### Prerequisites
 - [Git](https://git-scm.com/) installed
 - ~100MB free disk space

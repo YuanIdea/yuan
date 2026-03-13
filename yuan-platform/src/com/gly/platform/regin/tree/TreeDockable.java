@@ -254,7 +254,7 @@ public class TreeDockable extends DefaultSingleCDockable {
                     addNewNode(file, false);
                     GlobalBus.dispatch(new AddEvent(pageInfo));
                 } else {
-                    Logger.error("创建文件失败：" + nfc.getFileName());
+                    Logger.error("File creation failed:" + nfc.getFileName());
                 }
             }
         }
@@ -268,19 +268,14 @@ public class TreeDockable extends DefaultSingleCDockable {
         CreateConfig nfc = new CreateConfig("新建目录");
         nfc.showNewFileDialog(null);
         if (nfc.isOk()) {
-            CreateResult result = DirectoryCreator.createDirectory(selectFolder, nfc.getFileName());
+            String fileName = nfc.getFileName();
+            CreateResult result = DirectoryCreator.createDirectory(selectFolder, fileName);
             if (result.isSuccess()) {
-                FileCreator node = new FileCreator(selectFolder);
-                node.createFile(nfc.getFileName(), null);
-                File folder = node.getFile();
-                if (folder != null) {
-                    addNewNode(folder, true);
-                    Logger.info("目录创建成功：" + result.getPath());
-                } else {
-                    Logger.error("创建失败：" + nfc.getFileName());
-                }
+                File newFile = selectFolder.resolve(fileName).toFile();
+                addNewNode(newFile, true);
+                Logger.info("Directory created successfully:" + result.getPath());
             } else {
-                Logger.error("创建失败：" + result.getError());
+                Logger.error("Creation failed:" + result.getError());
             }
         }
     }
