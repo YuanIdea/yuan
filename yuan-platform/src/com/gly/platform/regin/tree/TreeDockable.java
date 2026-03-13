@@ -200,7 +200,7 @@ public class TreeDockable extends DefaultSingleCDockable {
     }
 
     /**
-     * Create a new file.
+     * Create a new file node.
      *
      * @param title Create title.
      */
@@ -229,7 +229,7 @@ public class TreeDockable extends DefaultSingleCDockable {
     }
 
     /**
-     * Create a Java class file.
+     * Create a Java class node.
      */
     void newJava() {
         final Path selectFolder = getSelectedFolder();
@@ -261,7 +261,7 @@ public class TreeDockable extends DefaultSingleCDockable {
     }
 
     /**
-     * Create directory nodes.
+     * Create a directory node.
      */
     void newFolder() {
         final Path selectFolder = getSelectedFolder();

@@ -5,30 +5,35 @@ import com.gly.platform.regin.auxiliary.maven.Pom;
 import com.gly.util.PathUtil;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * 代码生成器。
+ * Code generator.
  */
 public class CodeGenerator {
 
     /**
-     * 生成默认Java代码。
-     * @param root 项目根目录。
-     * @param file 新添加的文件。
-     * @param type 新添加的类型。
-     * @return 默认类实现代码。
+     * Generate default Java code.
+     *
+     * @param root Project root directory.
+     * @param file Newly added file.
+     * @param type Newly added type.
+     * @return Default class implementation code.
      */
     public static String generateJava(String root, File file, FileType type) {
         Path rootPath = Paths.get(root);
         Path pomPath = rootPath.resolve("pom.xml");
-        Pom pom = new Pom(pomPath);
-        pom.setNeedGenerate(false);
-        pom.parseProjectInfo();
-        String src = pom.getSourceDirectory();
-        String packageInfo = CodeGenerator.packageNameFromFile(file.toString(), src);
+        String packageInfo = "";
+        if (Files.exists(pomPath)) {
+            Pom pom = new Pom(pomPath);
+            pom.setNeedGenerate(false);
+            pom.parseProjectInfo();
+            String src = pom.getSourceDirectory();
+            packageInfo = CodeGenerator.packageNameFromFile(file.toString(), src);
+        }
         String strType = "class";
         if (type == FileType.Class) {
             strType = "class";
@@ -41,11 +46,12 @@ public class CodeGenerator {
     }
 
     /**
-     * 生成默认Java代码。
-     * @param packageInfo 包信息。
-     * @param type 新添加的类型。
-     * @param className 类名。
-     * @return 默认类实现代码。
+     * Generate default Java code.
+     *
+     * @param packageInfo Package information.
+     * @param type        added type.
+     * @param className   Class name.
+     * @return Default class implementation code.
      */
     private static String generateJava(String packageInfo, String type, String className) {
         if (packageInfo == null || packageInfo.isEmpty()) {
@@ -56,12 +62,12 @@ public class CodeGenerator {
     }
 
     /**
-     * 从文件完整路径和源目录路径生成 Java 包名。
+     * Generate Java package name from the full file path and source root directory path.
      *
-     * @param filePathName 文件完整路径，例如 "D:\\WorkSpace\\...\\com\\gly\\model\\test.java"
-     * @param srcRoot      源根目录路径，例如 "D:\\WorkSpace\\...\\src"
-     * @return 包名，例如 "com.gly.model"；如果文件不在 srcRoot 下则返回空字符串（也可改为抛异常）
-     * @throws IllegalArgumentException 如果输入为 null 或路径无效
+     * @param filePathName Full path of the file.
+     * @param srcRoot      Source root directory path
+     * @return Package name; returns an empty string if the file is not under srcRoot (or could throw an exception)
+     * @throws IllegalArgumentException If input is null or the path is invalid.
      */
     private static String packageNameFromFile(String filePathName, String srcRoot) {
         if (filePathName == null || srcRoot == null) {
@@ -71,7 +77,7 @@ public class CodeGenerator {
         try {
             // 使用 Path 来标准化并处理分隔符
             Path filePath = Paths.get(filePathName).normalize();
-            Path srcPath  = Paths.get(srcRoot).normalize();
+            Path srcPath = Paths.get(srcRoot).normalize();
 
             // 如果 srcPath 是文件而不是目录，也尝试取其父目录（容错）
             // 例如 srcRoot 可能传入 ".../src/com" 之类的情况，这里我们假定传入的 srcRoot 是源码根路径
