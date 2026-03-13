@@ -114,7 +114,7 @@ public class FindReplaceDialog extends JDialog {
         JPanel buttonPanel = new JPanel(new GridLayout(1, 4, 5, 5));
         JButton findPrevButton = createButton(I18n.get("previousStep"), this::findPrevious, I18n.get("toolTip.previousStep"));
         JButton findNextButton = createButton(I18n.get("nextStep"), this::findNext, I18n.get("toolTip.nextStep"));
-        JButton replaceButton = createButton(I18n.get("replace"), this::replace, I18n.get("toolTip.replace"));
+        JButton replaceButton = createButton(I18n.get("replace"), this::replace, I18n.get("btnBoolTip.replace"));
         JButton replaceAllButton = createButton(I18n.get("replaceAll"), this::replaceAll, I18n.get("toolTip.replaceAll"));
 
         buttonPanel.add(findPrevButton);
@@ -237,7 +237,7 @@ public class FindReplaceDialog extends JDialog {
         } else if (result.isWrapped()) {
             statusLabel.setText(I18n.get("backBeginning"));
         } else {
-            statusLabel.setText(I18n.get("matchesFound"));
+            statusLabel.setText(I18n.get("numberMatchesReplaced") + I18n.get("matchesFound"));
         }
     }
 
