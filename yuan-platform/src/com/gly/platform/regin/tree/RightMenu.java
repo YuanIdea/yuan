@@ -1,5 +1,6 @@
 package com.gly.platform.regin.tree;
 
+import com.gly.i18n.I18n;
 import com.gly.platform.regin.tree.delete.DeleteWorker;
 
 import javax.swing.*;
@@ -8,33 +9,32 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 
-
 class RightMenu {
-    // 树形资源管理器
-    private TreeDockable treeDockable;
+    // Tree Resource Manager.
+    private final TreeDockable treeDockable;
 
-    // 弹出菜单
+    // Pop-up menu.
     private JPopupMenu popupMenu;
 
-    // 添加
+    // Add menu.
     private JMenu addItem;
 
-    // 添加文件
+    // Open file menu.
     private JMenuItem openItem;
 
-    // 设计文件
+    // Design file menu.
     private JMenuItem designItem;
 
-    // 剪切
+    // Cut menu.
     private JMenuItem cutItem;
 
-    // 复制
+    // Copy menu.
     private JMenuItem copyItem;
 
-    // 重命名文件
+    // Rename file menu.
     private JMenuItem renameItem;
 
-    // 删除
+    // Delete menu.
     private JMenuItem deleteItem;
 
     RightMenu(TreeDockable treeDockable) {
@@ -42,48 +42,49 @@ class RightMenu {
     }
 
     /**
-     * 添加右键菜单
+     * Add right-click context menu.
      */
     void createRightMenu() {
         JTree tree = treeDockable.getTree();
         popupMenu = new JPopupMenu();
-        addItem = new JMenu("添加");
+        addItem = new JMenu(I18n.get("add"));
 
-        JMenuItem addJavaClassItem = new JMenuItem("Java Class");
-        addJavaClassItem.addActionListener(e -> treeDockable.newJava()); // 新建Java类
+        JMenuItem addJavaClassItem = new JMenuItem(I18n.get("newJava"));
+        addJavaClassItem.addActionListener(e -> treeDockable.newJava()); // New Java Class.
         addItem.add(addJavaClassItem);
 
-        JMenuItem addFileItem = new JMenuItem("新建文件");
-        addFileItem.addActionListener(e -> treeDockable.newFile("新建文件")); // 新建文件
+        String newFile = I18n.get("newFile");
+        JMenuItem addFileItem = new JMenuItem(newFile);
+        addFileItem.addActionListener(e -> treeDockable.newFile(newFile)); // New File
         addItem.add(addFileItem);
 
-        JMenuItem addFoldItem = new JMenuItem("新建文件夹");
-        addFoldItem.addActionListener(e -> treeDockable.newFolder()); // 新建件夹
+        JMenuItem addFoldItem = new JMenuItem(I18n.get("newFolder"));
+        addFoldItem.addActionListener(e -> treeDockable.newFolder()); // New Folder
         addItem.add(addFoldItem);
         popupMenu.add(addItem);
 
-        openItem = new JMenuItem("打开文件");
-        openItem.addActionListener(e ->  treeDockable.openFile(false)); // 打开文件
+        openItem = new JMenuItem(I18n.get("openFile"));
+        openItem.addActionListener(e -> treeDockable.openFile(false)); // Open file
 
-        designItem = new JMenuItem("设计文件");
-        designItem.addActionListener(e -> treeDockable.openFile(true)); // 设计设计
+        designItem = new JMenuItem(I18n.get("designFile"));
+        designItem.addActionListener(e -> treeDockable.openFile(true)); // Design file
 
         popupMenu.addSeparator();
-        cutItem = new JMenuItem("剪切");
+        cutItem = new JMenuItem(I18n.get("cut"));
         cutItem.addActionListener(e -> treeDockable.cut());
 
-        copyItem = new JMenuItem("复制");
+        copyItem = new JMenuItem(I18n.get("copy"));
         popupMenu.add(copyItem);
         copyItem.addActionListener(e -> treeDockable.copy());
 
-        JMenuItem pasteItem = new JMenuItem("粘贴");
+        JMenuItem pasteItem = new JMenuItem(I18n.get("paste"));
         pasteItem.addActionListener(e -> treeDockable.paste());
         popupMenu.add(pasteItem);
         popupMenu.addSeparator();
 
-        // 删除功能。
-        // 定义一个 Action（可以在外部类或内部类）
-        Action deleteAction = new AbstractAction("删除") {
+        // Delete functionality.
+        // Define an Action (can be in an outer class or inner class)
+        Action deleteAction = new AbstractAction(I18n.get("delete")) {
             @Override
             public void actionPerformed(ActionEvent e) {
                 DeleteWorker.deleteSelectedNode(tree);
@@ -91,26 +92,27 @@ class RightMenu {
         };
         deleteItem = new JMenuItem(deleteAction);
         popupMenu.add(deleteItem);
-        // 绑定 Delete 键
+        // Bind to the Delete key.
         tree.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "delete");
         tree.getActionMap().put("delete", deleteAction);
 
-        renameItem = new JMenuItem("重命名");
-        renameItem.addActionListener(e -> treeDockable.renameNode()); // 重命名。
+        renameItem = new JMenuItem(I18n.get("rename"));
+        renameItem.addActionListener(e -> treeDockable.renameNode());
         popupMenu.addSeparator();
 
-        JMenuItem openOutItem = new JMenuItem("在资源管理器中显示");
-        openOutItem.addActionListener(e -> treeDockable.openDiskFile()); // 外部打开。
+        JMenuItem openOutItem = new JMenuItem(I18n.get("showInExplorer"));
+        openOutItem.addActionListener(e -> treeDockable.openDiskFile()); // Show in Explorer.
         popupMenu.add(openOutItem);
 
-        JMenuItem refresh = new JMenuItem("刷新");
+        JMenuItem refresh = new JMenuItem(I18n.get("refresh"));
         popupMenu.add(refresh);
         refresh.addActionListener(e -> treeDockable.refresh());
     }
 
     /**
-     * 点击事件为右键处理
-     * @param e 点击事件。
+     * Handle the event as a right-click.
+     *
+     * @param e The click event.
      */
     void rightHandler(MouseEvent e) {
         JTree tree = treeDockable.getTree();
@@ -119,12 +121,13 @@ class RightMenu {
             FileTreeNode selectedNode;
             if (path != null) {
                 selectedNode = (FileTreeNode) path.getLastPathComponent();
-                popupMenu.remove(cutItem); // 先移除，避免重复
+                // Remove first to avoid duplication.
+                popupMenu.remove(cutItem);
                 popupMenu.remove(openItem);
                 popupMenu.remove(designItem);
                 popupMenu.remove(renameItem);
 
-                if (!selectedNode.isRoot()) { // 不是根目录
+                if (!selectedNode.isRoot()) { // Not the root directory.
                     popupMenu.add(cutItem, getMenuIndex(copyItem));
                     popupMenu.add(renameItem, getMenuIndex(deleteItem) + 1);
                     if (selectedNode.isFile()) {
@@ -132,12 +135,12 @@ class RightMenu {
                     }
                 }
 
-                // 如果点击的节点不在当前选择中，则重新选择
+                // If the clicked node is not in the current selection, reselect it.
                 if (!tree.getSelectionModel().isPathSelected(path)) {
                     tree.getSelectionModel().setSelectionPath(path);
                 }
 
-                // 显示弹出菜单
+                // Show the popup menu.
                 if (tree.getSelectionCount() > 0) {
                     popupMenu.show(tree, e.getX(), e.getY());
                 }
@@ -146,9 +149,10 @@ class RightMenu {
     }
 
     /**
-     * 返回指定 JMenuItem 在 JPopupMenu 中的索引，如果找不到返回 -1。
-     * @param menuItem 需要查找的 JMenuItem
-     * @return 索引位置，找不到就返回 -1
+     * Returns the index of the specified JMenuItem within the JPopupMenu, or -1 if not found.
+     *
+     * @param menuItem The JMenuItem to search for.
+     * @return The index position, or -1 if not found.
      */
     private int getMenuIndex(JMenuItem menuItem) {
         int itemCount = popupMenu.getComponentCount();
