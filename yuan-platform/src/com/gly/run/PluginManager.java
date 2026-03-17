@@ -25,11 +25,11 @@ public class PluginManager {
     // All units within the plugin that can be registered.
     private final Map<String, PluginRegister> registers = new HashMap<>();
     // Plugin path.
-    private Path pluginDir;
+    private final Path pluginDir;
     private static PluginManager pluginManager;
-    private String start;
+    private final String start;
 
-    public static PluginManager getInstance(String start){
+    public static PluginManager getInstance(String start) {
         if (pluginManager == null) {
             pluginManager = new PluginManager(start);
         }
@@ -43,25 +43,71 @@ public class PluginManager {
     }
 
     /**
+     *
      * Load all plugins.
      */
     private void loadPlugins() {
-        File dir = pluginDir.toFile();
-        if (!dir.exists()) {
+        File pluginsRoot = pluginDir.toFile();
+        if (!pluginsRoot.exists() || !pluginsRoot.isDirectory()) {
             return;
         }
 
-        File[] jarFiles = dir.listFiles((d, name) -> name.endsWith(".jar"));
-        if (jarFiles == null) {
-            return;
+        // First, load the JARs placed directly in the plugins root directory.
+        File[] rootJars = pluginsRoot.listFiles((d, name) -> name.endsWith(".jar"));
+        if (rootJars != null) {
+            for (File jar : rootJars) {
+                try {
+                    loadExecutableUnits(jar);
+                } catch (Exception e) {
+                    System.err.println("Failed to load root plugin jar: " + jar.getName());
+                    e.printStackTrace();
+                }
+            }
         }
 
-        for (File jarFile : jarFiles) {
-            try {
-                loadExecutableUnits(jarFile);
-            } catch (Exception e) {
-                System.err.println("❌ Failed to load plugin: " + jarFile.getName());
-                e.printStackTrace();
+        // Traverse each subdirectory (plugin folder) under the plugins directory.
+        File[] pluginDirs = pluginsRoot.listFiles(File::isDirectory);
+        if (pluginDirs == null)
+            return;
+
+        for (File pluginDir : pluginDirs) {
+            // Skip hidden directories.
+            if (pluginDir.isHidden()) continue;
+
+            // Navigate to the lib subdirectory.
+            File libDir = new File(pluginDir, "lib");
+            if (!libDir.exists() || !libDir.isDirectory()) {
+                // If there is no lib directory, attempt to load JARs directly from the plugin's root directory.
+                File[] directJars = pluginDir.listFiles((d, name) -> name.endsWith(".jar"));
+                if (directJars != null && directJars.length > 0) {
+                    System.out.println(pluginDir.getName() + " No lib directory, directly load the JAR from its root directory.");
+                    for (File jar : directJars) {
+                        try {
+                            loadExecutableUnits(jar);
+                        } catch (Exception e) {
+                            System.err.println("Failed to load plugin jar: " + jar.getName() + " from " + pluginDir.getName());
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                continue;
+            }
+
+            // 加载 lib 目录下的所有 jar 文件
+            File[] libJars = libDir.listFiles((d, name) -> name.endsWith(".jar"));
+            if (libJars == null || libJars.length == 0) {
+                System.err.println("⚠️ 插件 " + pluginDir.getName() + " 的 lib 目录为空");
+                continue;
+            }
+
+            for (File jarFile : libJars) {
+                try {
+                    loadExecutableUnits(jarFile);
+                    // 你可以在此记录插件名称，用于后续管理
+                } catch (Exception e) {
+                    System.err.println("Failed to load plugin jar: " + jarFile.getName() + " from plugin " + pluginDir.getName());
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -119,7 +165,7 @@ public class PluginManager {
                             registers.put(className, register);
                         }
                     } catch (NoClassDefFoundError | ClassNotFoundException e) {
-                        System.err.println("❌ Failed to load plugin: " + className);
+                        System.err.println("Failed to load plugin: " + className);
                         e.printStackTrace();
                     }
                 }
