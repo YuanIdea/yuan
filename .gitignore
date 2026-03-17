@@ -3,6 +3,9 @@ generated-sources/
 maven-archiver/
 maven-status/
 yuan-common/target/
+plugins/yuan-chart/yuan-chart/.yuan/
+plugins/yuan-chart/yuan-chart/.idea/
+plugins/yuan-chart/yuan-chart/target/
 .idea/
 .yuan/
 *.iml
