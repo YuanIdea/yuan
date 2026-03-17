@@ -34,6 +34,10 @@ public class Main {
         double[][] data2 = {x2, y2b};
         plot2.plot(data1, data2);   // Draw two curves
 
+//        Chart chart = new Chart();
+//        chart.init("D:\\WorkSpace\\yuan\\yuan-test\\simple", "D:\\WorkSpace\\yuan\\yuan-test\\simple\\draw.json", null);
+//        chart.start();
+
         System.out.println("All charts have been displayed, please check the windows.");
     }
 }

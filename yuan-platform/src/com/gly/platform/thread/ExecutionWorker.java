@@ -7,7 +7,7 @@ import com.gly.model.ExecutableUnit;
 import javax.swing.*;
 
 public class ExecutionWorker extends SwingWorker<Object, String> {
-    private ExecutableUnit actuator;
+    private final ExecutableUnit actuator;
 
     ExecutionWorker(ExecutableUnit exec) {
         actuator = exec;
@@ -15,23 +15,20 @@ public class ExecutionWorker extends SwingWorker<Object, String> {
 
     @Override
     protected Object doInBackground() {
-        // 初始化算法
-        actuator.start();
-
+        actuator.start(); // Initialize algorithm
         if (actuator.isDone()) {
             GlobalBus.dispatch(new DoneEvent(actuator));
         }
-        // 返回最终结果
-        return actuator.getResult();
+        return actuator.getResult(); // Return final result
     }
 
     @Override
     protected void done() {
-
+        super.done();
     }
 
     /**
-     * 安全终止程序。
+     * Terminate the program safely.
      */
     public void stop() {
         actuator.stop();

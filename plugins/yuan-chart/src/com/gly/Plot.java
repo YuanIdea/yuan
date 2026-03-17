@@ -19,6 +19,15 @@ public class Plot {
 
     private JFrame frame;
 
+    public Plot() {
+        title = "";
+        labelX = "";
+        labelY = "";
+        legend = null;
+        lineWidth = null;
+        style = null;
+    }
+
     public void plot(double[] y) {
         double[] x = new double[y.length];
         Arrays.setAll(x, i -> i + 1);
@@ -34,7 +43,7 @@ public class Plot {
                 .yAxisTitle(labelY)
                 .build();
 
-        // 自定义样式
+        // Custom styles
         chart.getStyler().setLegendVisible(true);
         chart.getStyler().setChartBackgroundColor(Color.WHITE);
         chart.getStyler().setPlotBackgroundColor(Color.WHITE);
@@ -46,8 +55,9 @@ public class Plot {
     }
 
     public void plot(double[][]... data) {
-        if (data.length == 0) return;
-
+        if (data.length == 0) {
+            return;
+        }
         XYChart chart = new XYChartBuilder()
                 .width(600).height(400)
                 .title(title)
@@ -59,26 +69,35 @@ public class Plot {
         chart.getStyler().setChartBackgroundColor(Color.WHITE);
         chart.getStyler().setPlotBackgroundColor(Color.WHITE);
 
-        for (int i = 0; i < data.length; i++) {
+        int length = data.length;
+        for (int i = 0; i < length; ++i) {
             double[] x = data[i][0];
             double[] y = data[i][1];
             validateInput(x, y);
 
-            String seriesName = (legend != null && legend.length == data.length) ? legend[i] : "Series " + (i + 1);
+            String seriesName = (legend != null && legend.length == length) ? legend[i] : "Series " + (i + 1);
             XYSeries series = chart.addSeries(seriesName, x, y);
             applySeriesStyle(series, i);
         }
-
         displayChart(chart);
     }
 
+    public void init(Config config) {
+        title = config.getTitle();
+        labelX = config.getLabelX();
+        labelY = config.getLabelY();
+        legend = config.getLegend();
+        lineWidth = config.getLineWidth();
+        style = config.getStyle();
+    }
+
     private void applySeriesStyle(XYSeries series, int index) {
-        // 设置颜色
+        // Set colors
         Color color = getColorForIndex(index);
         series.setLineColor(color);
         series.setMarkerColor(color);
 
-        // 设置线型
+        // Set line style
         float width = (lineWidth != null && lineWidth.length > index) ? lineWidth[index] : 1.0f;
         series.setLineWidth(width);
 
@@ -100,7 +119,7 @@ public class Plot {
 
     private Color getColorForIndex(int index) {
         if (style != null && style.length > index) {
-            char colorChar = style[index].length() > 0 ? style[index].charAt(0) : 'b';
+            char colorChar = !style[index].isEmpty() ? style[index].charAt(0) : 'b';
             Color color = PlotColors.CHAR_MAP.get(colorChar);
             if (color != null) return color;
         }
@@ -108,11 +127,11 @@ public class Plot {
     }
 
     private void displayChart(XYChart chart) {
-        // 使用 SwingWrapper 显示图表
+        // Use SwingWrapper to display the chart.
         SwingWrapper<XYChart> sw = new SwingWrapper<>(chart);
-        JFrame frame = sw.displayChart();
+        this.frame = sw.displayChart();
+        frame.setTitle("Figure");
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        this.frame = frame;
     }
 
     private void validateInput(double[] x, double[] y) {

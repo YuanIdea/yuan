@@ -5,7 +5,7 @@
                              http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>yuanidea</groupId>
-    <artifactId>plot-xchart</artifactId>
+    <artifactId>plot-chart</artifactId>
     <version>1.0.0</version>
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -18,7 +18,7 @@
         <dependency>
             <groupId>yuan</groupId>
             <artifactId>yuan-common</artifactId>
-            <version>1.0.5</version>
+            <version>1.0.7</version>
         </dependency>
         <dependency>
             <groupId>org.knowm.xchart</groupId>
@@ -29,5 +29,33 @@
 
     <build>
         <sourceDirectory>src</sourceDirectory>
+        <plugins>
+            <!-- Package all dependencies into an executable JAR -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.4.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
 </project>
