@@ -3,6 +3,7 @@ package com.gly.platform.editor;
 import bibliothek.gui.dock.common.MultipleCDockableFactory;
 import bibliothek.gui.dock.common.event.CVetoClosingEvent;
 import bibliothek.gui.dock.common.event.CVetoClosingListener;
+import com.gly.i18n.I18n;
 import com.gly.log.Logger;
 import com.gly.event.page.PageInfo;
 import com.gly.platform.regin.tree.find.FileExplorerUtil;
@@ -26,14 +27,14 @@ import java.nio.file.Paths;
  * Text editor supporting code highlighting effects.
  */
 public class Editor extends PageDockable {
-    // 页面
-    private RSyntaxTextArea textArea;
+    // Text editing area.
+    private final RSyntaxTextArea textArea;
 
     // Encoding method used by the current text.
     private String encoding;
 
     // Path name where the current text is stored.
-    private Path path;
+    private final Path path;
 
     // Used to indicate whether the content has been edited.
     private boolean isModified;
@@ -62,7 +63,8 @@ public class Editor extends PageDockable {
         new EditorShortcutManager(textArea); // Implement shortcut key functionality.
 
         if (!checkEncoding.equalsIgnoreCase(encoding)) {
-            Logger.info("检测到可能不是" + encoding + "编码，建议尝试" + checkEncoding + "编码方式打开。");
+            Logger.info("It was detected that the file may not be encoded in " + encoding +
+                    ". It is recommended to try opening it with the " + checkEncoding + " encoding.");
         }
 
         setTextNoBack(FileUtil.loadFile(path, encoding));
@@ -158,11 +160,7 @@ public class Editor extends PageDockable {
      */
     private void checkModifyByContent() {
         if (originalContent != null) {
-            if (originalContent.equals(textArea.getText())) {
-                setModified(false);
-            } else {
-                setModified(true);
-            }
+            setModified(!originalContent.equals(textArea.getText()));
         }
     }
 
@@ -176,9 +174,10 @@ public class Editor extends PageDockable {
             public void closing(CVetoClosingEvent event) {
                 if (isModified) {
                     int option = JOptionPane.showOptionDialog(textArea,
-                            textArea.getName() + "文件已修改，是否保存？", "保存文件",
+                            textArea.getName() + I18n.get("wantSave"), I18n.get("saveFile"),
                             JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null,
-                            new String[]{"保存", "不保存", "取消"}, "保存");
+                            new String[]{I18n.get("saveFile"), I18n.get("doNotSave"), I18n.get("cancel")},
+                            I18n.get("saveFile"));
 
                     if (option == JOptionPane.YES_OPTION) {
                         save(getPageInfo().getName());
@@ -192,7 +191,6 @@ public class Editor extends PageDockable {
             }
         };
     }
-
 
     public String getEncoding() {
         return encoding;
@@ -242,9 +240,10 @@ public class Editor extends PageDockable {
     public void undo() {
         if (textArea.canUndo()) {
             textArea.undoLastAction();
-            SwingUtilities.invokeLater(this::checkModifyByContent);// 异步检查是否回到了原始状态
+            // Asynchronously check whether it has returned to the original state.
+            SwingUtilities.invokeLater(this::checkModifyByContent);
         } else {
-            Logger.warn("无法撤销。");
+            Logger.warn("Cannot perform undo operation.");
         }
     }
 
@@ -254,9 +253,10 @@ public class Editor extends PageDockable {
     public void redo() {
         if (textArea.canRedo()) {
             textArea.redoLastAction();
-            SwingUtilities.invokeLater(this::checkModifyByContent);// 异步检查是否回到了原始状态
+            // Asynchronously check whether it has returned to the original state.
+            SwingUtilities.invokeLater(this::checkModifyByContent);
         } else {
-            Logger.warn("无法重做。");
+            Logger.warn("Cannot perform redo operation.");
         }
     }
 
@@ -276,7 +276,7 @@ public class Editor extends PageDockable {
         JPopupMenu popupMenu = textArea.getPopupMenu();
         // Add a separator to the menu bar.
         popupMenu.addSeparator();
-        JMenuItem open = new JMenuItem("在资源管理器中显示");
+        JMenuItem open = new JMenuItem(I18n.get("showInExplorer"));
         open.addActionListener(e -> {
             try {
                 FileExplorerUtil.showFileInExplorer(path.toFile());
@@ -296,5 +296,4 @@ public class Editor extends PageDockable {
             textArea.setText(content);
         }
     }
-
 }

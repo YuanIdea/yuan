@@ -57,7 +57,7 @@ public class ToolManager {
         if (urlSave != null) {
             ImageIcon save = new ImageIcon(urlSave);
             JButton btnSave = new JButton(save);
-            btnSave.setToolTipText(I18n.get("menuItem.saveFile") + " (Ctrl + S)");
+            btnSave.setToolTipText(I18n.get("saveFile") + " (Ctrl + S)");
             btnSave.addActionListener(e -> platform.save());
             toolBar.add(btnSave);
         }

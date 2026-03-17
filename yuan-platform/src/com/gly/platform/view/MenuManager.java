@@ -88,7 +88,7 @@ public class MenuManager {
         menuFile.add(open);
         open.addActionListener(e -> new Dialog().Open(platform, platform.getRoot()));
 
-        JMenuItem save = new JMenuItem(I18n.get("menuItem.saveFile"));
+        JMenuItem save = new JMenuItem(I18n.get("saveFile"));
         menuFile.add(save);
         save.addActionListener(e -> platform.save());
 
