@@ -30,9 +30,8 @@ public class Main {
         plot2.setStyle(new String[]{"-", "--"});           // Line styles: solid, dashed
 
         // Pass multiple data sets (each data set is a 2D array [x[], y[]])
-        double[][] data1 = {x2, y2a};
-        double[][] data2 = {x2, y2b};
-        plot2.plot(data1, data2);   // Draw two curves
+        double[][] data2 = {y2a, y2b};
+        plot2.plot(x2, data2);   // Draw two curves
 
 //        Chart chart = new Chart();
 //        chart.init("D:\\WorkSpace\\yuan\\yuan-test\\simple", "D:\\WorkSpace\\yuan\\yuan-test\\simple\\draw.json", null);

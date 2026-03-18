@@ -2,6 +2,7 @@ package com.gly;
 
 import com.gly.util.PlotColors;
 import org.knowm.xchart.*;
+import org.knowm.xchart.style.Styler;
 import org.knowm.xchart.style.lines.SeriesLines;
 import org.knowm.xchart.style.markers.SeriesMarkers;
 
@@ -16,7 +17,6 @@ public class Plot {
     private String[] legend;
     private float[] lineWidth;
     private String[] style;
-
     private JFrame frame;
 
     public Plot() {
@@ -34,54 +34,6 @@ public class Plot {
         plot(x, y);
     }
 
-    private void plot(double[] x, double[] y) {
-        validateInput(x, y);
-        XYChart chart = new XYChartBuilder()
-                .width(600).height(400)
-                .title(title)
-                .xAxisTitle(labelX)
-                .yAxisTitle(labelY)
-                .build();
-
-        // Custom styles
-        chart.getStyler().setLegendVisible(true);
-        chart.getStyler().setChartBackgroundColor(Color.WHITE);
-        chart.getStyler().setPlotBackgroundColor(Color.WHITE);
-
-        XYSeries series = chart.addSeries("Data", x, y);
-        applySeriesStyle(series, 0); // 应用第一条线的样式
-
-        displayChart(chart);
-    }
-
-    public void plot(double[][]... data) {
-        if (data.length == 0) {
-            return;
-        }
-        XYChart chart = new XYChartBuilder()
-                .width(600).height(400)
-                .title(title)
-                .xAxisTitle(labelX)
-                .yAxisTitle(labelY)
-                .build();
-
-        chart.getStyler().setLegendVisible(true);
-        chart.getStyler().setChartBackgroundColor(Color.WHITE);
-        chart.getStyler().setPlotBackgroundColor(Color.WHITE);
-
-        int length = data.length;
-        for (int i = 0; i < length; ++i) {
-            double[] x = data[i][0];
-            double[] y = data[i][1];
-            validateInput(x, y);
-
-            String seriesName = (legend != null && legend.length == length) ? legend[i] : "Series " + (i + 1);
-            XYSeries series = chart.addSeries(seriesName, x, y);
-            applySeriesStyle(series, i);
-        }
-        displayChart(chart);
-    }
-
     public void init(Config config) {
         title = config.getTitle();
         labelX = config.getLabelX();
@@ -89,6 +41,52 @@ public class Plot {
         legend = config.getLegend();
         lineWidth = config.getLineWidth();
         style = config.getStyle();
+    }
+
+    private void plot(double[] x, double[] y) {
+        validateInput(x, y);
+        XYChart chart = createChart();
+        XYSeries series = chart.addSeries("Data", x, y);
+        applySeriesStyle(series, 0); // 应用第一条线的样式
+        displayChart(chart);
+    }
+
+    public void plot(double[] x, double[][] data) {
+        if (data.length == 0) {
+            return;
+        }
+
+        XYChart chart = createChart();
+        int length = data.length;
+        for (int i = 0; i < length; ++i) {
+            double[] y = data[i];
+            validateInput(x, y);
+            String seriesName = (legend != null && legend.length == length) ? legend[i] : "Series " + (i + 1);
+            XYSeries series = chart.addSeries(seriesName, x, y);
+            applySeriesStyle(series, i);
+        }
+        displayChart(chart);
+    }
+
+    private XYChart createChart() {
+        XYChart chart = new XYChartBuilder()
+                .theme(Styler.ChartTheme.Matlab)
+                .width(700).height(500)
+                .title(title)
+                .xAxisTitle(labelX)
+                .yAxisTitle(labelY)
+                .build();
+        Styler st = chart.getStyler();
+        chart.getStyler().setPlotGridLinesVisible(false);
+
+        st.setLegendVisible(true);
+        st.setLegendPosition(Styler.LegendPosition.OutsideS);
+        st.setLegendLayout(Styler.LegendLayout.Horizontal);
+        st.setLegendBorderColor(Color.WHITE);
+
+        st.setChartBackgroundColor(Color.WHITE);
+        st.setPlotBackgroundColor(Color.WHITE);
+        return chart;
     }
 
     private void applySeriesStyle(XYSeries series, int index) {
@@ -135,53 +133,29 @@ public class Plot {
     }
 
     private void validateInput(double[] x, double[] y) {
-        if (x == null || y == null) throw new IllegalArgumentException("数组不能为 null");
-        if (x.length != y.length) throw new IllegalArgumentException("X 和 Y 长度必须相同");
-        if (x.length == 0) throw new IllegalArgumentException("数组不能为空");
-    }
-
-    public String getTitle() {
-        return title;
+        if (x == null || y == null) throw new IllegalArgumentException("Array cannot be null");
+        if (x.length != y.length) throw new IllegalArgumentException("X and Y must have the same length");
+        if (x.length == 0) throw new IllegalArgumentException("Array cannot be empty");
     }
 
     public void setTitle(String title) {
         this.title = title;
     }
 
-    public String getLabelX() {
-        return labelX;
-    }
-
     public void setLabelX(String labelX) {
         this.labelX = labelX;
-    }
-
-    public String getLabelY() {
-        return labelY;
     }
 
     public void setLabelY(String labelY) {
         this.labelY = labelY;
     }
 
-    public String[] getLegend() {
-        return legend;
-    }
-
     public void setLegend(String[] legend) {
         this.legend = legend;
     }
 
-    public float[] getLineWidth() {
-        return lineWidth;
-    }
-
     public void setLineWidth(float[] lineWidth) {
         this.lineWidth = lineWidth;
-    }
-
-    public String[] getStyle() {
-        return style;
     }
 
     public void setStyle(String[] style) {
