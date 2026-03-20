@@ -76,6 +76,8 @@ public class Plot {
                 .xAxisTitle(labelX)
                 .yAxisTitle(labelY)
                 .build();
+
+
         Styler st = chart.getStyler();
         chart.getStyler().setPlotGridLinesVisible(false);
 

@@ -76,17 +76,9 @@ public class Chart extends BaseExecutable {
     private Plot createPlot(Config config, double[][] data) {
         // Generate X-axis data (starting from 0, length = number of columns in the first data row)
         double[] x = ArrayUtils.rangeD(0, data[0].length);
-        int seriesCount = data.length;
-
-        // Build the 3D array required by the plot: each element is [xArray, yArray]
-        double[][][] seriesData = new double[seriesCount][][];
-        for (int i = 0; i < seriesCount; ++i) {
-            seriesData[i] = new double[][]{x, data[i]};
-        }
-
         Plot plot = new Plot();
         plot.init(config);
-        plot.plot(seriesData);
+        plot.plot(x, data);
         return plot;
     }
 
