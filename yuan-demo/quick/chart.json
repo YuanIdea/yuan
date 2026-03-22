@@ -1,0 +1,11 @@
+{
+	"actionType":"chart",
+	"inputPathName":"data/output/quick.csv",
+	"inputIndex":[2,3],
+	"lineWidth":[2,1],
+	"style":["b","r-."],
+	"labelX":"样本点",
+	"labelY":"实际y",
+	"title":"预测y",
+	"legend":["实际y","预测y"]
+}
