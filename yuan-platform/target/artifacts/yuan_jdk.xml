@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch4jConfig>
+  <dontWrapJar>false</dontWrapJar>
+  <headerType>gui</headerType>
+  <jar>.\yuan\yuan-platform-1.0.8.jar</jar>
+  <outfile>.\yuan\yuan-1.0.8.exe</outfile>
+  <errTitle></errTitle>
+  <cmdLine></cmdLine>
+  <chdir>.</chdir>
+  <priority>normal</priority>
+  <downloadUrl></downloadUrl>
+  <supportUrl></supportUrl>
+  <stayAlive>false</stayAlive>
+  <restartOnCrash>false</restartOnCrash>
+  <manifest></manifest>
+  <icon>.\yuan\icons\aif.ico</icon>
+  <classPath>
+    <mainClass>com.gly.platform.app.Yuan</mainClass>
+    <cp>lib\*.jar</cp>
+  </classPath>
+  <jre>
+    <path>./jdk-11</path>
+    <requiresJdk>false</requiresJdk>
+    <requires64Bit>false</requires64Bit>
+    <minVersion>11</minVersion>
+    <maxVersion></maxVersion>
+    <opt>-Dfile.encoding=UTF-8</opt>
+  </jre>
+  <versionInfo>
+    <fileVersion>1.0.8.0</fileVersion>
+    <txtFileVersion>10.8.0</txtFileVersion>
+    <fileDescription>An algorithm design platform</fileDescription>
+    <copyright>Copyright @2026-2030</copyright>
+    <productVersion>1.0.8.0</productVersion>
+    <txtProductVersion>1.0.8.0</txtProductVersion>
+    <productName>yuan</productName>
+    <companyName>Guoliang-Yang</companyName>
+    <internalName>yuan</internalName>
+    <originalFilename>yuan-1.0.8.exe</originalFilename>
+    <trademarks></trademarks>
+    <language>SIMPLIFIED_CHINESE</language>
+  </versionInfo>
+</launch4jConfig>
