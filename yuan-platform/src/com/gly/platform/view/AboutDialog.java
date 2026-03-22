@@ -9,8 +9,8 @@ import java.net.URL;
  * About dialog.
  */
 class AboutDialog {
-    private static final String APP_NAME = "yuan-1.0.7";
-    private static final String VERSION = "2026.02.11";
+    private static final String APP_NAME = "yuan-1.0.8";
+    private static final String VERSION = "2026.03.22";
     private static final String WEB = "https://github.com/YuanIdea/yuan";
 
     static void showAboutDialog(JFrame parent) {
