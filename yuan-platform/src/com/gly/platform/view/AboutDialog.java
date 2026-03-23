@@ -10,7 +10,7 @@ import java.net.URL;
  */
 class AboutDialog {
     private static final String APP_NAME = "yuan-1.0.8";
-    private static final String VERSION = "2026.03.22";
+    private static final String VERSION = "2026.03.23";
     private static final String WEB = "https://github.com/YuanIdea/yuan";
 
     static void showAboutDialog(JFrame parent) {
