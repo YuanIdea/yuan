@@ -14,6 +14,8 @@ import com.gly.platform.editor.Editor;
 import com.gly.platform.editor.FindReplaceDialog;
 import com.gly.run.Run;
 import com.gly.platform.regin.auxiliary.maven.Executor;
+import com.gly.util.JarFinder;
+import com.gly.util.JarInfo;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
 import javax.swing.*;
@@ -227,10 +229,15 @@ public class MenuManager {
             }
         });
         helpModel.add(helpDocFileBtn);
-        JMenuItem installCoreBtn = new JMenuItem(I18n.get("menuItem.installCommon"));
-        installCoreBtn.setMnemonic('I');
-        installCoreBtn.addActionListener(e -> installCore());
-        helpModel.add(installCoreBtn);
+
+        JarInfo jarInfo = JarFinder.findJarByPrefix(YuanConfig.YUAN_PATH.toString(), "yuan-common");
+        if (jarInfo != null) {
+            String commonInfo = jarInfo.getFullName() + ".jar";
+            JMenuItem installCoreBtn = new JMenuItem(I18n.get("menuItem.installCommon"));
+            installCoreBtn.setMnemonic('I');
+            installCoreBtn.addActionListener(e -> installCore(commonInfo));
+            helpModel.add(installCoreBtn);
+        }
 
         JMenuItem aboutFileBtn = new JMenuItem(I18n.get("menuItem.about"));
         aboutFileBtn.addActionListener(e -> AboutDialog.showAboutDialog(platform));
@@ -239,17 +246,18 @@ public class MenuManager {
 
     /**
      * Install yuan-common to the repository.
+     *
+     * @param commonName The name of yuan-common that includes version information.
      */
-    private void installCore() {
+    private void installCore(String commonName) {
         Path directory = YuanConfig.YUAN_PATH;
-        String jarName = "yuan-common-1.0.7.jar";
-        Path coreFile = directory.resolve(jarName);
+        Path coreFile = directory.resolve(commonName);
         boolean installedSuccess = Executor.executeMaven(directory, YuanConfig.DEFAULT_JAVA_HOME,
                 "install:install-file", "-Dfile=" + coreFile);
         if (installedSuccess) {
-            Logger.info(jarName + " installed successfully.");
+            Logger.info(commonName + " installed successfully.");
         } else {
-            Logger.error(jarName + " installation failed.");
+            Logger.error(commonName + " installation failed.");
         }
     }
 

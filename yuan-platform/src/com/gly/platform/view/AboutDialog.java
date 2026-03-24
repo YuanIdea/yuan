@@ -1,5 +1,9 @@
 package com.gly.platform.view;
 
+import com.gly.platform.app.YuanConfig;
+import com.gly.util.JarFinder;
+import com.gly.util.JarInfo;
+
 import javax.swing.*;
 import java.awt.*;
 import java.net.URI;
@@ -9,8 +13,8 @@ import java.net.URL;
  * About dialog.
  */
 class AboutDialog {
-    private static final String APP_NAME = "yuan-1.0.8";
-    private static final String VERSION = "2026.03.23";
+
+    private static final String VERSION = "2026.03.24";
     private static final String WEB = "https://github.com/YuanIdea/yuan";
 
     static void showAboutDialog(JFrame parent) {
@@ -52,7 +56,7 @@ class AboutDialog {
         });
 
         // Platform name and version.
-        JLabel titleLabel = new JLabel(APP_NAME);
+        JLabel titleLabel = new JLabel(getAppName());
         JLabel versionLabel = new JLabel(VERSION);
 
         JPanel textPanel = new JPanel(new GridLayout(2, 1));
@@ -80,5 +84,18 @@ class AboutDialog {
         aboutDialog.pack();
         aboutDialog.setLocationRelativeTo(parent);
         aboutDialog.setVisible(true);
+    }
+
+    /**
+     * Get the name of the current platform.
+     * @return Platform name containing version information.
+     */
+    private static String getAppName() {
+        JarInfo jarInfo = JarFinder.findJarByPrefix(YuanConfig.YUAN_PATH.toString(), "yuan-platform");
+        if (jarInfo != null) {
+            return "yuan-" + jarInfo.getVersion();
+        } else {
+            return "";
+        }
     }
 }
