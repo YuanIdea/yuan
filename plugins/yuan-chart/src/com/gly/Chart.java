@@ -39,7 +39,7 @@ public class Chart extends BaseExecutable {
 
         // Create and display the plot
         Plot plot = createPlot(config, transposedData);
-        plot.getFrame().addWindowListener(closeHandler());
+        plot.getDialog().addWindowListener(closeHandler());
     }
 
     /**
@@ -76,7 +76,7 @@ public class Chart extends BaseExecutable {
     private Plot createPlot(Config config, double[][] data) {
         // Generate X-axis data (starting from 0, length = number of columns in the first data row)
         double[] x = ArrayUtils.rangeD(0, data[0].length);
-        Plot plot = new Plot();
+        Plot plot = new Plot(getOwner());
         plot.init(config);
         plot.plot(x, data);
         return plot;

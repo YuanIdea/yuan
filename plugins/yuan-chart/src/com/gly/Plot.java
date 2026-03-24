@@ -17,8 +17,12 @@ public class Plot {
     private String[] legend;
     private float[] lineWidth;
     private String[] style;
-    private JFrame frame;
+    private JDialog dialog;
+    private JFrame owner;
 
+    /**
+     * Constructor.
+     */
     public Plot() {
         title = "";
         labelX = "";
@@ -26,6 +30,21 @@ public class Plot {
         legend = null;
         lineWidth = null;
         style = null;
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param owner the parent frame that owns this plot window, can be null for no owner
+     */
+    public Plot(JFrame owner) {
+        title = "";
+        labelX = "";
+        labelY = "";
+        legend = null;
+        lineWidth = null;
+        style = null;
+        this.owner = owner;
     }
 
     public void plot(double[] y) {
@@ -47,7 +66,7 @@ public class Plot {
         validateInput(x, y);
         XYChart chart = createChart();
         XYSeries series = chart.addSeries("Data", x, y);
-        applySeriesStyle(series, 0); // 应用第一条线的样式
+        applySeriesStyle(series, 0); // Apply style for the first line
         displayChart(chart);
     }
 
@@ -71,12 +90,10 @@ public class Plot {
     private XYChart createChart() {
         XYChart chart = new XYChartBuilder()
                 .theme(Styler.ChartTheme.Matlab)
-                .width(700).height(500)
                 .title(title)
                 .xAxisTitle(labelX)
                 .yAxisTitle(labelY)
                 .build();
-
 
         Styler st = chart.getStyler();
         chart.getStyler().setPlotGridLinesVisible(false);
@@ -107,13 +124,12 @@ public class Plot {
         } else if (lineStyle.contains(":")) {
             series.setLineStyle(SeriesLines.DASH_DOT);
         } else if (lineStyle.contains("-.")) {
-            series.setLineStyle(SeriesLines.DASH_DOT); // XChart 没有直接的 dash-dot，可以用自定义 BasicStroke 或近似
-            // 如需更精细控制，可自定义 BasicStroke
+            series.setLineStyle(SeriesLines.DASH_DOT); // XChart does not have direct dash-dot; custom BasicStroke can be used for finer control
         } else {
             series.setLineStyle(SeriesLines.SOLID);
         }
 
-        // 默认不显示点，如果需要可设置 setMarker(SeriesMarkers.CIRCLE)
+        // Markers are disabled by default; setMarker(SeriesMarkers.CIRCLE) can be used if needed
         series.setMarker(SeriesMarkers.NONE);
     }
 
@@ -127,11 +143,13 @@ public class Plot {
     }
 
     private void displayChart(XYChart chart) {
-        // Use SwingWrapper to display the chart.
-        SwingWrapper<XYChart> sw = new SwingWrapper<>(chart);
-        this.frame = sw.displayChart();
-        frame.setTitle("Figure");
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        XChartPanel<XYChart> chartPanel = new XChartPanel<>(chart);
+        dialog = new JDialog(owner, "Figure", false);
+        dialog.add(chartPanel);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        dialog.setSize(700, 500);
+        dialog.setLocationRelativeTo(owner);
+        dialog.setVisible(true);
     }
 
     private void validateInput(double[] x, double[] y) {
@@ -164,11 +182,7 @@ public class Plot {
         this.style = style;
     }
 
-    public JFrame getFrame() {
-        return frame;
-    }
-
-    public void setFrame(JFrame frame) {
-        this.frame = frame;
+    public Dialog getDialog() {
+        return dialog;
     }
 }
