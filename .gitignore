@@ -5,10 +5,15 @@ maven-status/
 yuan-common/target/
 yuan-common/.yuan/
 yuan-platform/.yuan/
-plugins/yuan-chart/.yuan/
+yuan-platform/target/artifacts/yuan/plugins/yuan-core
+plugins/yuan-chart/.yuan/effective-pom.xml
 plugins/yuan-chart/.idea/
 plugins/yuan-chart/target/
 plugins/yuan-chart/dependency-reduced-pom.xml
+plugins/yuan-detection/target/
+plugins/yuan-detection/.yuan/effective-pom.xml
+plugins/yuan-detection/dependency-reduced-pom.xml
+plugins/yuan-detection/src/resources/yolo/
 .idea/
 *.iml
 .vscode/
