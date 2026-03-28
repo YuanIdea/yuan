@@ -19,6 +19,9 @@ import ai.djl.training.evaluator.Accuracy;
 import ai.djl.training.listener.TrainingListener;
 import ai.djl.training.loss.Loss;
 import ai.djl.training.optimizer.Adam;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.gly.io.json.Json;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,14 +31,24 @@ public class Main {
     public static void main(String[] args) throws Exception {
         // 打印当前引擎
         System.out.println("Default engine: " + Engine.getDefaultEngineName());
-        int batchSize = 64;
-        int numEpochs = 5;
-
+        String metadata = "models/mlp-mnist/metadata.json";
+        Json json = new Json(metadata);
+        JsonNode config = json.getJsonNode("training");
+        Json training = new Json();
+        training.setRootNode(config);
+        int batchSize = training.getInt("batchSize");
+        int numEpochs = training.getInt("epochs");
+        Shape shape = ModelBuilder.parseShape(json.getJsonNode("modelConfig").get("inputShape"));
         MnistData mnistData = new MnistData();
         mnistData.loadData(batchSize);
         // 2. 训练 MLP 模型
-        trainAndSaveModel("mlp-mnist", ModelBuilder.createBlock("metadata.json"), new Shape(1, 28 * 28),
-                mnistData.trainDataset, mnistData.testDataset, numEpochs);
+        try {
+            SequentialBlock block = (SequentialBlock)ModelBuilder.buildBlockFromJson(metadata);
+            trainAndSaveModel("mlp-mnist", block, shape,
+                    mnistData.trainDataset, mnistData.testDataset, numEpochs);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
 
         // 3. 训练 CNN 模型
         trainAndSaveModel("cnn-mnist", Cnn.createCnnBlock(), new Shape(1, 1, 28, 28),
@@ -94,7 +107,7 @@ public class Main {
 
         // 1. 根据模型名称重建相同的网络结构
         if ("mlp-mnist".equals(modelName)) {
-            block = ModelBuilder.createBlock("metadata.json");
+            block = ModelBuilder.buildBlockFromJson("models/mlp-mnist/metadata.json");
             System.out.println("使用 MLP 结构");
         } else if ("cnn-mnist".equals(modelName)) {
             block = Cnn.createCnnBlock();

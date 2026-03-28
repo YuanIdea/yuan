@@ -1,12 +1,16 @@
 {
-  "modelType": "ModelZoo",
-  "modelLoadingVersion": "1.0",
-  "artifactVersion": "1.0.0",
-  "sequential": {
-    "modelType": "MLP",
-    "inputDim": 784,
-    "flattenInput": true,
-    "hiddenSizes": [128,64],
-    "numClasses": 10
+  "modelConfig": {
+    "inputShape": [1, 28, 28],
+    "outputClasses": 10,
+    "layers": [
+      {"type": "flatten"},
+      {"type": "dense", "units": 128, "activation": "sigmoid"},
+      {"type": "dense", "units": 64, "activation": "relu"},
+      {"type": "dense", "units": 10}
+    ]
+  },
+  "training": {
+    "batchSize": 64,
+    "epochs": 5
   }
 }
