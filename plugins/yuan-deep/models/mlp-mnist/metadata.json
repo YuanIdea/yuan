@@ -4,8 +4,9 @@
     "outputClasses": 10,
     "layers": [
       {"type": "flatten"},
-      {"type": "dense", "units": 128, "activation": "sigmoid"},
-      {"type": "dense", "units": 64, "activation": "relu"},
+      {"type": "dense", "units": 128, "activation": "relu"},
+      {"type": "dropout", "rate": 0.2},
+      {"type": "dense", "units": 64, "activation": "sigmoid"},
       {"type": "dense", "units": 10}
     ]
   },
