@@ -18,7 +18,7 @@ import com.gly.io.json.Json;
 import ai.djl.ndarray.types.Shape;
 
 /**
- * 从 JSON 配置文件构建 DJL 的 Block（模型结构）
+ * Builds a DJL Block (model structure) from a JSON configuration file.
  */
 public class ModelBuilder {
     public static Block buildBlockFromJson(Path configPath) throws IOException {
@@ -26,10 +26,10 @@ public class ModelBuilder {
     }
 
     /**
-     * 从 JSON 文件构建 Block
+     * Builds a Block from a JSON file.
      *
-     * @param configPath JSON 配置文件路径
-     * @return 构建好的 SequentialBlock
+     * @param configPath Path to the JSON configuration file
+     * @return The constructed SequentialBlock
      */
     public static Block buildBlockFromJson(String configPath) throws IOException {
         Json json = new Json(configPath);
@@ -41,10 +41,10 @@ public class ModelBuilder {
     }
 
     /**
-     * 从 modelConfig 节点构建 Block
+     * Builds a Block from the modelConfig node.
      *
-     * @param modelConfig modelConfig JSON 节点
-     * @return 构建好的 SequentialBlock
+     * @param modelConfig The modelConfig JSON node
+     * @return The constructed SequentialBlock
      */
     public static Block buildBlockFromModelConfig(JsonNode modelConfig) {
         JsonNode layersNode = modelConfig.get("layers");
@@ -55,8 +55,7 @@ public class ModelBuilder {
         }
 
         SequentialBlock block = new SequentialBlock();
-        for (int i=0; i<layersNode.size(); ++i) {
-            JsonNode layer = layersNode.get(i);
+        for (JsonNode layer : layersNode) {
             String layerType = layer.get("type").asText().toLowerCase();
             switch (layerType) {
                 case "flatten":
@@ -72,10 +71,6 @@ public class ModelBuilder {
                         }
                     }
                     break;
-                case "dropout":
-                    float rate =  (float)layer.get("rate").asDouble();
-                    block.add(Dropout.builder().optRate(rate).build());
-                    break;
                 case "conv2d":
                     int filters = layer.get("filters").asInt();
                     Shape kernelSize = parseShape(layer.get("kernelSize"));
@@ -89,13 +84,13 @@ public class ModelBuilder {
                         JsonNode padNode = layer.get("padding");
                         if (padNode.isTextual()) {
                             String padStr = padNode.asText().toLowerCase();
-                            // 解析 "same" 或 "valid" 为具体的填充值
+                            // Parse "same" or "valid" to specific padding values.
                             Shape paddingShape = parsePadding(padStr, kernelSize);
                             if (paddingShape != null) {
                                 convBuilder.optPadding(paddingShape);
                             }
                         } else if (padNode.isArray()) {
-                            // 直接使用数组作为填充值
+                            // Use array directly as padding value.
                             convBuilder.optPadding(parseShape(padNode));
                         }
                     }
@@ -112,7 +107,15 @@ public class ModelBuilder {
                     Shape stride = layer.has("stride") ? parseShape(layer.get("stride")) : poolSize;
                     block.add(Pool.maxPool2dBlock(poolSize, stride));
                     break;
-
+                case "avgpool2d":
+                    Shape avgPoolSize = parseShape(layer.get("poolSize"));
+                    Shape avgStride = layer.has("stride") ? parseShape(layer.get("stride")) : avgPoolSize;
+                    block.add(Pool.avgPool2dBlock(avgPoolSize, avgStride));
+                    break;
+                case "dropout":
+                    float rate = (float) layer.get("rate").asDouble();
+                    block.add(Dropout.builder().optRate(rate).build());
+                    break;
                 default:
                     throw new UnsupportedOperationException("Unsupported layer type: " + layerType);
             }
@@ -121,10 +124,10 @@ public class ModelBuilder {
     }
 
     /**
-     * 解析激活函数名称，返回对应的 Block（激活层）
+     * Parses the activation function name and returns the corresponding Block (activation layer).
      *
-     * @param name 激活函数名称，如 relu, sigmoid, tanh, linear
-     * @return 激活层 Block，若为 linear 则返回 null
+     * @param name The name of the activation function
+     * @return The activation layer Block, or null for linear
      */
     private static Block parseActivation(String name) {
         switch (name.toLowerCase()) {
@@ -135,17 +138,17 @@ public class ModelBuilder {
             case "tanh":
                 return Activation.tanhBlock();
             case "linear":
-                return null; // 恒等变换，不添加层
+                return null; // Do not add layer.
             default:
                 throw new IllegalArgumentException("Unsupported activation: " + name);
         }
     }
 
     /**
-     * 将 JSON 节点解析为 DJL 的 Shape
+     * Parses a JSON node into a DJL Shape.
      *
-     * @param node JSON 节点，可以是数字（标量）或数组
-     * @return Shape 对象
+     * @param node JSON node, which can be a number (scalar) or an array
+     * @return Shape object
      */
     public static Shape parseShape(JsonNode node) {
         if (node == null) return null;
@@ -165,11 +168,10 @@ public class ModelBuilder {
     private static Shape parsePadding(String padding, Shape kernelSize) {
         long[] ks = kernelSize.getShape();
         if ("same".equals(padding)) {
-            // 保持输入输出尺寸相同：padding = (kernelSize - 1) / 2
+            // Keep input and output dimensions the same: padding = (kernelSize - 1) / 2
             return new Shape((ks[0] - 1) / 2, (ks[1] - 1) / 2);
         } else if ("valid".equals(padding)) {
-            // 无填充
-            return new Shape(0, 0);
+            return new Shape(0, 0); // No padding.
         }
         return null;
     }
