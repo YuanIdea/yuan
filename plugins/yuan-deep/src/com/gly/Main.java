@@ -27,9 +27,9 @@ public class Main {
     public static void main(String[] args) throws Exception {
         // 打印当前引擎
         System.out.println("Default engine: " + Engine.getDefaultEngineName());
-
-//        String modelName = "mlp-mnist";
-        String modelName = "cnn-mnist";
+        String modelName = "mlp-mnist";
+        //String modelName = "cnn-mnist";
+        //String modelName = "lstm-mnist";
         String model = "models/" + modelName;
         Train train = new Train();
         train.fit(model + "/metadata.json", modelName);

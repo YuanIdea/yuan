@@ -5,6 +5,7 @@ import ai.djl.nn.convolutional.Conv2d;
 import ai.djl.nn.core.Linear;
 import ai.djl.nn.norm.Dropout;
 import ai.djl.nn.pooling.Pool;
+import ai.djl.nn.recurrent.LSTM;
 import com.fasterxml.jackson.databind.JsonNode;
 import ai.djl.nn.Activation;
 
@@ -115,6 +116,23 @@ public class ModelBuilder {
                 case "dropout":
                     float rate = (float) layer.get("rate").asDouble();
                     block.add(Dropout.builder().optRate(rate).build());
+                    break;
+                case "lstm":
+                    block.addSingleton(
+                            input -> {
+                                Shape inputShape = input.getShape();
+                                long batchSize = inputShape.get(0);
+                                long channel = inputShape.get(3);
+                                long time = inputShape.size() / (batchSize * channel);
+                                return input.reshape(new Shape(batchSize, time, channel));
+                            });
+                    block.add(
+                            new LSTM.Builder()
+                                    .setStateSize(64)
+                                    .setNumLayers(1)
+                                    .optDropRate(0)
+                                    .optReturnState(false)
+                                    .build());
                     break;
                 default:
                     throw new UnsupportedOperationException("Unsupported layer type: " + layerType);
