@@ -1,7 +1,6 @@
 {
   "modelConfig": {
     "inputShape": [1, 28, 28],
-    "outputClasses": 10,
     "layers": [
       {"type": "flatten"},
       {"type": "dense", "units": 128, "activation": "relu"},

@@ -1,8 +1,10 @@
 package com.gly;
 
 import ai.djl.nn.*;
+import ai.djl.nn.convolutional.Conv2d;
 import ai.djl.nn.core.Linear;
 import ai.djl.nn.norm.Dropout;
+import ai.djl.nn.pooling.Pool;
 import com.fasterxml.jackson.databind.JsonNode;
 import ai.djl.nn.Activation;
 
@@ -53,12 +55,12 @@ public class ModelBuilder {
         }
 
         SequentialBlock block = new SequentialBlock();
-        for (JsonNode layer : layersNode) {
+        for (int i=0; i<layersNode.size(); ++i) {
+            JsonNode layer = layersNode.get(i);
             String layerType = layer.get("type").asText().toLowerCase();
             switch (layerType) {
                 case "flatten":
-                    Shape inputShape = ModelBuilder.parseShape(modelConfig.get("inputShape"));
-                    block.add(Blocks.batchFlattenBlock(inputShape.size()));
+                    block.add(Blocks.batchFlattenBlock());
                     break;
                 case "dense":
                     int units = layer.get("units").asInt();
@@ -74,6 +76,43 @@ public class ModelBuilder {
                     float rate =  (float)layer.get("rate").asDouble();
                     block.add(Dropout.builder().optRate(rate).build());
                     break;
+                case "conv2d":
+                    int filters = layer.get("filters").asInt();
+                    Shape kernelSize = parseShape(layer.get("kernelSize"));
+                    Conv2d.Builder convBuilder = Conv2d.builder()
+                            .setFilters(filters)
+                            .setKernelShape(kernelSize);
+                    if (layer.has("stride")) {
+                        convBuilder.optStride(parseShape(layer.get("stride")));
+                    }
+                    if (layer.has("padding")) {
+                        JsonNode padNode = layer.get("padding");
+                        if (padNode.isTextual()) {
+                            String padStr = padNode.asText().toLowerCase();
+                            // 解析 "same" 或 "valid" 为具体的填充值
+                            Shape paddingShape = parsePadding(padStr, kernelSize);
+                            if (paddingShape != null) {
+                                convBuilder.optPadding(paddingShape);
+                            }
+                        } else if (padNode.isArray()) {
+                            // 直接使用数组作为填充值
+                            convBuilder.optPadding(parseShape(padNode));
+                        }
+                    }
+                    block.add(convBuilder.build());
+                    if (layer.has("activation") && !layer.get("activation").isNull()) {
+                        Block actBlock = parseActivation(layer.get("activation").asText());
+                        if (actBlock != null) {
+                            block.add(actBlock);
+                        }
+                    }
+                    break;
+                case "maxpool2d":
+                    Shape poolSize = parseShape(layer.get("poolSize"));
+                    Shape stride = layer.has("stride") ? parseShape(layer.get("stride")) : poolSize;
+                    block.add(Pool.maxPool2dBlock(poolSize, stride));
+                    break;
+
                 default:
                     throw new UnsupportedOperationException("Unsupported layer type: " + layerType);
             }
@@ -121,5 +160,17 @@ public class ModelBuilder {
         } else {
             throw new IllegalArgumentException("Invalid shape node: " + node);
         }
+    }
+
+    private static Shape parsePadding(String padding, Shape kernelSize) {
+        long[] ks = kernelSize.getShape();
+        if ("same".equals(padding)) {
+            // 保持输入输出尺寸相同：padding = (kernelSize - 1) / 2
+            return new Shape((ks[0] - 1) / 2, (ks[1] - 1) / 2);
+        } else if ("valid".equals(padding)) {
+            // 无填充
+            return new Shape(0, 0);
+        }
+        return null;
     }
 }

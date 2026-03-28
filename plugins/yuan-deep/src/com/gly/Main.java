@@ -3,95 +3,42 @@ package com.gly;
 import ai.djl.Model;
 import ai.djl.engine.Engine;
 import ai.djl.inference.Predictor;
-import ai.djl.modality.Classifications;
-import ai.djl.modality.cv.Image;
-import ai.djl.modality.cv.ImageFactory;
 import ai.djl.modality.cv.transform.ToTensor;
 import ai.djl.modality.cv.translator.ImageClassificationTranslator;
-import ai.djl.ndarray.types.Shape;
+import ai.djl.ndarray.NDArray;
+import ai.djl.ndarray.NDList;
+import ai.djl.ndarray.NDManager;
 import ai.djl.nn.Block;
-import ai.djl.nn.SequentialBlock;
-import ai.djl.training.DefaultTrainingConfig;
-import ai.djl.training.EasyTrain;
-import ai.djl.training.Trainer;
-import ai.djl.training.dataset.Dataset;
-import ai.djl.training.evaluator.Accuracy;
-import ai.djl.training.listener.TrainingListener;
-import ai.djl.training.loss.Loss;
-import ai.djl.training.optimizer.Adam;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.gly.io.json.Json;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import ai.djl.ndarray.types.Shape;
+import ai.djl.translate.NoopTranslator;
+import com.gly.io.json.Json;
 
 public class Main {
 
     public static void main(String[] args) throws Exception {
         // 打印当前引擎
         System.out.println("Default engine: " + Engine.getDefaultEngineName());
-        String metadata = "models/mlp-mnist/metadata.json";
-        Json json = new Json(metadata);
-        JsonNode config = json.getJsonNode("training");
-        Json training = new Json();
-        training.setRootNode(config);
-        int batchSize = training.getInt("batchSize");
-        int numEpochs = training.getInt("epochs");
-        Shape shape = ModelBuilder.parseShape(json.getJsonNode("modelConfig").get("inputShape"));
-        MnistData mnistData = new MnistData();
-        mnistData.loadData(batchSize);
-        // 2. 训练 MLP 模型
-        try {
-            SequentialBlock block = (SequentialBlock)ModelBuilder.buildBlockFromJson(metadata);
-            trainAndSaveModel("mlp-mnist", block, shape,
-                    mnistData.trainDataset, mnistData.testDataset, numEpochs);
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
-        }
 
-        // 3. 训练 CNN 模型
-        trainAndSaveModel("cnn-mnist", Cnn.createCnnBlock(), new Shape(1, 1, 28, 28),
-                mnistData.trainDataset, mnistData.testDataset, numEpochs);
-
-        // 4. 预测示例（加载模型）
-        predictWithModel("models/mlp-mnist", "test-digit.png");
-    }
-
-    /**
-     * 通用模型训练与保存方法
-     */
-    private static void trainAndSaveModel(String modelName,
-                                          SequentialBlock block,
-                                          Shape inputShape,
-                                          Dataset trainDataset,
-                                          Dataset testDataset,
-                                          int numEpochs) throws Exception {
-        // 创建模型并设置网络结构
-        Model model = Model.newInstance(modelName);
-        model.setBlock(block);
-
-        // 配置训练器
-        DefaultTrainingConfig config = new DefaultTrainingConfig(Loss.softmaxCrossEntropyLoss())
-                .addEvaluator(new Accuracy())
-                .optOptimizer(Adam.builder().build())
-                .addTrainingListeners(TrainingListener.Defaults.logging());
-
-        try (Trainer trainer = model.newTrainer(config)) {
-            trainer.initialize(inputShape);
-            System.out.println("开始训练 " + modelName + "...");
-            EasyTrain.fit(trainer, numEpochs, trainDataset, testDataset);
-        }
-
-        // 保存模型到 models/{modelName} 目录
-        Path modelDir = Paths.get("models", modelName);
-        model.save(modelDir, modelName);
-        // 检查最终模型文件是否存在
-        System.out.println("模型已保存至: " + modelDir.toAbsolutePath());
+//        String modelName = "mlp-mnist";
+        String modelName = "cnn-mnist";
+        String model = "models/" + modelName;
+        Train train = new Train();
+        train.fit(model + "/metadata.json", modelName);
+        predictWithModel(model, "test-digit.png");
     }
 
     /**
      * 使用已训练好的模型进行预测
+     *
      * @param modelPath 模型目录路径（例如 "models/cnn-mnist"）
      * @param imagePath 待识别图片路径（28x28 灰度图）
      */
@@ -103,19 +50,9 @@ public class Main {
         }
 
         String modelName = modelDir.getFileName().toString();
-        Block block = null;
-
-        // 1. 根据模型名称重建相同的网络结构
-        if ("mlp-mnist".equals(modelName)) {
-            block = ModelBuilder.buildBlockFromJson("models/mlp-mnist/metadata.json");
-            System.out.println("使用 MLP 结构");
-        } else if ("cnn-mnist".equals(modelName)) {
-            block = Cnn.createCnnBlock();
-            System.out.println("使用 CNN 结构");
-        } else {
-            System.err.println("未知模型类型: " + modelName);
-            return;
-        }
+        String metadata = "models/" + modelName + "/metadata.json";
+        Block block = ModelBuilder.buildBlockFromJson(metadata);
+        System.out.println("使用" + modelName);
 
         // 2. 创建模型实例，设置结构
         try (Model model = Model.newInstance(modelName)) {
@@ -130,16 +67,41 @@ public class Main {
                     .build();
 
             // 5. 加载图片并预测
-            Path imageFile = Paths.get(imagePath);
-            if (!Files.exists(imageFile)) {
-                System.err.println("图片文件不存在: " + imageFile.toAbsolutePath());
-                return;
-            }
-            Image image = ImageFactory.getInstance().fromFile(imageFile);
+            BufferedImage original = ImageIO.read(Paths.get(imagePath).toFile());
+            // 创建 28x28 灰度图
+            BufferedImage grayImage = new BufferedImage(28, 28, BufferedImage.TYPE_BYTE_GRAY);
+            Graphics2D g = grayImage.createGraphics();
+            g.drawImage(original, 0, 0, 28, 28, null);
+            g.dispose();
 
-            try (Predictor<Image, Classifications> predictor = model.newPredictor(translator)) {
-                Classifications result = predictor.predict(image);
-                System.out.println("预测结果: " + result.topK(3));
+            // 2. 从 BufferedImage 获取像素数据
+            byte[] pixelData = ((DataBufferByte) grayImage.getRaster().getDataBuffer()).getData();
+            // 3. 构建 NDArray，形状为 (1, 1, 28, 28) 或 (1, 28, 28) 取决于模型期望
+            try (NDManager manager = NDManager.newBaseManager()) {
+                // 将字节数组转为 float 并归一化到 [0,1]
+                float[] floatData = new float[pixelData.length];
+                for (int i = 0; i < pixelData.length; ++i) {
+                    floatData[i] = (pixelData[i] & 0xFF) / 255.0f;
+                }
+
+                Json json = new Json(metadata);
+                Shape inputShape = ModelBuilder.parseShape(json.getJsonNode("modelConfig").get("inputShape"));
+                NDArray input = manager.create(floatData, inputShape);
+                try (Predictor<NDList, NDList> predictor = model.newPredictor(new NoopTranslator())) {
+                    NDList result = predictor.predict(new NDList(input));
+                    NDArray logits = result.singletonOrThrow();          // 形状 (1, 10)
+                    // 对类别维度（索引1）应用softmax，得到概率分布
+                    NDArray probabilities = logits.softmax(1).squeeze(0); // 形状 (10,)
+                    long[] indices = probabilities.argSort(0).toLongArray(); // 升序排序
+                    int len = indices.length;
+                    System.out.println("预测结果:");
+                    for (int i = 0; i < 3; i++) {
+                        int idx = (int) indices[len - 1 - i];
+                        float prob = probabilities.getFloat(idx);
+                        System.out.printf("  类别 %d: %.4f%n", idx, prob);
+                    }
+                }
+
             }
         }
     }

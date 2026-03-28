@@ -1,0 +1,68 @@
+package com.gly;
+
+import ai.djl.Model;
+import ai.djl.ndarray.types.Shape;
+import ai.djl.nn.SequentialBlock;
+import ai.djl.training.DefaultTrainingConfig;
+import ai.djl.training.EasyTrain;
+import ai.djl.training.Trainer;
+import ai.djl.training.dataset.Dataset;
+import ai.djl.training.evaluator.Accuracy;
+import ai.djl.training.listener.TrainingListener;
+import ai.djl.training.loss.Loss;
+import ai.djl.training.optimizer.Adam;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.gly.io.json.Json;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+public class Train {
+    private String modelName;
+    private String metadata;
+
+    public void fit(String metadata , String modelName) {
+        this.metadata = metadata;
+        this.modelName = modelName;
+        try {
+            Json json = new Json(metadata);
+            JsonNode config = json.getJsonNode("training");
+            Json training = new Json();
+            training.setRootNode(config);
+            int batchSize = training.getInt("batchSize");
+            int numEpochs = training.getInt("epochs");
+            MnistData mnistData = new MnistData();
+            mnistData.loadData(batchSize);
+            trainAndSaveModel(json, mnistData.trainDataset, mnistData.testDataset, numEpochs);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
+    }
+
+    /**
+     * 通用模型训练与保存方法
+     */
+    public void trainAndSaveModel(Json json, Dataset trainDataset, Dataset testDataset, int numEpochs) throws Exception {
+        Shape inputShape = ModelBuilder.parseShape(json.getJsonNode("modelConfig").get("inputShape"));
+        SequentialBlock block = (SequentialBlock)ModelBuilder.buildBlockFromJson(metadata);
+        // 创建模型并设置网络结构
+        Model model = Model.newInstance(modelName);
+        model.setBlock(block);
+
+        // 配置训练器
+        DefaultTrainingConfig config = new DefaultTrainingConfig(Loss.softmaxCrossEntropyLoss())
+                .addEvaluator(new Accuracy())
+                .optOptimizer(Adam.builder().build())
+                .addTrainingListeners(TrainingListener.Defaults.logging());
+
+        try (Trainer trainer = model.newTrainer(config)) {
+            trainer.initialize(inputShape);
+            System.out.println("开始训练 " + modelName + "...");
+            EasyTrain.fit(trainer, numEpochs, trainDataset, testDataset);
+        }
+
+        Path modelDir = Paths.get("models", modelName);
+        model.save(modelDir, modelName);
+        System.out.println("模型已保存至: " + modelDir.toAbsolutePath());
+    }
+}

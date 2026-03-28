@@ -1,0 +1,20 @@
+{
+  "modelConfig": {
+    "name": "cnn_mnist",
+    "inputShape": [1, 1, 28, 28],
+    "layers": [
+      {"type": "conv2d", "filters": 32, "kernelSize": [3,3], "activation": "relu", "padding": "same"},
+      {"type": "maxPool2d", "poolSize": [2,2]},
+      {"type": "conv2d", "filters": 64, "kernelSize": [3,3], "activation": "relu", "padding": "same"},
+      {"type": "maxPool2d", "poolSize": [2,2]},
+      {"type": "flatten"},
+      {"type": "dense", "units": 128, "activation": "relu"},
+      {"type": "dropout", "rate": 0.5},
+      {"type": "dense", "units": 10, "activation": "linear"}
+    ]
+  },
+  "training": {
+    "batchSize": 64,
+    "epochs": 5
+  }
+}
