@@ -126,9 +126,10 @@ public class ModelBuilder {
                                 long time = inputShape.size() / (batchSize * channel);
                                 return input.reshape(new Shape(batchSize, time, channel));
                             });
+                    int lstmUnits = layer.get("units").asInt();
                     block.add(
                             new LSTM.Builder()
-                                    .setStateSize(64)
+                                    .setStateSize(lstmUnits)
                                     .setNumLayers(1)
                                     .optDropRate(0)
                                     .optReturnState(false)
