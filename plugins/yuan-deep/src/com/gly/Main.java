@@ -9,11 +9,11 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
         // Print the current engine.
-        System.out.println("Default engine: " + Engine.getDefaultEngineName());
+        System.out.println("Currently used engine: " + Engine.getDefaultEngineName());
 
-        String modelName = "mlp-mnist";
+        //String modelName = "mlp-mnist";
         //String modelName = "cnn-mnist";
-        //String modelName = "lstm-mnist";
+        String modelName = "lstm-mnist";
 
         String model = "models/" + modelName;
         Train train = new Train();

@@ -21,7 +21,7 @@ public class Train {
     private String modelName;
     private String metadata;
 
-    public void fit(String metadata , String modelName) {
+    public void fit(String metadata, String modelName) {
         this.metadata = metadata;
         this.modelName = modelName;
         try {
@@ -40,16 +40,16 @@ public class Train {
     }
 
     /**
-     * 通用模型训练与保存方法
+     * Model training and saving methods.
      */
     public void trainAndSaveModel(Json json, Dataset trainDataset, Dataset testDataset, int numEpochs) throws Exception {
         Shape inputShape = ModelBuilder.parseShape(json.getJsonNode("modelConfig").get("inputShape"));
-        SequentialBlock block = (SequentialBlock)ModelBuilder.buildBlockFromJson(metadata);
-        // 创建模型并设置网络结构
+        SequentialBlock block = (SequentialBlock) ModelBuilder.buildBlockFromJson(metadata);
+        // Create model and set network structure.
         Model model = Model.newInstance(modelName);
         model.setBlock(block);
 
-        // 配置训练器
+        // Configure the trainer.
         DefaultTrainingConfig config = new DefaultTrainingConfig(Loss.softmaxCrossEntropyLoss())
                 .addEvaluator(new Accuracy())
                 .optOptimizer(Adam.builder().build())
@@ -57,12 +57,12 @@ public class Train {
 
         try (Trainer trainer = model.newTrainer(config)) {
             trainer.initialize(inputShape);
-            System.out.println("开始训练 " + modelName + "...");
+            System.out.println("Start training " + modelName + "...");
             EasyTrain.fit(trainer, numEpochs, trainDataset, testDataset);
         }
 
         Path modelDir = Paths.get("models", modelName);
         model.save(modelDir, modelName);
-        System.out.println("模型已保存至: " + modelDir.toAbsolutePath());
+        System.out.println("Model saved to:" + modelDir.toAbsolutePath());
     }
 }

@@ -11,7 +11,6 @@ import ai.djl.nn.Activation;
 
 import java.awt.*;
 import java.io.IOException;
-import java.nio.file.Path;
 
 import ai.djl.nn.*;
 import ai.djl.nn.core.*;
@@ -22,9 +21,6 @@ import ai.djl.ndarray.types.Shape;
  * Builds a DJL Block (model structure) from a JSON configuration file.
  */
 public class ModelBuilder {
-    public static Block buildBlockFromJson(Path configPath) throws IOException {
-        return buildBlockFromJson(configPath.toString());
-    }
 
     /**
      * Builds a Block from a JSON file.
@@ -63,45 +59,10 @@ public class ModelBuilder {
                     block.add(Blocks.batchFlattenBlock());
                     break;
                 case "dense":
-                    int units = layer.get("units").asInt();
-                    block.add(Linear.builder().setUnits(units).build());
-                    if (layer.has("activation") && !layer.get("activation").isNull()) {
-                        Block actBlock = parseActivation(layer.get("activation").asText());
-                        if (actBlock != null) {
-                            block.add(actBlock);
-                        }
-                    }
+                    dense(layer, block);
                     break;
                 case "conv2d":
-                    int filters = layer.get("filters").asInt();
-                    Shape kernelSize = parseShape(layer.get("kernelSize"));
-                    Conv2d.Builder convBuilder = Conv2d.builder()
-                            .setFilters(filters)
-                            .setKernelShape(kernelSize);
-                    if (layer.has("stride")) {
-                        convBuilder.optStride(parseShape(layer.get("stride")));
-                    }
-                    if (layer.has("padding")) {
-                        JsonNode padNode = layer.get("padding");
-                        if (padNode.isTextual()) {
-                            String padStr = padNode.asText().toLowerCase();
-                            // Parse "same" or "valid" to specific padding values.
-                            Shape paddingShape = parsePadding(padStr, kernelSize);
-                            if (paddingShape != null) {
-                                convBuilder.optPadding(paddingShape);
-                            }
-                        } else if (padNode.isArray()) {
-                            // Use array directly as padding value.
-                            convBuilder.optPadding(parseShape(padNode));
-                        }
-                    }
-                    block.add(convBuilder.build());
-                    if (layer.has("activation") && !layer.get("activation").isNull()) {
-                        Block actBlock = parseActivation(layer.get("activation").asText());
-                        if (actBlock != null) {
-                            block.add(actBlock);
-                        }
-                    }
+                    conv2(layer, block);
                     break;
                 case "maxpool2d":
                     Shape poolSize = parseShape(layer.get("poolSize"));
@@ -118,28 +79,75 @@ public class ModelBuilder {
                     block.add(Dropout.builder().optRate(rate).build());
                     break;
                 case "lstm":
-                    block.addSingleton(
-                            input -> {
-                                Shape inputShape = input.getShape();
-                                long batchSize = inputShape.get(0);
-                                long channel = inputShape.get(3);
-                                long time = inputShape.size() / (batchSize * channel);
-                                return input.reshape(new Shape(batchSize, time, channel));
-                            });
-                    int lstmUnits = layer.get("units").asInt();
-                    block.add(
-                            new LSTM.Builder()
-                                    .setStateSize(lstmUnits)
-                                    .setNumLayers(1)
-                                    .optDropRate(0)
-                                    .optReturnState(false)
-                                    .build());
+                    lstm(layer, block);
                     break;
                 default:
                     throw new UnsupportedOperationException("Unsupported layer type: " + layerType);
             }
         }
         return block;
+    }
+
+    private static void dense(JsonNode layer, SequentialBlock block) {
+        int units = layer.get("units").asInt();
+        block.add(Linear.builder().setUnits(units).build());
+        if (layer.has("activation") && !layer.get("activation").isNull()) {
+            Block actBlock = parseActivation(layer.get("activation").asText());
+            if (actBlock != null) {
+                block.add(actBlock);
+            }
+        }
+    }
+
+    private static void conv2(JsonNode layer, SequentialBlock block) {
+        int filters = layer.get("filters").asInt();
+        Shape kernelSize = parseShape(layer.get("kernelSize"));
+        Conv2d.Builder convBuilder = Conv2d.builder()
+                .setFilters(filters)
+                .setKernelShape(kernelSize);
+        if (layer.has("stride")) {
+            convBuilder.optStride(parseShape(layer.get("stride")));
+        }
+        if (layer.has("padding")) {
+            JsonNode padNode = layer.get("padding");
+            if (padNode.isTextual()) {
+                String padStr = padNode.asText().toLowerCase();
+                // Parse "same" or "valid" to specific padding values.
+                Shape paddingShape = parsePadding(padStr, kernelSize);
+                if (paddingShape != null) {
+                    convBuilder.optPadding(paddingShape);
+                }
+            } else if (padNode.isArray()) {
+                // Use array directly as padding value.
+                convBuilder.optPadding(parseShape(padNode));
+            }
+        }
+        block.add(convBuilder.build());
+        if (layer.has("activation") && !layer.get("activation").isNull()) {
+            Block actBlock = parseActivation(layer.get("activation").asText());
+            if (actBlock != null) {
+                block.add(actBlock);
+            }
+        }
+    }
+
+    private static void lstm(JsonNode layer, SequentialBlock block) {
+        block.addSingleton(
+                input -> {
+                    Shape inputShape = input.getShape();
+                    long batchSize = inputShape.get(0);
+                    long channel = inputShape.get(3);
+                    long time = inputShape.size() / (batchSize * channel);
+                    return input.reshape(new Shape(batchSize, time, channel));
+                });
+        int lstmUnits = layer.get("units").asInt();
+        block.add(
+                new LSTM.Builder()
+                        .setStateSize(lstmUnits)
+                        .setNumLayers(1)
+                        .optDropRate(0)
+                        .optReturnState(false)
+                        .build());
     }
 
     /**
