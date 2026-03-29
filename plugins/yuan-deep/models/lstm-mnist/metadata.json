@@ -1,8 +1,8 @@
 {
   "modelConfig": {
-    "inputShape": [32, 1, 28, 28],
+    "inputShape": [1, 1, 28, 28],
     "layers": [
-      {"type": "lstm", "units": 64, "returnSequences": false},
+      {"type": "lstm", "units": 16, "returnSequences": false},
       {"type": "flatten"},
       {"type": "dense", "units": 64, "activation": "relu"},
       {"type": "dropout", "rate": 0.5},
