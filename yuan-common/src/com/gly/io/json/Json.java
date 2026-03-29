@@ -39,7 +39,7 @@ public class Json {
             mapper = new ObjectMapper();
             rootNode = mapper.readTree(file);
         } catch (IOException e) {
-            System.err.println("解析"+ filePath + "失败：" + e.getMessage());
+            System.err.println("解析" + filePath + "失败：" + e.getMessage());
         }
     }
 
@@ -62,7 +62,7 @@ public class Json {
     public boolean getBoolean(String key) {
         if (rootNode != null && rootNode.has(key)) {
             return rootNode.get(key).asBoolean();// 只读取"name"字段
-        }  else {
+        } else {
             return false;
         }
     }
@@ -70,7 +70,7 @@ public class Json {
     public int getInt(String key) {
         if (rootNode != null && rootNode.has(key)) {
             return rootNode.get(key).asInt();// 只读取"name"字段
-        }  else {
+        } else {
             return 0;
         }
     }
@@ -78,7 +78,7 @@ public class Json {
     public float getFloat(String key) {
         if (rootNode != null && rootNode.has(key)) {
             return (float) rootNode.get(key).asDouble();// 只读取"name"字段
-        }  else {
+        } else {
             return 0f;
         }
     }
@@ -86,7 +86,7 @@ public class Json {
     public double getDouble(String key) {
         if (rootNode != null && rootNode.has(key)) {
             return rootNode.get(key).asDouble();// 只读取"name"字段
-        }  else {
+        } else {
             return 0;
         }
     }
@@ -171,6 +171,7 @@ public class Json {
 
     /**
      * 获得3维数组,各数组维度要求一致。
+     *
      * @param key json串键值。
      * @return 3维数组。
      */
@@ -195,7 +196,7 @@ public class Json {
                     if (i == 0) {
                         dim2 = midNode.size();  // 用第一个元素确定第二维长度
                     } else if (midNode.size() != dim2) {
-                        System.err.println("第2维长度不一致.\n第1组长度为:" + dim2 + ",第" +(i+1)+"组长度为:" + midNode.size());
+                        System.err.println("第2维长度不一致.\n第1组长度为:" + dim2 + ",第" + (i + 1) + "组长度为:" + midNode.size());
                         return null;
                     }
                 }
@@ -218,7 +219,7 @@ public class Json {
                         if (i == 0 && j == 0) {
                             dim3 = innerNode.size();  // 用第一个元素确定第三维长度
                         } else if (innerNode.size() != dim3) {
-                            System.err.println("第3维长度不一致.\n第1行长度为:" + dim3 + ",第" +(j+1)+"行长度为:" + innerNode.size());
+                            System.err.println("第3维长度不一致.\n第1行长度为:" + dim3 + ",第" + (j + 1) + "行长度为:" + innerNode.size());
                             return null;
                         }
                     }
@@ -244,7 +245,7 @@ public class Json {
     /**
      * 判断json字符串中是否包含指定字段
      *
-     * @param key      解析的字段。
+     * @param key 解析的字段。
      * @return true-存在，false-不存在或解析异常
      */
     public boolean has(String key) {
@@ -256,7 +257,7 @@ public class Json {
     }
 
     public JsonNode getJsonNode(String id) {
-        return  rootNode.path(id);
+        return rootNode.path(id);
     }
 
 
@@ -303,20 +304,32 @@ public class Json {
 
     /**
      * 解析指定名称的字符串值。
+     *
      * @param rootNode 根节点。
-     * @param key 解析的字段。
+     * @param key      解析的字段。
      * @return 解析出来的值。
      */
     public static String getString(JsonNode rootNode, String key) {
-        if (rootNode != null) {
+        if (rootNode != null && rootNode.has(key)) {
             return rootNode.get(key).asText();// 只读取"name"字段
         } else {
             return "";
         }
     }
 
+    public Json getSubJson(String key) {
+        if (rootNode != null && rootNode.has(key)) {
+            Json subJson = new Json();
+            subJson.setRootNode(rootNode.get(key));
+            return subJson;// 只读取"name"字段
+        } else {
+            return null;
+        }
+    }
+
     /**
      * 写到磁盘中。
+     *
      * @param filePath 指定写入的位置。
      */
     public void writeJsonNode(String filePath) {
