@@ -24,8 +24,8 @@ public class Train {
     private String metadataPath;
     private String engine;
 
-    public void fit(String metadataPath) {
-        this.metadataPath = metadataPath;
+    public void fit(String modelPath) {
+        this.metadataPath = modelPath + "/metadata.json";
         try {
             Json json = new Json(metadataPath);
             JsonNode config = json.getJsonNode("training");

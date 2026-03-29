@@ -9,10 +9,11 @@ public class Main {
         String modelName = "mlp-mnist";
         //String modelName = "cnn-mnist";
         //String modelName = "lstm-mnist";
+        String modelPath = "models/" + modelName;
 
-        String model = "models/" + modelName;
         Train train = new Train();
-        train.fit(model + "/metadata.json");
-        Use.predictWithModel(model, "test-digit.png");
+        train.fit(modelPath);
+
+        Use.predictWithModel(modelPath, "test-digit.png");
     }
 }

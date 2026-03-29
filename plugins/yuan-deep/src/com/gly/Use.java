@@ -20,33 +20,33 @@ import java.nio.file.Paths;
 
 public class Use {
     /**
-     * 使用已训练好的模型进行预测
+     * Make predictions using a pre-trained model.
      *
-     * @param modelPath 模型目录路径（例如 "models/cnn-mnist"）
-     * @param imagePath 待识别图片路径（28x28 灰度图）
+     * @param modelPath Path to the model directory
+     * @param imagePath Path to the image to be recognized
      */
     public static void predictWithModel(String modelPath, String imagePath) throws Exception {
         Path modelDir = Paths.get(modelPath);
         if (!Files.exists(modelDir) || !Files.isDirectory(modelDir)) {
-            System.err.println("模型目录不存在: " + modelDir.toAbsolutePath());
+            System.err.println("Model directory does not exist: " + modelDir.toAbsolutePath());
             return;
         }
 
         String modelName = modelDir.getFileName().toString();
-        String metadata = "models/" + modelName + "/metadata.json";
+        String metadata = modelPath + "/metadata.json";
         Json json = new Json(metadata);
         Block block = ModelBuilder.buildBlockFromJson(metadata);
-        System.out.println("使用" + modelName);
+        System.out.println("Using " + modelName);
         String engine = json.getSubJson("modelConfig").getString("engine");
         if (engine.isEmpty()) {
             engine = "PyTorch";
         }
-        // 创建模型实例，设置结构
+        // Create a model instance and set its structure
         try (Model model = Model.newInstance(modelName, engine)) {
             model.setBlock(block);
-            // 加载参数文件（自动匹配 mlp-mnist-*.params 或 cnn-mnist-*.params）
+            // Load parameter file (automatically matches *.params)
             model.load(modelDir, modelName);
-            System.out.println("模型加载成功: " + modelName);
+            System.out.println("Model loaded successfully: " + modelName);
 
             Shape inputShape = ModelBuilder.parseShape(json.getJsonNode("modelConfig").get("inputShape"));
             predict(model, imagePath, inputShape, engine);
@@ -55,20 +55,18 @@ public class Use {
 
     private static void predict(Model model, String imagePath, Shape inputShape, String engin) {
         try {
-            // 加载图片并预测
+            // Load the image and make a prediction
             BufferedImage original = ImageIO.read(Paths.get(imagePath).toFile());
-            // 创建 28x28 灰度图
+            // Create a 28x28 grayscale image
             BufferedImage grayImage = new BufferedImage(28, 28, BufferedImage.TYPE_BYTE_GRAY);
             Graphics2D g = grayImage.createGraphics();
             g.drawImage(original, 0, 0, 28, 28, null);
             g.dispose();
 
-            // 从 BufferedImage 获取像素数据
             byte[] pixelData = ((DataBufferByte) grayImage.getRaster().getDataBuffer()).getData();
-            // 构建 NDArray，形状为 (1, 1, 28, 28) 或 (1, 28, 28) 取决于模型期望
             NDArray input;
             try (NDManager manager = NDManager.newBaseManager(engin)) {
-                // 将字节数组转为 float 并归一化到 [0,1]
+                // Convert byte array to float and normalize to [0,1]
                 float[] floatData = new float[pixelData.length];
                 for (int i = 0; i < pixelData.length; ++i) {
                     floatData[i] = (pixelData[i] & 0xFF) / 255.0f;
@@ -80,16 +78,16 @@ public class Use {
                 }
                 try (Predictor<NDList, NDList> predictor = model.newPredictor(new NoopTranslator())) {
                     NDList result = predictor.predict(new NDList(input));
-                    NDArray logits = result.singletonOrThrow();          // 形状 (1, 10)
-                    // 对类别维度（索引1）应用softmax，得到概率分布
-                    NDArray probabilities = logits.softmax(1).squeeze(0); // 形状 (10,)
-                    long[] indices = probabilities.argSort(0).toLongArray(); // 升序排序
+                    NDArray logits = result.singletonOrThrow();          // Shape (1, 10)
+                    // Apply softmax along the class dimension (index 1) to obtain the probability distribution.
+                    NDArray probabilities = logits.softmax(1).squeeze(0); // Shape (10,).
+                    long[] indices = probabilities.argSort(0).toLongArray(); // Sort in ascending order
                     int len = indices.length;
-                    System.out.println("预测结果:");
+                    System.out.println("Prediction result:");
                     for (int i = 0; i < 3; ++i) {
                         int idx = (int) indices[len - 1 - i];
                         float prob = probabilities.getFloat(idx);
-                        System.out.printf("  类别 %d: %.4f%n", idx, prob);
+                        System.out.printf("  Class %d: %.4f%n", idx, prob);
                     }
                 }
             }
