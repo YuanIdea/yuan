@@ -34,41 +34,26 @@ public class Use {
 
         String modelName = modelDir.getFileName().toString();
         String metadata = "models/" + modelName + "/metadata.json";
+        Json json = new Json(metadata);
         Block block = ModelBuilder.buildBlockFromJson(metadata);
         System.out.println("使用" + modelName);
-
+        String engine = json.getSubJson("modelConfig").getString("engine");
+        if (engine.isEmpty()) {
+            engine = "PyTorch";
+        }
         // 创建模型实例，设置结构
-        try (Model model = Model.newInstance(modelName)) {
+        try (Model model = Model.newInstance(modelName, engine)) {
             model.setBlock(block);
             // 加载参数文件（自动匹配 mlp-mnist-*.params 或 cnn-mnist-*.params）
             model.load(modelDir, modelName);
             System.out.println("模型加载成功: " + modelName);
 
-            Json json = new Json(metadata);
             Shape inputShape = ModelBuilder.parseShape(json.getJsonNode("modelConfig").get("inputShape"));
-            NDArray input = getGray(imagePath, inputShape);
-            if (input == null) {
-                System.out.println("Failed to parse data.");
-                return;
-            }
-            try (Predictor<NDList, NDList> predictor = model.newPredictor(new NoopTranslator())) {
-                NDList result = predictor.predict(new NDList(input));
-                NDArray logits = result.singletonOrThrow();          // 形状 (1, 10)
-                // 对类别维度（索引1）应用softmax，得到概率分布
-                NDArray probabilities = logits.softmax(1).squeeze(0); // 形状 (10,)
-                long[] indices = probabilities.argSort(0).toLongArray(); // 升序排序
-                int len = indices.length;
-                System.out.println("预测结果:");
-                for (int i = 0; i < 3; ++i) {
-                    int idx = (int) indices[len - 1 - i];
-                    float prob = probabilities.getFloat(idx);
-                    System.out.printf("  类别 %d: %.4f%n", idx, prob);
-                }
-            }
+            predict(model, imagePath, inputShape, engine);
         }
     }
 
-    private static NDArray getGray(String imagePath, Shape inputShape) {
+    private static void predict(Model model, String imagePath, Shape inputShape, String engin) {
         try {
             // 加载图片并预测
             BufferedImage original = ImageIO.read(Paths.get(imagePath).toFile());
@@ -81,17 +66,35 @@ public class Use {
             // 从 BufferedImage 获取像素数据
             byte[] pixelData = ((DataBufferByte) grayImage.getRaster().getDataBuffer()).getData();
             // 构建 NDArray，形状为 (1, 1, 28, 28) 或 (1, 28, 28) 取决于模型期望
-            NDManager manager = NDManager.newBaseManager();
-            // 将字节数组转为 float 并归一化到 [0,1]
-            float[] floatData = new float[pixelData.length];
-            for (int i = 0; i < pixelData.length; ++i) {
-                floatData[i] = (pixelData[i] & 0xFF) / 255.0f;
-            }
+            NDArray input;
+            try (NDManager manager = NDManager.newBaseManager(engin)) {
+                // 将字节数组转为 float 并归一化到 [0,1]
+                float[] floatData = new float[pixelData.length];
+                for (int i = 0; i < pixelData.length; ++i) {
+                    floatData[i] = (pixelData[i] & 0xFF) / 255.0f;
+                }
 
-            return manager.create(floatData, inputShape);
+                input = manager.create(floatData, inputShape);
+                if (input == null) {
+                    System.out.println("Failed to parse data.");
+                }
+                try (Predictor<NDList, NDList> predictor = model.newPredictor(new NoopTranslator())) {
+                    NDList result = predictor.predict(new NDList(input));
+                    NDArray logits = result.singletonOrThrow();          // 形状 (1, 10)
+                    // 对类别维度（索引1）应用softmax，得到概率分布
+                    NDArray probabilities = logits.softmax(1).squeeze(0); // 形状 (10,)
+                    long[] indices = probabilities.argSort(0).toLongArray(); // 升序排序
+                    int len = indices.length;
+                    System.out.println("预测结果:");
+                    for (int i = 0; i < 3; ++i) {
+                        int idx = (int) indices[len - 1 - i];
+                        float prob = probabilities.getFloat(idx);
+                        System.out.printf("  类别 %d: %.4f%n", idx, prob);
+                    }
+                }
+            }
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
-        return null;
     }
 }

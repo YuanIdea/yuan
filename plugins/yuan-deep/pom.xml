@@ -40,26 +40,26 @@
             <artifactId>yuan-common</artifactId>
             <version>1.0.8</version>
         </dependency>
-
         <!-- DJL 核心 API，版本由 BOM 管理 -->
         <dependency>
             <groupId>ai.djl</groupId>
             <artifactId>api</artifactId>
         </dependency>
-
         <!-- 数据集模块 -->
         <dependency>
             <groupId>ai.djl</groupId>
             <artifactId>basicdataset</artifactId>
         </dependency>
-
-        <!-- PyTorch 引擎后端 -->
+        <!-- MXNet -->
+        <dependency>
+            <groupId>ai.djl.mxnet</groupId>
+            <artifactId>mxnet-model-zoo</artifactId>
+        </dependency>
+        <!-- Pytorch -->
         <dependency>
             <groupId>ai.djl.pytorch</groupId>
-            <artifactId>pytorch-engine</artifactId>
-            <scope>compile</scope>
+            <artifactId>pytorch-model-zoo</artifactId>
         </dependency>
-
         <!-- 明确指定 CPU 版本原生库，classifier 请根据你的系统修改 -->
         <dependency>
             <groupId>ai.djl.pytorch</groupId>

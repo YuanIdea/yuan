@@ -1,5 +1,7 @@
 {
   "modelConfig": {
+    "name": "mlp",
+    "engine": "PyTorch",
     "inputShape": [1, 28, 28],
     "layers": [
       {"type": "flatten"},

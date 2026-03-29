@@ -1,5 +1,7 @@
 {
   "modelConfig": {
+    "name": "lstm",
+    "engine": "PyTorch",
     "inputShape": [1, 1, 28, 28],
     "layers": [
       {"type": "lstm", "units": 16, "returnSequences": false},
