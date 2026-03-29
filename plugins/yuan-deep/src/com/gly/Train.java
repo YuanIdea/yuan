@@ -2,7 +2,7 @@ package com.gly;
 
 import ai.djl.Model;
 import ai.djl.ndarray.types.Shape;
-import ai.djl.nn.SequentialBlock;
+import ai.djl.nn.Block;
 import ai.djl.training.DefaultTrainingConfig;
 import ai.djl.training.EasyTrain;
 import ai.djl.training.Trainer;
@@ -14,6 +14,7 @@ import ai.djl.training.optimizer.Adam;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.gly.io.json.Json;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -43,26 +44,33 @@ public class Train {
      * Model training and saving methods.
      */
     public void trainAndSaveModel(Json json, Dataset trainDataset, Dataset testDataset, int numEpochs) throws Exception {
+        // Parse input shape from configuration
         Shape inputShape = ModelBuilder.parseShape(json.getJsonNode("modelConfig").get("inputShape"));
-        SequentialBlock block = (SequentialBlock) ModelBuilder.buildBlockFromJson(metadata);
-        // Create model and set network structure.
-        Model model = Model.newInstance(modelName);
-        model.setBlock(block);
 
-        // Configure the trainer.
-        DefaultTrainingConfig config = new DefaultTrainingConfig(Loss.softmaxCrossEntropyLoss())
-                .addEvaluator(new Accuracy())
-                .optOptimizer(Adam.builder().build())
-                .addTrainingListeners(TrainingListener.Defaults.logging());
+        // Build the model block (returns a Block, avoid casting to SequentialBlock)
+        Block block = ModelBuilder.buildBlockFromJson(metadata);
 
-        try (Trainer trainer = model.newTrainer(config)) {
-            trainer.initialize(inputShape);
-            System.out.println("Start training " + modelName + "...");
-            EasyTrain.fit(trainer, numEpochs, trainDataset, testDataset);
-        }
+        // Use try-with-resources to automatically close the model
+        try (Model model = Model.newInstance(modelName)) {
+            model.setBlock(block);
 
-        Path modelDir = Paths.get("models", modelName);
-        model.save(modelDir, modelName);
-        System.out.println("Model saved to:" + modelDir.toAbsolutePath());
+            // Configure training settings
+            DefaultTrainingConfig config = new DefaultTrainingConfig(Loss.softmaxCrossEntropyLoss())
+                    .addEvaluator(new Accuracy())
+                    .optOptimizer(Adam.builder().build())
+                    .addTrainingListeners(TrainingListener.Defaults.logging());
+
+            try (Trainer trainer = model.newTrainer(config)) {
+                trainer.initialize(inputShape);
+                System.out.println("Start training " + modelName + "...");
+                EasyTrain.fit(trainer, numEpochs, trainDataset, testDataset);
+            } // Trainer automatically closed
+
+            // Save the trained model
+            Path modelDir = Paths.get("models", modelName);
+            Files.createDirectories(modelDir); // Ensure directory exists
+            model.save(modelDir, modelName);
+            System.out.println("Model saved to: " + modelDir.toAbsolutePath());
+        } // Model automatically closed
     }
 }
