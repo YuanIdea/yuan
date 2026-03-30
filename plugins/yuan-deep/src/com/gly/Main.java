@@ -12,7 +12,7 @@ public class Main {
         String modelPath = "models/" + modelName;
 
         Train train = new Train();
-        train.fit(modelPath);
+        train.trainAndSaveModel(modelPath);
 
         Use.predictWithModel(modelPath, "test-digit.png");
     }
