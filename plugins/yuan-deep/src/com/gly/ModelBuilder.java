@@ -45,8 +45,6 @@ public class ModelBuilder {
      */
     public static Block buildBlockFromModelConfig(JsonNode modelConfig) {
         JsonNode layersNode = modelConfig.get("layers");
-        Json json = new Json();
-        json.setRootNode(modelConfig);
         if (layersNode == null || !layersNode.isArray()) {
             throw new IllegalArgumentException("Missing or invalid 'layers' array");
         }
@@ -141,10 +139,11 @@ public class ModelBuilder {
                     return input.reshape(new Shape(batchSize, time, channel));
                 });
         int lstmUnits = layer.get("units").asInt();
+        int numLayers = layer.get("numLayers").asInt();
         block.add(
                 new LSTM.Builder()
                         .setStateSize(lstmUnits)
-                        .setNumLayers(1)
+                        .setNumLayers(numLayers)
                         .optDropRate(0)
                         .optReturnState(false)
                         .build());
