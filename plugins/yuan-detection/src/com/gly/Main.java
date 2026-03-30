@@ -56,7 +56,7 @@ public class Main {
 
     public static void main(String[] args) {
         // Model directory path (relative to the current working directory)
-        String modelDirPath = "src/resources/yolo";
+        String modelDirPath = "model";
         String modelUrl = Paths.get(modelDirPath).toUri().toString();
         System.out.println("Model directory URL: " + modelUrl);
 
