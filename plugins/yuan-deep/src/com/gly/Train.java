@@ -44,7 +44,7 @@ public class Train {
             Shape inputShape = ModelBuilder.parseShape(json.getJsonNode("modelConfig").get("inputShape"));
             // Build the model block (returns a Block, avoid casting to SequentialBlock)
             Block block = ModelBuilder.buildBlockFromJson(metadataPath);
-            String modelName = extractModelName(metadataPath);
+            String modelName = extractModelName(metadataPath, 2);
             // Use try-with-resources to automatically close the model
             try (Model model = Model.newInstance(modelName, engine)) {
                 // Print the current engine.
@@ -59,7 +59,7 @@ public class Train {
                 }
 
                 // Save the trained model
-                Path modelDir = Paths.get("models", modelName);
+                Path modelDir = Paths.get(modelPath);
                 Files.createDirectories(modelDir); // Ensure directory exists
                 model.save(modelDir, modelName);
                 System.out.println("Model saved to: " + modelDir.toAbsolutePath());
@@ -81,16 +81,17 @@ public class Train {
      * Extracts the model name by splitting the path with the system file separator.
      *
      * @param metadataPath The full path to the metadata.json file
+     * @param index        Get the index value of the truncated directory
      * @return The model name (the directory name right before "metadata.json")
      */
-    public static String extractModelName(String metadataPath) {
+    public static String extractModelName(String metadataPath, int index) {
         // Normalize separators to the system default
         String normalized = metadataPath.replace('/', File.separatorChar)
                 .replace('\\', File.separatorChar);
         String[] parts = normalized.split(File.separator.equals("\\") ? "\\\\" : File.separator);
         // The last part is "metadata.json", the one before is the model name
-        if (parts.length >= 2) {
-            return parts[parts.length - 2];
+        if (parts.length > index) {
+            return parts[index];
         }
         throw new IllegalArgumentException("Invalid path format: " + metadataPath);
     }

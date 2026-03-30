@@ -6,10 +6,12 @@ import java.awt.*;
 public class Main {
 
     public static void main(String[] args) throws Exception {
-        String modelName = "mlp-mnist";
-        //String modelName = "cnn-mnist";
-        //String modelName = "lstm-mnist";
-        String modelPath = "models/" + modelName;
+        String modelName = "mlp";
+        //modelName = "cnn";
+        //modelName = "lenet5";
+        //modelName = "lstm";
+
+        String modelPath = "models/mnist/" + modelName;
 
         Train train = new Train();
         train.trainAndSaveModel(modelPath);

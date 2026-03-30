@@ -1,0 +1,21 @@
+{
+  "modelConfig": {
+    "name": "lenet5",
+    "inputShape": [1, 1, 28, 28],
+    "engine": "PyTorch",
+    "layers": [
+      {"type": "conv2d", "filters": 6, "kernelSize": [5,5], "padding": [2,2], "activation": "sigmoid"},
+      {"type": "avgPool2d", "poolSize": [2,2], "stride": [2,2]},
+      {"type": "conv2d", "filters": 16, "kernelSize": [5,5], "activation": "sigmoid"},
+      {"type": "avgPool2d", "poolSize": [2,2], "stride": [2,2]},
+      {"type": "flatten"},
+      {"type": "dense", "units": 120, "activation": "sigmoid"},
+      {"type": "dense", "units": 84 , "activation": "sigmoid"},
+      {"type": "dense", "units": 10, "activation": "linear"}
+    ]
+  },
+  "training": {
+    "batchSize": 64,
+    "epochs": 5
+  }
+}

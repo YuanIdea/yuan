@@ -100,9 +100,7 @@ public class ModelBuilder {
     private static void conv2(JsonNode layer, SequentialBlock block) {
         int filters = layer.get("filters").asInt();
         Shape kernelSize = parseShape(layer.get("kernelSize"));
-        Conv2d.Builder convBuilder = Conv2d.builder()
-                .setFilters(filters)
-                .setKernelShape(kernelSize);
+        Conv2d.Builder convBuilder = Conv2d.builder().setFilters(filters).setKernelShape(kernelSize);
         if (layer.has("stride")) {
             convBuilder.optStride(parseShape(layer.get("stride")));
         }
