@@ -1,7 +1,7 @@
 {
   "modelConfig": {
     "name": "lenet5",
-    "inputShape": [1, 1, 28, 28],
+    "inputShape": [1, 28, 28],
     "engine": "PyTorch",
     "layers": [
       {"type": "conv2d", "filters": 6, "kernelSize": [5,5], "padding": [2,2], "activation": "sigmoid"},

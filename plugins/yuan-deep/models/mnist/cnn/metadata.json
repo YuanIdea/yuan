@@ -2,7 +2,7 @@
   "modelConfig": {
     "name": "cnn",
     "engine": "MXNet",
-    "inputShape": [1, 1, 28, 28],
+    "inputShape": [1, 28, 28],
     "layers": [
       {"type": "conv2d", "filters": 32, "kernelSize": [3,3], "activation": "relu", "padding": "same"},
       {"type": "avgPool2d", "poolSize": [2,2]},

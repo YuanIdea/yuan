@@ -2,7 +2,7 @@
   "modelConfig": {
     "name": "mlp",
     "engine": "PyTorch",
-    "inputShape": [1, 28, 28],
+    "inputShape": [28, 28],
     "layers": [
       {"type": "flatten"},
       {"type": "dense", "units": 128, "activation": "relu"},

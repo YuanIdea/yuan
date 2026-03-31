@@ -35,7 +35,8 @@ public class Train {
             int batchSize = training.getInt("batchSize");
             int numEpochs = training.getInt("epochs");
             MnistData mnistData = new MnistData();
-            String engine = json.getSubJson("modelConfig").getString("engine");
+            Json sequence = json.getSubJson("modelConfig");
+            String engine = sequence.getString("engine");
             if (engine.isEmpty()) {
                 engine = "PyTorch";
             }
@@ -45,6 +46,8 @@ public class Train {
             // Build the model block (returns a Block, avoid casting to SequentialBlock)
             Block block = ModelBuilder.buildBlockFromJson(metadataPath);
             String modelName = extractModelName(metadataPath, 2);
+
+            Shape fullShape = ModelBuilder.concatWithBatchSize(batchSize, inputShape);
             // Use try-with-resources to automatically close the model
             try (Model model = Model.newInstance(modelName, engine)) {
                 // Print the current engine.
@@ -53,7 +56,7 @@ public class Train {
                 DefaultTrainingConfig config = setupTrainingConfig();
                 try (Trainer trainer = model.newTrainer(config)) {
                     trainer.setMetrics(new Metrics());
-                    trainer.initialize(inputShape);
+                    trainer.initialize(fullShape);
                     System.out.println("Start training " + modelName + "...");
                     EasyTrain.fit(trainer, numEpochs, mnistData.trainDataset, mnistData.testDataset);
                 }

@@ -180,13 +180,24 @@ public class ModelBuilder {
             return new Shape(node.asLong());
         } else if (node.isArray()) {
             long[] dims = new long[node.size()];
-            for (int i = 0; i < node.size(); i++) {
+            for (int i = 0; i < node.size(); ++i) {
                 dims[i] = node.get(i).asLong();
             }
             return new Shape(dims);
         } else {
             throw new IllegalArgumentException("Invalid shape node: " + node);
         }
+    }
+
+    public static Shape concatWithBatchSize(int batchSize, Shape inputShape) {
+        // 创建新数组，长度 = 1 (batchSize) + inputShape.length
+        int length = inputShape.dimension();
+        long[] fullShape = new long[1 + length];
+        fullShape[0] = batchSize;
+        for (int i = 0; i < length; ++i) {
+            fullShape[i + 1] = inputShape.get(i);
+        }
+        return new Shape(fullShape);
     }
 
     private static Shape parsePadding(String padding, Shape kernelSize) {

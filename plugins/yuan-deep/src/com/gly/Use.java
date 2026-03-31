@@ -72,7 +72,7 @@ public class Use {
                     floatData[i] = (pixelData[i] & 0xFF) / 255.0f;
                 }
 
-                input = manager.create(floatData, inputShape);
+                input = manager.create(floatData, ModelBuilder.concatWithBatchSize(1, inputShape));
                 if (input == null) {
                     System.out.println("Failed to parse data.");
                 }
