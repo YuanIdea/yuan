@@ -130,21 +130,13 @@ public class ModelBuilder {
     private static void lstm(JsonNode layer, SequentialBlock block) {
         int lstmUnits = layer.get("units").asInt();
         int numLayers = layer.get("numLayers").asInt();
-        block.addSingleton(
-                        input -> {
-                            Shape inputShape = input.getShape();
-                            long batchSize = inputShape.get(0);
-                            long channel = inputShape.get(3);
-                            long time = inputShape.size() / (batchSize * channel);
-                            return input.reshape(new Shape(batchSize, time, channel));
-                        })
-                .add(
-                        new LSTM.Builder()
-                                .setStateSize(lstmUnits)
-                                .setNumLayers(numLayers)
-                                .optDropRate(0)
-                                .optReturnState(false)
-                                .build());
+        block.add(
+                new LSTM.Builder()
+                        .setStateSize(lstmUnits)
+                        .setNumLayers(numLayers)
+                        .optDropRate(0)
+                        .optReturnState(false)
+                        .build());
     }
 
     /**
@@ -189,7 +181,7 @@ public class ModelBuilder {
         }
     }
 
-    public static Shape concatWithBatchSize(int batchSize, Shape inputShape) {
+    public static Shape concatWithBatchSize(long batchSize, Shape inputShape) {
         // Create a new array with length = 1 (batchSize) + inputShape.dimension()
         int length = inputShape.dimension();
         long[] fullShape = new long[1 + length];

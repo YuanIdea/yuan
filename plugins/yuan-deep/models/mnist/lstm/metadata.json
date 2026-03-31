@@ -1,7 +1,7 @@
 {
   "modelConfig": {
     "name": "lstm",
-    "inputShape": [1, 28, 28],
+    "inputShape": [28, 28],
     "layers": [
       {"type": "lstm", "units": 16, "numLayers":2},
       {"type": "flatten"},

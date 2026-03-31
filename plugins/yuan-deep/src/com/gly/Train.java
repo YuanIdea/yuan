@@ -40,14 +40,16 @@ public class Train {
             if (engine.isEmpty()) {
                 engine = "PyTorch";
             }
-            mnistData.loadData(batchSize, engine);
             // Parse input shape from configuration
             Shape inputShape = ModelBuilder.parseShape(json.getJsonNode("modelConfig").get("inputShape"));
+            Shape fullShape = ModelBuilder.concatWithBatchSize(batchSize, inputShape);
+            mnistData.loadData(engine, batchSize, inputShape);
+
             // Build the model block (returns a Block, avoid casting to SequentialBlock)
             Block block = ModelBuilder.buildBlockFromJson(metadataPath);
             String modelName = extractModelName(metadataPath, 2);
 
-            Shape fullShape = ModelBuilder.concatWithBatchSize(batchSize, inputShape);
+
             // Use try-with-resources to automatically close the model
             try (Model model = Model.newInstance(modelName, engine)) {
                 // Print the current engine.
