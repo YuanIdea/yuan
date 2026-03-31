@@ -14,7 +14,7 @@ import java.net.URL;
  */
 class AboutDialog {
 
-    private static final String VERSION = "2026.03.24";
+    private static final String VERSION = "2026.03.31";
     private static final String WEB = "https://github.com/YuanIdea/yuan";
 
     static void showAboutDialog(JFrame parent) {
