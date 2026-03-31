@@ -128,23 +128,23 @@ public class ModelBuilder {
     }
 
     private static void lstm(JsonNode layer, SequentialBlock block) {
-        block.addSingleton(
-                input -> {
-                    Shape inputShape = input.getShape();
-                    long batchSize = inputShape.get(0);
-                    long channel = inputShape.get(3);
-                    long time = inputShape.size() / (batchSize * channel);
-                    return input.reshape(new Shape(batchSize, time, channel));
-                });
         int lstmUnits = layer.get("units").asInt();
         int numLayers = layer.get("numLayers").asInt();
-        block.add(
-                new LSTM.Builder()
-                        .setStateSize(lstmUnits)
-                        .setNumLayers(numLayers)
-                        .optDropRate(0)
-                        .optReturnState(false)
-                        .build());
+        block.addSingleton(
+                        input -> {
+                            Shape inputShape = input.getShape();
+                            long batchSize = inputShape.get(0);
+                            long channel = inputShape.get(3);
+                            long time = inputShape.size() / (batchSize * channel);
+                            return input.reshape(new Shape(batchSize, time, channel));
+                        })
+                .add(
+                        new LSTM.Builder()
+                                .setStateSize(lstmUnits)
+                                .setNumLayers(numLayers)
+                                .optDropRate(0)
+                                .optReturnState(false)
+                                .build());
     }
 
     /**
@@ -190,7 +190,7 @@ public class ModelBuilder {
     }
 
     public static Shape concatWithBatchSize(int batchSize, Shape inputShape) {
-        // 创建新数组，长度 = 1 (batchSize) + inputShape.length
+        // Create a new array with length = 1 (batchSize) + inputShape.dimension()
         int length = inputShape.dimension();
         long[] fullShape = new long[1 + length];
         fullShape[0] = batchSize;
