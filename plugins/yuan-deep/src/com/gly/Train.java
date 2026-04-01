@@ -11,6 +11,7 @@ import ai.djl.training.Trainer;
 import ai.djl.training.evaluator.Accuracy;
 import ai.djl.training.listener.TrainingListener;
 import ai.djl.training.loss.Loss;
+import ai.djl.training.loss.SoftmaxCrossEntropyLoss;
 import ai.djl.training.optimizer.Adam;
 import com.gly.io.json.Json;
 
@@ -43,23 +44,21 @@ public class Train {
             // Parse input shape from configuration
             Shape inputShape = ModelBuilder.parseShape(json.getJsonNode("modelConfig").get("inputShape"));
             Shape fullShape = ModelBuilder.concatWithBatchSize(batchSize, inputShape);
-            mnistData.loadData(engine, batchSize, inputShape);
-
-            // Build the model block (returns a Block, avoid casting to SequentialBlock)
+            mnistData.loadData(engine, batchSize, inputShape, 10, true);
             Block block = ModelBuilder.buildBlockFromJson(metadataPath);
             String modelName = extractModelName(metadataPath, 2);
-
 
             // Use try-with-resources to automatically close the model
             try (Model model = Model.newInstance(modelName, engine)) {
                 // Print the current engine.
                 model.setBlock(block);
                 // Configure training settings
-                DefaultTrainingConfig config = setupTrainingConfig();
+                DefaultTrainingConfig config = setupTrainingConfig(training.getString("loss"));
                 try (Trainer trainer = model.newTrainer(config)) {
                     trainer.setMetrics(new Metrics());
                     trainer.initialize(fullShape);
                     System.out.println("Start training " + modelName + "...");
+
                     EasyTrain.fit(trainer, numEpochs, mnistData.trainDataset, mnistData.testDataset);
                 }
 
@@ -71,11 +70,22 @@ public class Train {
             }
         } catch (Exception e) {
             System.err.println(e.getMessage());
+            e.printStackTrace();
         }
     }
 
-    private static DefaultTrainingConfig setupTrainingConfig() {
-        return new DefaultTrainingConfig(Loss.softmaxCrossEntropyLoss())
+    private static DefaultTrainingConfig setupTrainingConfig(String lossName) {
+        Loss loss;
+        lossName = lossName.toLowerCase();
+        if ("crossentropy".equals(lossName)) {
+            //loss = Loss.softmaxCrossEntropyLoss();
+            loss = new SoftmaxCrossEntropyLoss("softmax", 1.0f, -1, false, true); // 接受 one‑hot
+        } else if ("mse".equals(lossName)) {
+            loss = Loss.l2Loss(); // 直接使用 one‑hot
+        } else {
+            loss = Loss.l2Loss();
+        }
+        return new DefaultTrainingConfig(loss)
                 .addEvaluator(new Accuracy("accuracy"))
                 .optDevices(maxGpus)
                 .optOptimizer(Adam.builder().build())

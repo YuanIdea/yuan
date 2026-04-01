@@ -12,6 +12,7 @@
   },
   "training": {
     "batchSize": 64,
+    "loss":"mse",
     "epochs": 5
   }
 }

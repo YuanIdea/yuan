@@ -13,6 +13,7 @@
   },
   "training": {
     "batchSize": 64,
+    "loss":"crossEntropy",
     "epochs": 5
   }
 }

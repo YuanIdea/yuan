@@ -8,6 +8,7 @@ import ai.djl.training.dataset.Dataset;
 import ai.djl.training.dataset.RandomAccessDataset;
 import ai.djl.training.util.ProgressBar;
 import ai.djl.translate.Pipeline;
+import ai.djl.translate.TranslateException;
 
 import java.io.IOException;
 
@@ -16,43 +17,63 @@ public class MnistData {
     public RandomAccessDataset testDataset;
 
     /**
-     * Loads the MNIST dataset, optionally reshaping the image data to a target shape.
+     * 加载 MNIST 数据集，支持图像重塑和可选 one-hot 标签。
      *
-     * @param engine      the deep learning engine (e.g., "PyTorch")
-     * @param batchSize   the batch size
-     * @param targetShape the target shape (without the batch dimension)
+     * @param engine      深度学习引擎（如 "PyTorch"）
+     * @param batchSize   批次大小
+     * @param targetShape 图像目标形状（不含 batch 维度），为 null 则保持原始形状
+     * @param numClasses  类别数（用于 one-hot，若 oneHot 为 false 则忽略）
+     * @param oneHot      是否将标签转为 one-hot 格式
      */
-    public void loadData(String engine, int batchSize, Shape targetShape) {
+    public void loadData(String engine, int batchSize, Shape targetShape, int numClasses, boolean oneHot) {
         try {
-            trainDataset = getDataset(Dataset.Usage.TRAIN, batchSize, engine, targetShape);
-            testDataset = getDataset(Dataset.Usage.TEST, batchSize, engine, targetShape);
+            trainDataset = getDataset(Dataset.Usage.TRAIN, batchSize, engine, targetShape, numClasses, oneHot);
+            testDataset = getDataset(Dataset.Usage.TEST, batchSize, engine, targetShape, numClasses, oneHot);
         } catch (Exception e) {
             System.err.println("Failed to load dataset: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Dataset loading failed", e); // 终止程序，暴露问题
         }
+    }
+
+    /**
+     * 兼容旧版：不进行 one-hot 转换。
+     */
+    public void loadData(String engine, int batchSize, Shape targetShape) {
+        loadData(engine, batchSize, targetShape, 0, false);
     }
 
     private static RandomAccessDataset getDataset(Dataset.Usage usage, int batchSize,
-                                                  String engine, Shape targetShape)
-            throws IOException {
-        // Build the data preprocessing pipeline
+                                                  String engine, Shape targetShape,
+                                                  int numClasses, boolean oneHot)
+            throws IOException, TranslateException {
+        // 构建图像预处理管道
         Pipeline pipeline = new Pipeline();
         if (targetShape != null) {
-            // Add a custom transformation: reshape the image to the target shape
-            pipeline.add((NDArray array) -> {
-                Shape shape = ModelBuilder.concatWithBatchSize(array.getShape().get(0), targetShape);
-                return array.reshape(shape);
-            });
+            pipeline.add((NDArray array) -> array.reshape(targetShape));
         }
 
-        Mnist mnist = Mnist.builder()
-                .optUsage(usage)
-                .optManager(NDManager.newBaseManager(engine))
-                .setSampling(batchSize, true)
-                .optLimit(Long.MAX_VALUE)
-                .optPipeline(pipeline) // Apply the preprocessing pipeline
-                .build();
-
-        mnist.prepare(new ProgressBar());
-        return mnist;
+        RandomAccessDataset dataset;
+        if (oneHot && numClasses > 0) {
+            dataset = MnistOneHot.builder()
+                    .optUsage(usage)
+                    .optManager(NDManager.newBaseManager(engine))
+                    .setSampling(batchSize, true)
+                    .optLimit(Long.MAX_VALUE)
+                    .optPipeline(pipeline)
+                    .optNumClasses(numClasses)
+                    .build();
+        } else {
+            dataset = Mnist.builder()
+                    .optUsage(usage)
+                    .optManager(NDManager.newBaseManager(engine))
+                    .setSampling(batchSize, true)
+                    .optLimit(Long.MAX_VALUE)
+                    .optPipeline(pipeline)
+                    .build();
+        }
+        dataset.prepare(new ProgressBar());
+        return dataset;
     }
+
 }
