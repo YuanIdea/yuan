@@ -8,6 +8,7 @@ import ai.djl.nn.Block;
 import ai.djl.training.DefaultTrainingConfig;
 import ai.djl.training.EasyTrain;
 import ai.djl.training.Trainer;
+import ai.djl.training.dataset.Dataset;
 import ai.djl.training.evaluator.Accuracy;
 import ai.djl.training.listener.TrainingListener;
 import ai.djl.training.loss.Loss;
@@ -27,15 +28,16 @@ public class Train {
      * Model training and saving methods.
      *
      * @param modelPath Path to the model directory.
+     * @param trainingDataset Dataset used for training.
+     * @param validateDataset Dataset used for validation.
      */
-    public void trainAndSaveModel(String modelPath) {
+    public void trainAndSaveModel(String modelPath, Dataset trainingDataset, Dataset validateDataset) {
         String metadataPath = modelPath + "/metadata.json";
         try {
             Json json = new Json(metadataPath);
             Json training = json.getSubJson("training");
             int batchSize = training.getInt("batchSize");
             int numEpochs = training.getInt("epochs");
-            MnistData mnistData = new MnistData();
             Json sequence = json.getSubJson("modelConfig");
             String engine = sequence.getString("engine");
             if (engine.isEmpty()) {
@@ -44,7 +46,7 @@ public class Train {
             // Parse input shape from configuration
             Shape inputShape = ModelBuilder.parseShape(json.getJsonNode("modelConfig").get("inputShape"));
             Shape fullShape = ModelBuilder.concatWithBatchSize(batchSize, inputShape);
-            mnistData.loadData(engine, batchSize, inputShape, 10, true);
+
             Block block = ModelBuilder.buildBlockFromJson(metadataPath);
             String modelName = extractModelName(metadataPath, 2);
 
@@ -59,7 +61,7 @@ public class Train {
                     trainer.initialize(fullShape);
                     System.out.println("Start training " + modelName + "...");
 
-                    EasyTrain.fit(trainer, numEpochs, mnistData.trainDataset, mnistData.testDataset);
+                    EasyTrain.fit(trainer, numEpochs, trainingDataset, validateDataset);
                 }
 
                 // Save the trained model
