@@ -1,10 +1,11 @@
 package com.gly;
 
 import ai.djl.basicdataset.cv.classification.Mnist;
+import ai.djl.modality.cv.transform.ToTensor;
 import ai.djl.ndarray.NDArray;
 import ai.djl.ndarray.NDList;
 import ai.djl.ndarray.NDManager;
-import ai.djl.training.util.ProgressBar;
+import ai.djl.ndarray.types.Shape;
 import ai.djl.translate.Pipeline;
 import ai.djl.training.dataset.RandomAccessDataset;
 import ai.djl.training.dataset.Dataset;
@@ -30,19 +31,18 @@ public class MnistOneHot extends RandomAccessDataset {
     private MnistOneHot(Builder builder) {
         super(builder);  // Must call super constructor with builder
         this.numClasses = builder.numClasses;
-        this.pipeline = builder.pipeline;
+        this.pipeline = new Pipeline();
+        if (builder.targetShape != null) {
+            pipeline.add((NDArray array) -> array.reshape(builder.targetShape));
+        }
+        pipeline.add((NDArray array) -> array.div(255f));
+
         this.base = Mnist.builder()
                 .optUsage(builder.usage)
                 .optManager(builder.manager)
                 .setSampling(builder.batchSize, builder.sampling)
                 .optLimit(builder.limit)
-                .optPipeline(null)
                 .build();
-        try {
-            this.base.prepare(new ProgressBar());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
 
     }
 
@@ -76,7 +76,6 @@ public class MnistOneHot extends RandomAccessDataset {
         return base.size();
     }
 
-    // ==================== Builder pattern ====================
 
     public static Builder builder() {
         return new Builder();
@@ -84,12 +83,12 @@ public class MnistOneHot extends RandomAccessDataset {
 
     public static final class Builder extends BaseBuilder<Builder> {
         private int numClasses;
-        private Pipeline pipeline;
         private NDManager manager;
         private int batchSize;
         private boolean sampling;
         private long limit;
         private Dataset.Usage usage;
+        private Shape targetShape;
 
         @Override
         protected Builder self() {
@@ -122,6 +121,11 @@ public class MnistOneHot extends RandomAccessDataset {
             super.setSampling(batchSize, random);
             this.batchSize = batchSize;
             this.sampling = random;
+            return this;
+        }
+
+        public Builder optTargetShape(Shape targetShape) {
+            this.targetShape = targetShape;
             return this;
         }
 

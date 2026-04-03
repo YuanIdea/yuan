@@ -1,6 +1,7 @@
 package com.gly;
 
 import ai.djl.basicdataset.cv.classification.Mnist;
+import ai.djl.modality.cv.transform.ToTensor;
 import ai.djl.ndarray.NDArray;
 import ai.djl.ndarray.NDManager;
 import ai.djl.ndarray.types.Shape;
@@ -47,11 +48,6 @@ public class MnistData {
                                                   String engine, Shape targetShape,
                                                   int numClasses, boolean oneHot)
             throws IOException, TranslateException {
-        // 构建图像预处理管道
-        Pipeline pipeline = new Pipeline();
-        if (targetShape != null) {
-            pipeline.add((NDArray array) -> array.reshape(targetShape));
-        }
 
         RandomAccessDataset dataset;
         if (oneHot && numClasses > 0) {
@@ -60,10 +56,15 @@ public class MnistData {
                     .optManager(NDManager.newBaseManager(engine))
                     .setSampling(batchSize, true)
                     .optLimit(Long.MAX_VALUE)
-                    .optPipeline(pipeline)
+                    .optTargetShape(targetShape)
                     .optNumClasses(numClasses)
                     .build();
         } else {
+            Pipeline pipeline = new Pipeline();
+            if (targetShape != null) {
+                pipeline.add((NDArray array) -> array.reshape(targetShape));
+            }
+            pipeline.add((NDArray array) -> array.div(255f));
             dataset = Mnist.builder()
                     .optUsage(usage)
                     .optManager(NDManager.newBaseManager(engine))

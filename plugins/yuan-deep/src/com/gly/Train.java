@@ -78,7 +78,6 @@ public class Train {
         Loss loss;
         lossName = lossName.toLowerCase();
         if ("crossentropy".equals(lossName)) {
-            //loss = Loss.softmaxCrossEntropyLoss();
             loss = new SoftmaxCrossEntropyLoss("softmax", 1.0f, -1, false, true); // 接受 one‑hot
         } else if ("mse".equals(lossName)) {
             loss = Loss.l2Loss(); // 直接使用 one‑hot
