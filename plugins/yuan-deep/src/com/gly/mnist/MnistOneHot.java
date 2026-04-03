@@ -1,7 +1,6 @@
-package com.gly;
+package com.gly.mnist;
 
 import ai.djl.basicdataset.cv.classification.Mnist;
-import ai.djl.modality.cv.transform.ToTensor;
 import ai.djl.ndarray.NDArray;
 import ai.djl.ndarray.NDList;
 import ai.djl.ndarray.NDManager;

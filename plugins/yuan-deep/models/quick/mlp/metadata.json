@@ -1,0 +1,18 @@
+{
+  "modelConfig": {
+    "name": "mlp",
+    "engine": "PyTorch",
+    "inputShape": [2],
+    "layers": [
+      {"type": "flatten"},
+      {"type": "dense", "units": 128, "activation": "sigmoid"},
+      {"type": "dense", "units": 64, "activation": "sigmoid"},
+      {"type": "dense", "units": 1}
+    ]
+  },
+  "training": {
+    "batchSize": 64,
+    "loss":"mse",
+    "epochs": 20
+  }
+}

@@ -1,17 +1,13 @@
-package com.gly;
+package com.gly.mnist;
 
 import ai.djl.Device;
 import ai.djl.Model;
 import ai.djl.basicdataset.cv.classification.Mnist;
+import ai.djl.basicmodelzoo.basic.Mlp;
 import ai.djl.metric.Metrics;
 import ai.djl.ndarray.NDManager;
 import ai.djl.ndarray.types.Shape;
 import ai.djl.nn.Block;
-import ai.djl.nn.Blocks;
-import ai.djl.nn.SequentialBlock;
-import ai.djl.nn.core.Linear;
-import ai.djl.nn.norm.BatchNorm;
-import ai.djl.nn.recurrent.LSTM;
 import ai.djl.training.DefaultTrainingConfig;
 import ai.djl.training.EasyTrain;
 import ai.djl.training.Trainer;
@@ -27,27 +23,39 @@ import ai.djl.translate.TranslateException;
 
 import java.io.IOException;
 
-public final class TrainMnistWithLSTM {
-
+/**
+ * An example of training an image classification (MNIST) model.
+ *
+ * <p>See this <a
+ * href="https://github.com/deepjavalibrary/djl/blob/master/examples/docs/train_mnist_mlp.md">doc</a>
+ * for information about this example.
+ */
+public final class TrainMnist {
     private final static int epoch = 5;
     private final static int batchSize = 64;
     private final static String engine = "PyTorch";
-    private final static String outputDir = "list-mnist";
+    private final static String outputDir = "mlp-mnist";
     private final static Device[] maxGpus = new Device[]{Device.cpu()};
     private final static int limit = 1000;
 
-    private TrainMnistWithLSTM() {
-    }
+    private TrainMnist() {}
 
     public static void main(String[] args) throws IOException, TranslateException {
-        TrainMnistWithLSTM.runExample(args);
+        TrainMnist.runExample(args);
     }
 
     public static TrainingResult runExample(String[] args) throws IOException, TranslateException {
 
 
-        try (Model model = Model.newInstance("lstm", engine)) {
-            model.setBlock(getLSTMModel());
+        // Construct neural network
+        Block block =
+                new Mlp(
+                        Mnist.IMAGE_HEIGHT * Mnist.IMAGE_WIDTH,
+                        Mnist.NUM_CLASSES,
+                        new int[] {128, 64});
+
+        try (Model model = Model.newInstance("mlp", engine)) {
+            model.setBlock(block);
 
             // get training and validation dataset
             RandomAccessDataset trainingSet = getDataset(Dataset.Usage.TRAIN);
@@ -63,7 +71,7 @@ public final class TrainMnistWithLSTM {
                  * MNIST is 28x28 grayscale image and pre processed into 28 * 28 NDArray.
                  * 1st axis is batch axis, we can use 1 for initialization.
                  */
-                Shape inputShape = new Shape(32, 1, 28, 28);
+                Shape inputShape = new Shape(1, Mnist.IMAGE_HEIGHT * Mnist.IMAGE_WIDTH);
 
                 // initialize trainer with proper input shape
                 trainer.initialize(inputShape);
@@ -73,29 +81,6 @@ public final class TrainMnistWithLSTM {
                 return trainer.getTrainingResult();
             }
         }
-    }
-
-    private static Block getLSTMModel() {
-        SequentialBlock block = new SequentialBlock();
-        block.addSingleton(
-                input -> {
-                    Shape inputShape = input.getShape();
-                    long batchSize = inputShape.get(0);
-                    long channel = inputShape.get(3);
-                    long time = inputShape.size() / (batchSize * channel);
-                    return input.reshape(new Shape(batchSize, time, channel));
-                });
-        block.add(
-                new LSTM.Builder()
-                        .setStateSize(64)
-                        .setNumLayers(1)
-                        .optDropRate(0)
-                        .optReturnState(false)
-                        .build());
-        block.add(BatchNorm.builder().optEpsilon(1e-5f).optMomentum(0.9f).build());
-        block.add(Blocks.batchFlattenBlock());
-        block.add(Linear.builder().setUnits(10).build());
-        return block;
     }
 
     private static DefaultTrainingConfig setupTrainingConfig() {
@@ -122,7 +107,7 @@ public final class TrainMnistWithLSTM {
                 Mnist.builder()
                         .optUsage(usage)
                         .optManager(NDManager.newBaseManager(engine))
-                        .setSampling(batchSize, false, true)
+                        .setSampling(batchSize, true)
                         .optLimit(limit)
                         .build();
         mnist.prepare(new ProgressBar());
