@@ -22,20 +22,21 @@ public class Use {
     /**
      * Make predictions using a pre-trained model.
      *
-     * @param modelPath Path to the model directory
-     * @param imagePath Path to the image to be recognized
+     * @param metadataPathName Path to the model directory
+     * @param imagePath        Path to the image to be recognized
      */
-    public static void predictWithModel(String modelPath, String imagePath) throws Exception {
-        Path modelDir = Paths.get(modelPath);
+    public static void predictWithModel(String metadataPathName, String imagePath) throws Exception {
+        Path modelDir = Paths.get(metadataPathName).getParent();
+        ;
+        ;
         if (!Files.exists(modelDir) || !Files.isDirectory(modelDir)) {
             System.err.println("Model directory does not exist: " + modelDir.toAbsolutePath());
             return;
         }
 
         String modelName = modelDir.getFileName().toString();
-        String metadata = modelPath + "/metadata.json";
-        Json json = new Json(metadata);
-        Block block = ModelBuilder.buildBlockFromJson(metadata);
+        Json json = new Json(metadataPathName);
+        Block block = ModelBuilder.buildBlockFromJson(metadataPathName);
         System.out.println("Using " + modelName);
         String engine = json.getSubJson("modelConfig").getString("engine");
         if (engine.isEmpty()) {

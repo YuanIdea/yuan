@@ -19,6 +19,7 @@ import ai.djl.training.loss.SoftmaxCrossEntropyLoss;
 import ai.djl.training.optimizer.Adam;
 
 import com.gly.io.json.Json;
+import com.gly.model.BaseExecutable;
 import com.gly.util.*;
 
 import java.nio.file.Files;
@@ -28,16 +29,17 @@ import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class Train extends NetExecutable{
+public class Train extends BaseExecutable {
     private final static Device[] maxGpus = new Device[]{Device.cpu()};
     private String engine;
+
     @Override
     public void start() {
 //        String root = getRoot();
 //        String name = getName();
 
         String root = "D:/WorkSpace/github/yuan/yuan-demo/quick/";
-        String name = root+"train.json";
+        String name = root + "train.json";
 
         Json json = new Json(name);
         Json data = json.getSubJson("data");
@@ -57,7 +59,8 @@ public class Train extends NetExecutable{
                     engine = "PyTorch";
                 }
                 try (NDManager manager = NDManager.newBaseManager(engine)) {
-                    Dataset dataset = convertToDataset(manager, dataCoder.getEncode(), labelCoder.getEncode(),64, true);;
+                    Dataset dataset = convertToDataset(manager, dataCoder.getEncode(), labelCoder.getEncode(), 64, true);
+                    ;
                     trainAndSaveModel(name, dataset, dataset);
                 }
             } catch (Exception e) {
@@ -71,11 +74,12 @@ public class Train extends NetExecutable{
      * Model training and saving methods.
      *
      * @param metadataPathName Path to the model directory.
-     * @param trainingDataset Dataset used for training.
-     * @param validateDataset Dataset used for validation.
+     * @param trainingDataset  Dataset used for training.
+     * @param validateDataset  Dataset used for validation.
      */
     public void trainAndSaveModel(String metadataPathName, Dataset trainingDataset, Dataset validateDataset) {
-        Path modelDir = Paths.get(metadataPathName).getParent();;
+        Path modelDir = Paths.get(metadataPathName).getParent();
+        ;
         try {
             Json json = new Json(metadataPathName);
             Json training = json.getSubJson("training");
@@ -178,9 +182,11 @@ public class Train extends NetExecutable{
         jsonMap.put("labelMax", label.getMaxData());
         JsonUtil.writeJson(pathName, jsonMap);
     }
+
     @Override
     public void stop() {
     }
+
     @Override
     public Object getResult() {
         return null;

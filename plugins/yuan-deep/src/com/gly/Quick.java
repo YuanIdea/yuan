@@ -8,17 +8,15 @@ import ai.djl.training.dataset.Dataset;
 import com.gly.io.json.Json;
 
 public class Quick {
-    public static void train(String modelPath) {
+    public static void train(String metadataPath) {
         try (NDManager manager = NDManager.newBaseManager("PyTorch")) {
-
-            String metadataPath = modelPath + "/metadata.json";
             Json json = new Json(metadataPath);
             Json training = json.getSubJson("training");
             int batchSize = training.getInt("batchSize");
             Dataset trainDs = getQuadraticDataset(manager, 5000, batchSize);
             Dataset validDs = getQuadraticDataset(manager, 500, batchSize);
             Train train = new Train();
-            train.trainAndSaveModel(modelPath, trainDs, validDs);
+            train.trainAndSaveModel(metadataPath, trainDs, validDs);
         }
     }
 
