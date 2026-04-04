@@ -64,8 +64,12 @@ public class Run {
             }
         }
         if (execute != null) {
-            execute.init(root, pathName, platform);
-            executor.startNewSolver(execute);
+            try {
+                execute.init(root, pathName, platform);
+                executor.startNewSolver(execute);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -79,8 +83,11 @@ public class Run {
                     return executableUnits.get(id);
                 }
             }
+            return null;
+        } else {
+            System.err.println("The JSON is empty, or there is no actionType.");
+            return null;
         }
-        return null;
     }
 
 
