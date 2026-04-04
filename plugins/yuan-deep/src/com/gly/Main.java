@@ -11,9 +11,11 @@ public class Main {
         //modelName = "lstm";
 
         String modelPath = "models/mnist/" + modelName;
-        Mnist.train(modelPath);
+        Mnist.train(modelPath+"/metadata.json");
         Use.predictWithModel(modelPath, "test-digit.png");
 
-        Quick.train("models/quick/mlp");
+//        Quick.train("models/quick/mlp");
+        Train train = new Train();
+        train.start();
     }
 }
