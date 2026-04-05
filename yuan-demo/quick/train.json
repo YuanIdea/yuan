@@ -13,7 +13,7 @@
 	"training": {
 		"batchSize": 64,
 		"loss":"mse",
-		"epochs": 5
+		"epochs": 50
  	 },
 	"data":{
 		"inputPathName":"data/input/demo.csv",
