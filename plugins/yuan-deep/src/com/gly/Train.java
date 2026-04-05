@@ -32,14 +32,15 @@ import java.util.Map;
 public class Train extends BaseExecutable {
     private final static Device[] maxGpus = new Device[]{Device.cpu()};
     private String engine;
+    private String root;
 
     @Override
     public void start() {
-//        String root = getRoot();
-//        String name = getName();
+        root = getRoot();
+        String name = getName();
 
-        String root = "D:/WorkSpace/github/yuan/yuan-demo/quick/";
-        String name = root + "train.json";
+//        root = "D:/WorkSpace/github/yuan/yuan-demo/quick/";
+//        String name = root + "train.json";
 
         Json json = new Json(name);
         Json data = json.getSubJson("data");
@@ -59,13 +60,17 @@ public class Train extends BaseExecutable {
                     engine = "PyTorch";
                 }
                 try (NDManager manager = NDManager.newBaseManager(engine)) {
-                    Dataset dataset = convertToDataset(manager, dataCoder.getEncode(), labelCoder.getEncode(), 64, true);
-                    ;
+                    Json training = json.getSubJson("training");
+                    Dataset dataset = convertToDataset(manager,
+                            dataCoder.getEncode(),
+                            labelCoder.getEncode(),
+                            training.getInt("batchSize"),
+                            data.getBoolean("shuffle"));
                     trainAndSaveModel(name, dataset, dataset);
                 }
             } catch (Exception e) {
-                e.printStackTrace(); // 打印完整堆栈
-                throw e; // 或处理
+                e.printStackTrace();
+                throw e;
             }
         }
     }
@@ -79,7 +84,6 @@ public class Train extends BaseExecutable {
      */
     public void trainAndSaveModel(String metadataPathName, Dataset trainingDataset, Dataset validateDataset) {
         Path modelDir = Paths.get(metadataPathName).getParent();
-        ;
         try {
             Json json = new Json(metadataPathName);
             Json training = json.getSubJson("training");
@@ -110,6 +114,13 @@ public class Train extends BaseExecutable {
                     EasyTrain.fit(trainer, numEpochs, trainingDataset, validateDataset);
                 }
 
+                if (training.has("saveModelPath")) {
+                    Path rootPath = Paths.get(root);
+                    modelDir = rootPath.resolve(training.getString("saveModelPath"));
+                }
+                if (training.has("modelName")) {
+                    modelName = training.getString("modelName");
+                }
                 // Save the trained model
                 Files.createDirectories(modelDir); // Ensure directory exists
                 model.save(modelDir, modelName);
@@ -125,7 +136,8 @@ public class Train extends BaseExecutable {
         Loss loss;
         lossName = lossName.toLowerCase();
         if ("crossentropy".equals(lossName)) {
-            loss = new SoftmaxCrossEntropyLoss("softmax", 1.0f, -1, false, true); // 接受 one‑hot
+            loss = new SoftmaxCrossEntropyLoss("softmax", 1.0f, -1,
+                    false, true); // 接受 one‑hot
         } else if ("mse".equals(lossName)) {
             loss = Loss.l2Loss(); // 直接使用 one‑hot
         } else {
@@ -157,21 +169,15 @@ public class Train extends BaseExecutable {
         throw new IllegalArgumentException("Invalid path format: " + metadataPath);
     }
 
-    public static Dataset convertToDataset(NDManager manager, float[][] featuresArray, float[][] labelsArray, int batchSize, boolean shuffle) {
-
-        // 2. 将 float[][] 转换为 NDArray
-        // 注意：NDArray 的数据类型默认为 FLOAT32，而 float 是 FLOAT64，转换可能会损失精度。
+    public static Dataset convertToDataset(NDManager manager, float[][] featuresArray,
+                                           float[][] labelsArray, int batchSize, boolean shuffle) {
         NDArray features = manager.create(featuresArray);
         NDArray labels = manager.create(labelsArray);
-
-        // 3. 使用 ArrayDataset.Builder 构建数据集
-        ArrayDataset dataset = new ArrayDataset.Builder()
-                .setData(features)          // 设置特征
-                .optLabels(labels)          // 设置标签
-                .setSampling(batchSize, shuffle) // 设置批次大小和是否打乱
+        return new ArrayDataset.Builder()
+                .setData(features)
+                .optLabels(labels)
+                .setSampling(batchSize, shuffle)
                 .build();
-
-        return dataset;
     }
 
     private void writeMinMax(String pathName, Coder data, Coder label) {

@@ -1,19 +1,20 @@
 {
 	"actionType":"train",
-
 	"modelConfig": {
 	"name": "mlp",
 	"engine": "PyTorch",
 	"inputShape": [2],
 	"layers": [
-		{"type": "dense", "units": 128, "activation": "relu"},
+		{"type": "dense", "units": 128, "activation": "sigmoid"},
 		{"type": "dense", "units": 64, "activation": "sigmoid"},
 		{"type": "dense", "units": 1}
     	]},
 	"training": {
-		"batchSize": 64,
 		"loss":"mse",
-		"epochs": 50
+		"epochs": 50,
+		"batchSize": 64,
+		"saveModelPath":"data/model",
+		"modelName":"bp"
  	 },
 	"data":{
 		"inputPathName":"data/input/demo.csv",
