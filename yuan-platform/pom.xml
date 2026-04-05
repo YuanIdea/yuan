@@ -40,7 +40,7 @@
         <dependency>
             <groupId>yuan</groupId>
             <artifactId>yuan-common</artifactId>
-            <version>1.0.8</version>
+            <version>1.0.9</version>
         </dependency>
 
         <!-- Library for parsing pom.xml files. -->
@@ -80,7 +80,14 @@
             <artifactId>rsyntaxtextarea</artifactId>
             <version>3.6.2</version>
         </dependency>
-<!--        &lt;!&ndash; Pytorch &ndash;&gt;-->
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.16</version>
+        </dependency>
+
+        <!-- Pytorch -->
 <!--        <dependency>-->
 <!--            <groupId>ai.djl.pytorch</groupId>-->
 <!--            <artifactId>pytorch-model-zoo</artifactId>-->

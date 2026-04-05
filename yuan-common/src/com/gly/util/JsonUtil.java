@@ -1,5 +1,6 @@
 package com.gly.util;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
@@ -13,70 +14,114 @@ public class JsonUtil {
     private static final ObjectMapper mapper = new ObjectMapper();
 
     /**
-     * 对象转JSON字符串
-     * @param params 需要转json的对象。
-     * @return 对象对应的json字符串。
+     * Converts an object to a JSON string.
+     *
+     * @param params The object to be converted to JSON.
+     * @return The JSON string corresponding to the object.
      */
     public static String encode(Object params) {
         try {
             return mapper.writeValueAsString(params);
         } catch (Exception ex) {
-            throw new RuntimeException("JSON编码失败", ex);
+            throw new RuntimeException("JSON encoding failed", ex);
         }
     }
 
     /**
-     * JSON字符串转对象
-     * @param json json字符串。
-     * @param valueType 需要转化的类。
-     * @param <T> 类的class
-     * @return 指定类的实例。
+     * Converts a JSON string to an object.
+     *
+     * @param json      The JSON string.
+     * @param valueType The class to be converted to.
+     * @param <T>       The class type.
+     * @return An instance of the specified class.
      */
     public static <T> T decode(String json, Class<T> valueType) {
         try {
             return mapper.readValue(json, valueType);
         } catch (Exception ex) {
-            throw new RuntimeException("JSON解码失败", ex);
+            throw new RuntimeException("JSON encoding failed", ex);
         }
     }
 
     /**
-     * 加载文件转成对象。
-     * @param filePath 文件路径名。
-     * @param valueType 需要转化的类。
-     * @param <T> 类的class。
-     * @return 指定类的实例。
+     * Loads a file and converts it to an object.
+     *
+     * @param filePath  The path name of the file.
+     * @param valueType The class to be converted to.
+     * @param <T>       The class type.
+     * @return An instance of the specified class.
      */
     public static <T> T load(String filePath, Class<T> valueType) {
         return decode(new File(filePath), valueType);
     }
 
     /**
-     * 加载文件转换成对像
-     * @param file 文件。
-     * @param valueType 需要转化的类。
-     * @param <T> 类的class
-     * @return 指定类的实例。
+     * Loads a file and converts it to an object.
+     *
+     * @param file      The file.
+     * @param valueType The class to be converted to.
+     * @param <T>       The class type.
+     * @return An instance of the specified class.
      */
     public static <T> T decode(File file, Class<T> valueType) {
         try {
             return mapper.readValue(file, valueType);
         } catch (Exception ex) {
-            throw new RuntimeException("JSON解码失败", ex);
+            throw new RuntimeException("JSON encoding failed", ex);
         }
     }
 
+    /**
+     * Writes a Map object to a JSON file with pretty formatting.
+     *
+     * @param pathName the file path where the JSON data will be written
+     * @param jsonMap  the Map containing key-value pairs to be serialized to JSON
+     */
     public static void writeJson(String pathName, Map<String, Object> jsonMap) {
         try {
             Path father = Paths.get(pathName).getParent();
             if (father != null) {
-                Files.createDirectories(father);// 如果父目录不存在，创建目录
+                // If the parent directory does not exist, create it.
+                Files.createDirectories(father);
             }
             ObjectMapper mapper = new ObjectMapper();
-            mapper.enable(SerializationFeature.INDENT_OUTPUT); // 启用美化打印（缩进和换行）
+            // Enable pretty printing (indentation and line breaks)
+            mapper.enable(SerializationFeature.INDENT_OUTPUT);
             mapper.writeValue(new File(pathName), jsonMap);
         } catch (Exception e) {
-            System.err.println("写数据错误:" + e.getMessage());
+            System.err.println("Write data error:" + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Writes a JsonNode object to a JSON file with pretty formatting.
+     * Creates parent directories automatically if they don't exist.
+     *
+     * @param pathName the destination file path
+     * @param jsonNode the JsonNode to be serialized to JSON
+     */
+    public static void writeJsonNode(String pathName, JsonNode jsonNode) {
+        try {
+            // Get the parent directory of the target file
+            Path father = Paths.get(pathName).getParent();
+            if (father != null) {
+                // If the parent directory does not exist, create it along with any missing parent directories
+                Files.createDirectories(father);
+            }
+
+            // Create ObjectMapper instance for JSON processing
+            ObjectMapper mapper = new ObjectMapper();
+
+            // Enable pretty printing (indentation and line breaks) for readable JSON output
+            mapper.enable(SerializationFeature.INDENT_OUTPUT);
+
+            // Write the JsonNode to the specified file
+            mapper.writeValue(new File(pathName), jsonNode);
+        } catch (Exception e) {
+            // Print error message and stack trace if JSON writing fails
+            System.err.println("Write JSON node error: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }
