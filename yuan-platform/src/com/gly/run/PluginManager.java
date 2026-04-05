@@ -156,7 +156,7 @@ public class PluginManager {
                             // Instantiate the plugin.
                             ExecutableUnit executableUnit = (ExecutableUnit) clazz.getDeclaredConstructor().newInstance();
                             this.executableUnits.put(className, executableUnit);
-                            System.out.println("✅ Plugin loaded successfully:" + className);
+                            System.out.println("Plugin loaded successfully:" + className);
                         }
 
                         // Find registration classes that implement the PluginRegister interface.

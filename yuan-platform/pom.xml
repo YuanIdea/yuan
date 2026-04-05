@@ -6,13 +6,35 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>yuan</groupId>
     <artifactId>yuan-platform</artifactId>
-    <version>1.0.8</version>
+    <version>1.0.9</version>
+
+    <repositories>
+        <repository>
+            <id>jetbrains-intellij-dependencies</id>
+            <url>https://packages.jetbrains.team/maven/p/ij/intellij-dependencies</url>
+        </repository>
+    </repositories>
+
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <main.class>com.gly.platform.app.Yuan</main.class>
+<!--        <djl.version>0.36.0</djl.version>-->
     </properties>
+
+<!--    <dependencyManagement>-->
+<!--        <dependencies>-->
+<!--            <dependency>-->
+<!--                <groupId>ai.djl</groupId>-->
+<!--                <artifactId>bom</artifactId>-->
+<!--                <version>${djl.version}</version>-->
+<!--                <type>pom</type>-->
+<!--                <scope>import</scope>-->
+<!--            </dependency>-->
+<!--        </dependencies>-->
+<!--    </dependencyManagement>-->
+
     <dependencies>
         <!-- Platform's common dependency library. -->
         <dependency>
@@ -40,13 +62,35 @@
             <version>1.1.1</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.jetbrains.jediterm</groupId>
+            <artifactId>jediterm-core</artifactId>
+            <version>3.64</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jetbrains.jediterm</groupId>
+            <artifactId>jediterm-ui</artifactId>
+            <version>3.64</version>
+        </dependency>
+
         <!-- Text editor core library: Basic features such as syntax highlighting, code folding, etc. -->
         <dependency>
             <groupId>com.fifesoft</groupId>
             <artifactId>rsyntaxtextarea</artifactId>
             <version>3.6.2</version>
         </dependency>
-
+<!--        &lt;!&ndash; Pytorch &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>ai.djl.pytorch</groupId>-->
+<!--            <artifactId>pytorch-model-zoo</artifactId>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>ai.djl.pytorch</groupId>-->
+<!--            <artifactId>pytorch-native-cpu</artifactId>-->
+<!--            <classifier>win-x86_64</classifier>   &lt;!&ndash; Windows 系统 &ndash;&gt;-->
+<!--            <scope>compile</scope>-->
+<!--        </dependency>-->
     </dependencies>
 
     <build>
