@@ -38,14 +38,14 @@
         <dependency>
             <groupId>yuan</groupId>
             <artifactId>yuan-common</artifactId>
-            <version>1.0.8</version>
+            <version>1.0.9</version>
         </dependency>
-        <!-- DJL 核心 API，版本由 BOM 管理 -->
+        <!-- DJL core API, version managed by BOM -->
         <dependency>
             <groupId>ai.djl</groupId>
             <artifactId>api</artifactId>
         </dependency>
-        <!-- 数据集模块 -->
+        <!-- Dataset module -->
         <dependency>
             <groupId>ai.djl</groupId>
             <artifactId>basicdataset</artifactId>
@@ -60,15 +60,15 @@
             <groupId>ai.djl.pytorch</groupId>
             <artifactId>pytorch-model-zoo</artifactId>
         </dependency>
-        <!-- 明确指定 CPU 版本原生库，classifier 请根据你的系统修改 -->
+        <!-- Explicitly specify the native library for CPU version -->
         <dependency>
             <groupId>ai.djl.pytorch</groupId>
             <artifactId>pytorch-native-cpu</artifactId>
-            <classifier>win-x86_64</classifier>   <!-- Windows 系统 -->
+            <classifier>win-x86_64</classifier>
             <scope>compile</scope>
         </dependency>
 
-        <!-- 日志 -->
+        <!-- Logging -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>

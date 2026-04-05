@@ -124,6 +124,8 @@ public class Train extends BaseExecutable {
                 // Save the trained model
                 Files.createDirectories(modelDir); // Ensure directory exists
                 model.save(modelDir, modelName);
+                String configPathName = modelDir.resolve("config.json").toString();
+                JsonUtil.writeJsonNode(configPathName, json.getJsonNode("modelConfig"));
                 System.out.println("Model saved to: " + modelDir.toAbsolutePath());
             }
         } catch (Exception e) {
