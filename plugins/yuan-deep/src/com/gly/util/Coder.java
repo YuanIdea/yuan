@@ -31,7 +31,7 @@ public class Coder {
         this.minData = minData.clone();
         this.maxData = maxData.clone();
         this.range = new float[minData.length];
-        for (int i = 0; i < minData.length; i++) {
+        for (int i = 0; i < minData.length; ++i) {
             this.range[i] = maxData[i] - minData[i];
         }
     }
@@ -146,5 +146,4 @@ public class Coder {
         }
         return decoded;
     }
-
 }

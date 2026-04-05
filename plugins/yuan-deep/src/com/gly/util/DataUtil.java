@@ -1,7 +1,5 @@
 package com.gly.util;
 
-import com.gly.io.csv.Reader;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -9,8 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DataUtil {
-
-
     public static Pair<float[][], float[][]> readToPairFloat(String filePath, int skip, int[] dataIndex, int[] labelIndex)  {
         try {
             List<float[]> dataList = new ArrayList<>();

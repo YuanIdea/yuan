@@ -18,6 +18,7 @@ plugins/yuan-detection/src/resources/yolo/
 plugins/yuan-deep/.yuan/effective-pom.xml
 plugins/yuan-deep/dependency-reduced-pom.xml
 plugins/yuan-deep/target/
+*.params
 *.torchscript
 .idea/
 *.iml

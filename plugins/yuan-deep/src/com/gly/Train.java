@@ -180,10 +180,10 @@ public class Train extends BaseExecutable {
                 .build();
     }
 
-    private void writeMinMax(String pathName, Coder data, Coder label) {
+    private void writeMinMax(String pathName, Coder coder, Coder label) {
         Map<String, Object> jsonMap = new LinkedHashMap<>();
-        jsonMap.put("dataMin", data.getMinData());
-        jsonMap.put("dataMax", data.getMaxData());
+        jsonMap.put("dataMin", coder.getMinData());
+        jsonMap.put("dataMax", coder.getMaxData());
         jsonMap.put("labelMin", label.getMinData());
         jsonMap.put("labelMax", label.getMaxData());
         JsonUtil.writeJson(pathName, jsonMap);
