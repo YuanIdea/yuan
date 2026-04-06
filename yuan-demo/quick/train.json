@@ -16,15 +16,14 @@
 		"loss": "mse",
 		"epochs": 50,
 		"batchSize": 64,
-		"saveModelPath": "data/model",
-		"modelName": "bp"
+		"saveModelPath": "data/model"
  	 },
  	 
 	"data":{
 		"inputPathName": "data/input/demo.csv",
 		"minMaxPathName": "data/model/minMax.json",
 		"inputIndex": [0, 1],
-		"labelIndex": [1],
+		"labelIndex": [2],
 		"shuffle": true
 	}
 }
