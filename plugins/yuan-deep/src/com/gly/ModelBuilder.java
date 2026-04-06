@@ -10,32 +10,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import ai.djl.nn.Activation;
 
 import java.awt.*;
-import java.io.IOException;
 
 import ai.djl.nn.*;
 import ai.djl.nn.core.*;
-import com.gly.io.json.Json;
 import ai.djl.ndarray.types.Shape;
 
 /**
  * Builds a DJL Block (model structure) from a JSON configuration file.
  */
 public class ModelBuilder {
-
-    /**
-     * Builds a Block from a JSON file.
-     *
-     * @param configPath Path to the JSON configuration file
-     * @return The constructed SequentialBlock
-     */
-    public static Block buildBlockFromJson(String configPath) throws IOException {
-        Json json = new Json(configPath);
-        JsonNode modelConfig = json.getJsonNode("modelConfig");
-        if (modelConfig == null) {
-            throw new IllegalArgumentException("Missing 'modelConfig' in JSON");
-        }
-        return buildBlockFromModelConfig(modelConfig);
-    }
 
     /**
      * Builds a Block from the modelConfig node.

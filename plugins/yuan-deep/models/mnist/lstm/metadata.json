@@ -13,6 +13,8 @@
   "training": {
     "batchSize": 64,
     "loss":"mse",
-    "epochs": 5
+    "epochs": 5,
+    "saveModelPath": "models/mnist/lstm",
+    "modelName": "lstm"
   }
 }

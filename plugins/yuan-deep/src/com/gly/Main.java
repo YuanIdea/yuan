@@ -10,9 +10,10 @@ public class Main {
         //modelName = "lenet5";
         //modelName = "lstm";
 
-        String modelPathName = "models/mnist/" + modelName + "/metadata.json";
-        Mnist.train(modelPathName);
-        Use.predictWithModel(modelPathName, "test-digit.png");
+        String modelPath = "models/mnist/" + modelName;
+        Mnist.train(modelPath + "/metadata.json");
+
+        Use.predictWithModel(modelPath, "test-digit.png");
 
         Quick.train("models/quick/mlp/metadata.json");
 

@@ -18,6 +18,7 @@ import ai.djl.training.loss.Loss;
 import ai.djl.training.loss.SoftmaxCrossEntropyLoss;
 import ai.djl.training.optimizer.Adam;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.gly.io.json.Json;
 import com.gly.model.BaseExecutable;
 import com.gly.util.*;
@@ -32,7 +33,7 @@ import java.util.Map;
 public class Train extends BaseExecutable {
     private final static Device[] maxGpus = new Device[]{Device.cpu()};
     private String engine;
-    private String root;
+    private String root="";
 
     @Override
     public void start() {
@@ -95,10 +96,11 @@ public class Train extends BaseExecutable {
                 engine = "PyTorch";
             }
             // Parse input shape from configuration
-            Shape inputShape = ModelBuilder.parseShape(json.getJsonNode("modelConfig").get("inputShape"));
+            JsonNode modelConfig = sequence.getRootNode();
+            Shape inputShape = ModelBuilder.parseShape(modelConfig.get("inputShape"));
             Shape fullShape = ModelBuilder.concatWithBatchSize(batchSize, inputShape);
 
-            Block block = ModelBuilder.buildBlockFromJson(metadataPathName);
+            Block block = ModelBuilder.buildBlockFromModelConfig(modelConfig);
             String modelName = extractModelName(metadataPathName, 2);
 
             // Use try-with-resources to automatically close the model
@@ -106,8 +108,8 @@ public class Train extends BaseExecutable {
                 // Print the current engine.
                 model.setBlock(block);
                 // Configure training settings
-                DefaultTrainingConfig config = setupTrainingConfig(training.getString("loss"));
-                try (Trainer trainer = model.newTrainer(config)) {
+                DefaultTrainingConfig lossConfig = setupTrainingConfig(training.getString("loss"));
+                try (Trainer trainer = model.newTrainer(lossConfig)) {
                     trainer.setMetrics(new Metrics());
                     trainer.initialize(fullShape);
                     System.out.println("Start training " + modelName + "...");

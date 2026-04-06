@@ -17,6 +17,8 @@
   "training": {
     "batchSize": 64,
     "loss":"crossEntropy",
-    "epochs": 5
+    "epochs": 5,
+    "saveModelPath": "models/mnist/cnn",
+    "modelName": "cnn"
   }
 }

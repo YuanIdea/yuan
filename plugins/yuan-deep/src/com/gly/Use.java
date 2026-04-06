@@ -8,6 +8,7 @@ import ai.djl.ndarray.NDManager;
 import ai.djl.ndarray.types.Shape;
 import ai.djl.nn.Block;
 import ai.djl.translate.NoopTranslator;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.gly.io.json.Json;
 
 import javax.imageio.ImageIO;
@@ -22,23 +23,25 @@ public class Use {
     /**
      * Make predictions using a pre-trained model.
      *
-     * @param metadataPathName Path to the model directory
+     * @param modelPath Path to the model directory
      * @param imagePath        Path to the image to be recognized
      */
-    public static void predictWithModel(String metadataPathName, String imagePath) throws Exception {
-        Path modelDir = Paths.get(metadataPathName).getParent();
-        ;
-        ;
+    public static void predictWithModel(String modelPath, String imagePath) throws Exception {
+        Path modelDir = Paths.get(modelPath);
         if (!Files.exists(modelDir) || !Files.isDirectory(modelDir)) {
             System.err.println("Model directory does not exist: " + modelDir.toAbsolutePath());
             return;
         }
 
         String modelName = modelDir.getFileName().toString();
-        Json json = new Json(metadataPathName);
-        Block block = ModelBuilder.buildBlockFromJson(metadataPathName);
+        Json json = new Json(modelPath+"/config.json");
+        JsonNode modelConfig = json.getRootNode();
+        if (modelConfig == null) {
+            throw new IllegalArgumentException("Missing 'modelConfig' in JSON");
+        }
+        Block block = ModelBuilder.buildBlockFromModelConfig(modelConfig);
         System.out.println("Using " + modelName);
-        String engine = json.getSubJson("modelConfig").getString("engine");
+        String engine = json.getString("engine");
         if (engine.isEmpty()) {
             engine = "PyTorch";
         }
@@ -49,7 +52,7 @@ public class Use {
             model.load(modelDir, modelName);
             System.out.println("Model loaded successfully: " + modelName);
 
-            Shape inputShape = ModelBuilder.parseShape(json.getJsonNode("modelConfig").get("inputShape"));
+            Shape inputShape = ModelBuilder.parseShape(json.getRootNode().get("inputShape"));
             predict(model, imagePath, inputShape, engine);
         }
     }
