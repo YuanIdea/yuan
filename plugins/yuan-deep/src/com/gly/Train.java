@@ -26,13 +26,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class Train extends BaseExecutable {
     private final static Device[] maxGpus = new Device[]{Device.cpu()};
-    private String root="";
+    private String root = "";
 
     @Override
     public void start() {
@@ -51,8 +50,6 @@ public class Train extends BaseExecutable {
         if (allData != null) {
             Coder dataCoder = new Coder(allData.first);
             Coder labelCoder = new Coder(allData.second);
-            String minMaxPath = PathUtil.resolveAbsolutePath(root, data.getString("minMaxPathName"));
-            writeMinMax(minMaxPath, dataCoder, labelCoder);
             try {
                 Json sequence = json.getSubJson("modelConfig");
                 String engine = sequence.getString("engine");
@@ -67,6 +64,8 @@ public class Train extends BaseExecutable {
                             training.getInt("batchSize"),
                             data.getBoolean("shuffle"));
                     trainAndSaveModel(name, dataset, dataset);
+                    String minMaxPath = PathUtil.resolveAbsolutePath(root, data.getString("minMaxPathName"));
+                    writeMinMax(minMaxPath, dataCoder, labelCoder);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -107,7 +106,7 @@ public class Train extends BaseExecutable {
                 }
 
                 if (training.has("saveModelPath")) {
-                    saveModel(model, json);
+                    saveModel(Paths.get(root), model, json);
                 }
             }
         } catch (Exception e) {
@@ -116,16 +115,15 @@ public class Train extends BaseExecutable {
         }
     }
 
-    private void saveModel(Model model, Json json) throws IOException {
-        Path rootPath = Paths.get(root);
-        Json sequence = json.getSubJson("modelConfig");
-        Json training = json.getSubJson("training");
+    public static void saveModel(Path rootPath, Model model, Json metadata) throws IOException {
+        Json sequence = metadata.getSubJson("modelConfig");
+        Json training = metadata.getSubJson("training");
         Path modelDir = rootPath.resolve(training.getString("saveModelPath"));
         // Save the trained model
         Files.createDirectories(modelDir); // Ensure directory exists
         model.save(modelDir, sequence.getString("name"));
         String configPathName = modelDir.resolve("config.json").toString();
-        JsonUtil.writeJsonNode(configPathName, json.getJsonNode("modelConfig"));
+        JsonUtil.writeJsonNode(configPathName, metadata.getJsonNode("modelConfig"));
         System.out.println("Model saved to: " + modelDir.toAbsolutePath());
     }
 
