@@ -15,7 +15,6 @@
     "batchSize": 64,
     "loss":"crossEntropy",
     "epochs": 5,
-    "saveModelPath": "models/mnist/mlp",
-    "modelName": "mlp"
+    "saveModelPath": "models/mnist/mlp"
   }
 }

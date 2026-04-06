@@ -6,15 +6,14 @@ import ai.djl.ndarray.NDArray;
 import ai.djl.ndarray.NDList;
 import ai.djl.ndarray.NDManager;
 import ai.djl.ndarray.types.Shape;
-import ai.djl.nn.Block;
 import ai.djl.translate.NoopTranslator;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.gly.io.json.Json;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -29,33 +28,20 @@ public class Use {
     public static void predictWithModel(String modelPath, String imagePath) throws Exception {
         Path modelDir = Paths.get(modelPath);
         if (!Files.exists(modelDir) || !Files.isDirectory(modelDir)) {
-            System.err.println("Model directory does not exist: " + modelDir.toAbsolutePath());
-            return;
+            throw new IOException("Model directory does not exist: " + modelDir.toAbsolutePath());
         }
-
-        String modelName = modelDir.getFileName().toString();
         Json json = new Json(modelPath+"/config.json");
-        JsonNode modelConfig = json.getRootNode();
-        if (modelConfig == null) {
-            throw new IllegalArgumentException("Missing 'modelConfig' in JSON");
-        }
-        Block block = ModelBuilder.buildBlockFromModelConfig(modelConfig);
-        System.out.println("Using " + modelName);
-        String engine = json.getString("engine");
-        if (engine.isEmpty()) {
-            engine = "PyTorch";
-        }
-        // Create a model instance and set its structure
-        try (Model model = Model.newInstance(modelName, engine)) {
-            model.setBlock(block);
+        try (Model model = ModelBuilder.generateModel(json)) {
             // Load parameter file (automatically matches *.params)
-            model.load(modelDir, modelName);
-            System.out.println("Model loaded successfully: " + modelName);
-
+            String prefix = json.getString("name");
+            model.load(modelDir, prefix);
+            System.out.println("Using " + prefix);
             Shape inputShape = ModelBuilder.parseShape(json.getRootNode().get("inputShape"));
+            String engine = model.getNDManager().getEngine().getEngineName();
             predict(model, imagePath, inputShape, engine);
         }
     }
+
 
     private static void predict(Model model, String imagePath, Shape inputShape, String engin) {
         try {

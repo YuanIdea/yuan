@@ -1,5 +1,6 @@
 package com.gly;
 
+import ai.djl.Model;
 import ai.djl.nn.*;
 import ai.djl.nn.convolutional.Conv2d;
 import ai.djl.nn.core.Linear;
@@ -10,10 +11,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import ai.djl.nn.Activation;
 
 import java.awt.*;
+import java.nio.file.Path;
 
 import ai.djl.nn.*;
 import ai.djl.nn.core.*;
 import ai.djl.ndarray.types.Shape;
+import com.gly.io.json.Json;
 
 /**
  * Builds a DJL Block (model structure) from a JSON configuration file.
@@ -184,5 +187,23 @@ public class ModelBuilder {
             return new Shape(0, 0); // No padding.
         }
         return null;
+    }
+
+    public static Model generateModel(Json modelJson) throws Exception {
+        JsonNode modelJsonNode = modelJson.getRootNode();
+        if (modelJsonNode == null) {
+            throw new IllegalArgumentException("Missing 'modelConfig' in JSON");
+        }
+
+        Block block = buildBlockFromModelConfig(modelJsonNode);
+        String modelName = modelJson.getString("name");
+        String engine = modelJson.getString("engine");
+        if (engine.isEmpty()) {
+            engine = "PyTorch";
+        }
+        // Create a model instance and set its structure
+        Model model = Model.newInstance(modelName, engine);
+        model.setBlock(block);
+        return model;
     }
 }

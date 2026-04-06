@@ -18,7 +18,6 @@
     "batchSize": 64,
     "loss":"crossEntropy",
     "epochs": 5,
-    "saveModelPath": "models/mnist/lenet5",
-    "modelName": "lenet5"
+    "saveModelPath": "models/mnist/lenet5"
   }
 }

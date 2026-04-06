@@ -6,7 +6,6 @@ import ai.djl.metric.Metrics;
 import ai.djl.ndarray.NDArray;
 import ai.djl.ndarray.NDManager;
 import ai.djl.ndarray.types.Shape;
-import ai.djl.nn.Block;
 import ai.djl.training.DefaultTrainingConfig;
 import ai.djl.training.EasyTrain;
 import ai.djl.training.Trainer;
@@ -23,6 +22,7 @@ import com.gly.io.json.Json;
 import com.gly.model.BaseExecutable;
 import com.gly.util.*;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,7 +32,6 @@ import java.util.Map;
 
 public class Train extends BaseExecutable {
     private final static Device[] maxGpus = new Device[]{Device.cpu()};
-    private String engine;
     private String root="";
 
     @Override
@@ -56,7 +55,7 @@ public class Train extends BaseExecutable {
             writeMinMax(minMaxPath, dataCoder, labelCoder);
             try {
                 Json sequence = json.getSubJson("modelConfig");
-                engine = sequence.getString("engine");
+                String engine = sequence.getString("engine");
                 if (engine.isEmpty()) {
                     engine = "PyTorch";
                 }
@@ -84,29 +83,20 @@ public class Train extends BaseExecutable {
      * @param validateDataset  Dataset used for validation.
      */
     public void trainAndSaveModel(String metadataPathName, Dataset trainingDataset, Dataset validateDataset) {
-        Path modelDir = Paths.get(metadataPathName).getParent();
         try {
             Json json = new Json(metadataPathName);
             Json training = json.getSubJson("training");
             int batchSize = training.getInt("batchSize");
             int numEpochs = training.getInt("epochs");
             Json sequence = json.getSubJson("modelConfig");
-            String engine = sequence.getString("engine");
-            if (engine.isEmpty()) {
-                engine = "PyTorch";
-            }
             // Parse input shape from configuration
             JsonNode modelConfig = sequence.getRootNode();
             Shape inputShape = ModelBuilder.parseShape(modelConfig.get("inputShape"));
             Shape fullShape = ModelBuilder.concatWithBatchSize(batchSize, inputShape);
-
-            Block block = ModelBuilder.buildBlockFromModelConfig(modelConfig);
-            String modelName = extractModelName(metadataPathName, 2);
+            String modelName = sequence.getString("name");
 
             // Use try-with-resources to automatically close the model
-            try (Model model = Model.newInstance(modelName, engine)) {
-                // Print the current engine.
-                model.setBlock(block);
+            try (Model model = ModelBuilder.generateModel(sequence)) {
                 // Configure training settings
                 DefaultTrainingConfig lossConfig = setupTrainingConfig(training.getString("loss"));
                 try (Trainer trainer = model.newTrainer(lossConfig)) {
@@ -117,23 +107,26 @@ public class Train extends BaseExecutable {
                 }
 
                 if (training.has("saveModelPath")) {
-                    Path rootPath = Paths.get(root);
-                    modelDir = rootPath.resolve(training.getString("saveModelPath"));
+                    saveModel(model, json);
                 }
-                if (training.has("modelName")) {
-                    modelName = training.getString("modelName");
-                }
-                // Save the trained model
-                Files.createDirectories(modelDir); // Ensure directory exists
-                model.save(modelDir, modelName);
-                String configPathName = modelDir.resolve("config.json").toString();
-                JsonUtil.writeJsonNode(configPathName, json.getJsonNode("modelConfig"));
-                System.out.println("Model saved to: " + modelDir.toAbsolutePath());
             }
         } catch (Exception e) {
             System.err.println(e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private void saveModel(Model model, Json json) throws IOException {
+        Path rootPath = Paths.get(root);
+        Json sequence = json.getSubJson("modelConfig");
+        Json training = json.getSubJson("training");
+        Path modelDir = rootPath.resolve(training.getString("saveModelPath"));
+        // Save the trained model
+        Files.createDirectories(modelDir); // Ensure directory exists
+        model.save(modelDir, sequence.getString("name"));
+        String configPathName = modelDir.resolve("config.json").toString();
+        JsonUtil.writeJsonNode(configPathName, json.getJsonNode("modelConfig"));
+        System.out.println("Model saved to: " + modelDir.toAbsolutePath());
     }
 
     private static DefaultTrainingConfig setupTrainingConfig(String lossName) {
@@ -152,25 +145,6 @@ public class Train extends BaseExecutable {
                 .optDevices(maxGpus)
                 .optOptimizer(Adam.builder().build())
                 .addTrainingListeners(TrainingListener.Defaults.logging());
-    }
-
-    /**
-     * Extracts the model name by splitting the path with the system file separator.
-     *
-     * @param metadataPath The full path to the metadata.json file
-     * @param index        Get the index value of the truncated directory
-     * @return The model name (the directory name right before "metadata.json")
-     */
-    public static String extractModelName(String metadataPath, int index) {
-        // Normalize separators to the system default
-        String normalized = metadataPath.replace('/', File.separatorChar)
-                .replace('\\', File.separatorChar);
-        String[] parts = normalized.split(File.separator.equals("\\") ? "\\\\" : File.separator);
-        // The last part is "metadata.json", the one before is the model name
-        if (parts.length > index) {
-            return parts[index];
-        }
-        throw new IllegalArgumentException("Invalid path format: " + metadataPath);
     }
 
     public static Dataset convertToDataset(NDManager manager, float[][] featuresArray,
