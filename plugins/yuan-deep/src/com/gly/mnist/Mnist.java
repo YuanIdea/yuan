@@ -6,10 +6,11 @@ import com.gly.Train;
 import com.gly.io.json.Json;
 
 public class Mnist {
-    public static void train(String modelPath) {
+    public static void train(String modelPathName) {
         Train train = new Train();
-        MnistData mnistData = getMnistData(modelPath);
-        train.trainAndSaveModel(modelPath, mnistData.trainDataset, mnistData.testDataset);
+        train.init("", modelPathName, null);
+        MnistData mnistData = getMnistData(modelPathName);
+        train.trainAndSaveModel(modelPathName, mnistData.trainDataset, mnistData.testDataset);
     }
 
     /**

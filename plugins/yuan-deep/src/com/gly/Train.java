@@ -31,15 +31,11 @@ import java.util.Map;
 
 public class Train extends BaseExecutable {
     private final static Device[] maxGpus = new Device[]{Device.cpu()};
-    private String root = "";
 
     @Override
     public void start() {
-        root = getRoot();
+        String root = getRoot();
         String name = getName();
-
-//        root = "D:/WorkSpace/github/yuan/yuan-demo/quick/";
-//        String name = root + "train.json";
 
         Json json = new Json(name);
         Json data = json.getSubJson("data");
@@ -106,7 +102,7 @@ public class Train extends BaseExecutable {
                 }
 
                 if (training.has("saveModelPath")) {
-                    saveModel(Paths.get(root), model, json);
+                    saveModel(Paths.get(getRoot()), model, json);
                 }
             }
         } catch (Exception e) {
