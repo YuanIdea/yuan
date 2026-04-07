@@ -2,6 +2,9 @@ package com.gly;
 
 import com.gly.mnist.Mnist;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Main {
 
     public static void main(String[] args) throws Exception {
@@ -16,7 +19,11 @@ public class Main {
                 String modelPath = "models/mnist/" + modelName;
                 Mnist.train(modelPath + "/metadata.json");
 
-                Use.predictWithModel(modelPath, "test-digit.png");
+                List<String> nameList = new ArrayList<>();
+                nameList.add("test/4.png");
+                nameList.add("test/6.png");
+                nameList.add("test/7.png");
+                Use.predictWithModel(modelPath, nameList);
                 break;
             case 1:
                 Quick.train("models/quick/mlp/metadata.json");

@@ -189,7 +189,15 @@ public class ModelBuilder {
         return null;
     }
 
-    public static Model generateModel(Json modelJson) throws Exception {
+    public static Model load(Path modelDir, Json modelJson) throws Exception {
+        Model model = generateModel(modelJson);
+        // Load parameter file (automatically matches *.params)
+        String prefix = modelJson.getString("name");
+        model.load(modelDir, prefix);
+        return model;
+    }
+
+    public static Model generateModel(Json modelJson) {
         JsonNode modelJsonNode = modelJson.getRootNode();
         if (modelJsonNode == null) {
             throw new IllegalArgumentException("Missing 'modelConfig' in JSON");

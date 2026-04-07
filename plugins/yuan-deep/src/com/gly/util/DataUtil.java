@@ -49,13 +49,11 @@ public class DataUtil {
         if (rows == 0) {
             return new float[0][0];
         } else {
-            int cols = ((float[])dataList.get(0)).length;
+            int cols = dataList.get(0).length;
             float[][] result = new float[rows][cols];
-
             for(int i = 0; i < rows; ++i) {
-                result[i] = (float[])dataList.get(i);
+                result[i] = dataList.get(i);
             }
-
             return result;
         }
     }
