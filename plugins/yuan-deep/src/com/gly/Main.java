@@ -12,7 +12,7 @@ import java.util.List;
 public class Main {
 
     public static void main(String[] args) throws Exception {
-        int type = 1;
+        int type = 0;
         switch (type) {
             case 0:
                 mnist("mlp");
@@ -24,10 +24,7 @@ public class Main {
                 quick();
                 break;
             case 2:
-                Train train = new Train();
-                String root = "D:/WorkSpace/github/yuan/yuan-demo/quick/";
-                train.init(root, root + "train.json", null);
-                train.start();
+                plugin();
                 break;
         }
     }
@@ -50,5 +47,17 @@ public class Main {
         for (float[] output : outputs) {
             System.out.println("Predicted: " + Arrays.toString(output));
         }
+    }
+
+    private static void plugin() {
+        String root = "D:/WorkSpace/github/yuan/yuan-demo/quick/";
+
+//        Train train = new Train();
+//        train.init(root, root + "train.json", null);
+//        train.start();
+
+        Use use = new Use();
+        use.init(root, root + "use.json", null);
+        use.start();
     }
 }

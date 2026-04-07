@@ -13,6 +13,7 @@
   "training": {
     "batchSize": 64,
     "loss":"mse",
-    "epochs": 20
+    "epochs": 20,
+    "saveModelPath": "models/quick/mlp"
   }
 }

@@ -138,29 +138,78 @@ public class Json {
         return null;
     }
 
+    public float[] getFloatArray(String key) {
+        if (rootNode != null) {
+            JsonNode node = rootNode.get(key);
+            if (node != null && node.isArray()) {
+                float[] result = new float[node.size()];
+                for (int i = 0; i < node.size(); ++i) {
+                    result[i] = node.get(i).floatValue();
+                }
+                return result;
+            }
+        }
+        return null;
+    }
+
     public double[][] getDouble2DArray(String key) {
         if (rootNode != null) {
             JsonNode node = rootNode.get(key);
             if (node != null && node.isArray()) {
                 int outerSize = node.size();
-                // 判断二维数组的行数
+                // Get the number of rows in a 2D array
                 if (outerSize == 0) {
-                    return new double[0][0];
+                    return null;
                 }
-                // 假设每个内部元素也是数组，且长度相同
+                // Assume each inner element is also an array, and all have the same length
                 JsonNode firstInnerNode = node.get(0);
                 if (!firstInnerNode.isArray()) {
-                    return null;  // 结构不符合二维数组
+                    return null;  // The structure does not conform to a 2D array
                 }
                 int innerSize = firstInnerNode.size();
                 double[][] result = new double[outerSize][innerSize];
                 for (int i = 0; i < outerSize; ++i) {
                     JsonNode innerNode = node.get(i);
                     if (!innerNode.isArray() || innerNode.size() != innerSize) {
-                        return null; // 内部数组长度不一致或不是数组，无法转换
+                        // The inner arrays have inconsistent lengths or are not arrays;
+                        // conversion is not possible.
+                        return null;
                     }
-                    for (int j = 0; j < innerSize; j++) {
+                    for (int j = 0; j < innerSize; ++j) {
                         result[i][j] = innerNode.get(j).asDouble();
+                    }
+                }
+                return result;
+            }
+        }
+        return null;
+    }
+
+    public float[][] getFloat2DArray(String key) {
+        if (rootNode != null) {
+            JsonNode node = rootNode.get(key);
+            if (node != null && node.isArray()) {
+                int outerSize = node.size();
+                // Get the number of rows in a 2D array
+                if (outerSize == 0) {
+                    return null;
+                }
+                // Assume each inner element is also an array, and all have the same length
+                JsonNode firstInnerNode = node.get(0);
+                if (!firstInnerNode.isArray()) {
+                    return null;  // The structure does not conform to a 2D array
+                }
+                int innerSize = firstInnerNode.size();
+                float[][] result = new float[outerSize][innerSize];
+                for (int i = 0; i < outerSize; ++i) {
+                    JsonNode innerNode = node.get(i);
+                    if (!innerNode.isArray() || innerNode.size() != innerSize) {
+                        // The inner arrays have inconsistent lengths or are not arrays;
+                        // conversion is not possible.
+                        return null;
+                    }
+                    for (int j = 0; j < innerSize; ++j) {
+                        result[i][j] = innerNode.get(j).floatValue();
                     }
                 }
                 return result;

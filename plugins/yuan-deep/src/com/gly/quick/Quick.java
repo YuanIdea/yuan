@@ -17,6 +17,7 @@ public class Quick {
             Dataset trainDs = getQuadraticDataset(manager, 5000, batchSize);
             Dataset validDs = getQuadraticDataset(manager, 500, batchSize);
             Train train = new Train();
+            train.init("", "metadata.json", null);
             train.trainAndSaveModel(metadataPath, trainDs, validDs);
         }
     }

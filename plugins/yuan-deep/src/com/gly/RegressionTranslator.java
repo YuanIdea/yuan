@@ -1,4 +1,4 @@
-package com.gly.quick;
+package com.gly;
 
 import ai.djl.ndarray.NDArray;
 import ai.djl.ndarray.NDList;
@@ -12,19 +12,15 @@ import ai.djl.translate.TranslatorContext;
  * Assumes the model expects a 1D input (features) and outputs a 1D array (predictions).
  */
 public class RegressionTranslator implements Translator<float[], float[]> {
-
     private final Shape inputShape;   // e.g., new Shape(featureDim)
-    private final Shape outputShape;  // e.g., new Shape(outputDim)
 
     /**
      * Constructs a RegressionTranslator with explicit input and output shapes.
      *
      * @param inputShape  shape of a single input sample (without batch dimension)
-     * @param outputShape shape of a single output sample (without batch dimension)
      */
-    public RegressionTranslator(Shape inputShape, Shape outputShape) {
+    public RegressionTranslator(Shape inputShape) {
         this.inputShape = inputShape;
-        this.outputShape = outputShape;
     }
 
     @Override
@@ -44,10 +40,6 @@ public class RegressionTranslator implements Translator<float[], float[]> {
         if (actualShape.length == 2 && actualShape[0] == 1) {
             // Remove batch dimension: (1, outputDim) -> (outputDim)
             array = array.squeeze(0);
-        }
-        // If shape doesn't match outputShape, attempt to reshape
-        if (!array.getShape().equals(outputShape)) {
-            array = array.reshape(outputShape);
         }
         // Convert to float[]
         return array.toFloatArray();
