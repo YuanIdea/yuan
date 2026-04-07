@@ -1,12 +1,12 @@
-package com.gly;
+package com.gly.mnist;
 
 import ai.djl.Model;
 import ai.djl.inference.Predictor;
 import ai.djl.modality.Classifications;
 import ai.djl.modality.cv.Image;
 import ai.djl.modality.cv.ImageFactory;
+import com.gly.ModelBuilder;
 import com.gly.io.json.Json;
-import com.gly.mnist.MnistTranslator;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,7 +15,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Use {
+public class MnistUse {
     /**
      * Make predictions using a pre-trained model.
      *
