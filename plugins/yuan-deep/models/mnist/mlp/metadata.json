@@ -12,8 +12,9 @@
     ]
   },
   "training": {
-    "batchSize": 64,
     "loss":"crossEntropy",
+    "accuracy": true,
+    "batchSize": 64,
     "epochs": 5,
     "saveModelPath": "models/mnist/mlp"
   }

@@ -11,8 +11,9 @@
     ]
   },
   "training": {
-    "batchSize": 64,
     "loss":"mse",
+    "accuracy": true,
+    "batchSize": 64,
     "epochs": 5,
     "saveModelPath": "models/mnist/lstm"
   }

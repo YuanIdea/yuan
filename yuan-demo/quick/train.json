@@ -14,7 +14,8 @@
     
 	"training": {
 		"loss": "mse",
-		"epochs": 50,
+		"accuracy": false,
+		"epochs": 100,
 		"batchSize": 64,
 		"saveModelPath": "data/model"
  	 },

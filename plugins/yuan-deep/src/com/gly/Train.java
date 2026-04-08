@@ -93,7 +93,12 @@ public class Train extends BaseExecutable {
             // Use try-with-resources to automatically close the model
             try (Model model = ModelBuilder.generateModel(sequence)) {
                 // Configure training settings
-                DefaultTrainingConfig lossConfig = setupTrainingConfig(training.getString("loss"));
+                String loss = training.getString("loss");
+                boolean addAccuracy = false;
+                if (training.has("accuracy")){
+                    addAccuracy = training.getBoolean("accuracy");
+                }
+                DefaultTrainingConfig lossConfig = setupTrainingConfig(loss, addAccuracy);
                 try (Trainer trainer = model.newTrainer(lossConfig)) {
                     trainer.setMetrics(new Metrics());
                     trainer.initialize(fullShape);
@@ -123,7 +128,7 @@ public class Train extends BaseExecutable {
         System.out.println("Model saved to: " + modelDir.toAbsolutePath());
     }
 
-    private static DefaultTrainingConfig setupTrainingConfig(String lossName) {
+    private static DefaultTrainingConfig setupTrainingConfig(String lossName,  boolean addAccuracy) {
         Loss loss;
         lossName = lossName.toLowerCase();
         if ("crossentropy".equals(lossName)) {
@@ -134,11 +139,14 @@ public class Train extends BaseExecutable {
         } else {
             loss = Loss.l2Loss();
         }
-        return new DefaultTrainingConfig(loss)
-                .addEvaluator(new Accuracy("accuracy"))
+        DefaultTrainingConfig config = new DefaultTrainingConfig(loss)
                 .optDevices(maxGpus)
                 .optOptimizer(Adam.builder().build())
                 .addTrainingListeners(TrainingListener.Defaults.logging());
+        if (addAccuracy) {
+            config.addEvaluator(new Accuracy("accuracy"));
+        }
+        return config;
     }
 
     public static Dataset convertToDataset(NDManager manager, float[][] featuresArray,
