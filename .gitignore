@@ -8,7 +8,6 @@ yuan-platform/.yuan/
 yuan-demo/quick/data/model/
 yuan-platform/target/artifacts/yuan/plugins/yuan-core
 plugins/yuan-chart/.yuan/effective-pom.xml
-plugins/yuan-chart/.idea/
 plugins/yuan-chart/target/
 plugins/yuan-chart/dependency-reduced-pom.xml
 plugins/yuan-detection/target/
@@ -20,12 +19,9 @@ plugins/yuan-deep/dependency-reduced-pom.xml
 plugins/yuan-deep/target/
 *.params
 *.torchscript
-.idea/
-*.iml
-.vscode/
-*.swp
-*.swo
 *.log
+.idea/
+config.json
 
 # system
 .DS_Store

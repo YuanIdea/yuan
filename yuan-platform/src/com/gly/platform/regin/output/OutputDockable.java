@@ -57,8 +57,9 @@ public class OutputDockable extends DefaultSingleCDockable {
 
     @Subscribe
     public void handleClearStagePage(RefreshEvent event) {
-        console.getTerminal().clearScreen();
+        // Standard ANSI sequences:
+        // \033[2J Clear the entire screen
+        // \033[H  Move the cursor to the top-left corner (0,0)
+        System.out.print("\033[2J\033[H");
     }
 }
-
-
