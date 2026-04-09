@@ -52,12 +52,16 @@ public class Main {
     private static void plugin() {
         String root = "D:/WorkSpace/github/yuan/yuan-demo/quick/";
 
-//        Train train = new Train();
-//        train.init(root, root + "train.json", null);
-//        train.start();
+        Train train = new Train();
+        train.init(root, root + "train.json", null);
+        train.start();
 
         Use use = new Use();
         use.init(root, root + "use.json", null);
         use.start();
+
+        Test test = new Test();
+        test.init(root, root + "test.json", null);
+        test.start();
     }
 }

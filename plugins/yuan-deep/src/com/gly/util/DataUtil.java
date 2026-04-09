@@ -57,4 +57,68 @@ public class DataUtil {
             return result;
         }
     }
+
+    public static float[][] hstack(Object... arrays) {
+        if (arrays != null && arrays.length != 0) {
+            Integer rows = null;
+
+            for(Object arr : arrays) {
+                if (arr instanceof float[][]) {
+                    float[][] a = (float[][])arr;
+                    if (rows == null) {
+                        rows = a.length;
+                    } else if (a.length != rows) {
+                        throw new IllegalArgumentException("所有二维数组行数必须相等");
+                    }
+                } else {
+                    if (!(arr instanceof float[])) {
+                        throw new IllegalArgumentException("参数必须是 float[][] 或 float[] 类型");
+                    }
+
+                    float[] a = (float[])arr;
+                    if (rows == null) {
+                        rows = a.length;
+                    } else if (a.length != rows) {
+                        throw new IllegalArgumentException("一维数组长度必须等于二维数组行数");
+                    }
+                }
+            }
+
+            int totalCols = 0;
+
+            for(Object arr : arrays) {
+                if (arr instanceof float[][]) {
+                    float[][] a = (float[][])arr;
+                    if (a.length > 0) {
+                        totalCols += a[0].length;
+                    }
+                } else if (arr instanceof float[]) {
+                    ++totalCols;
+                }
+            }
+
+            float[][] result = new float[rows][totalCols];
+
+            for(int r = 0; r < rows; ++r) {
+                int colIndex = 0;
+
+                for(Object arr : arrays) {
+                    if (arr instanceof float[][]) {
+                        float[][] a = (float[][])arr;
+                        System.arraycopy(a[r], 0, result[r], colIndex, a[r].length);
+                        colIndex += a[r].length;
+                    } else {
+                        float[] a = (float[])arr;
+                        result[r][colIndex] = a[r];
+                        ++colIndex;
+                    }
+                }
+            }
+
+            return result;
+        } else {
+            return new float[0][0];
+        }
+    }
+
 }

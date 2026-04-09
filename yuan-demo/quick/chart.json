@@ -1,6 +1,6 @@
 {
 	"actionType":"chart",
-	"inputPathName":"data/output/quick.csv",
+	"inputPathName":"data/output/demo.csv",
 	"inputIndex":[2,3],
 	"lineWidth":[2,1],
 	"style":["b","r-."],

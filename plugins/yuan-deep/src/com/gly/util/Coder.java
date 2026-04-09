@@ -1,5 +1,7 @@
 package com.gly.util;
 
+import com.gly.io.json.Json;
+
 import java.util.Arrays;
 
 public class Coder {
@@ -20,6 +22,19 @@ public class Coder {
 
     public Coder(float[] minData, float[] maxData) {
         init(minData, maxData);
+    }
+
+    /**
+     * 根据json串创建编码器。
+     * @param minMax minMax的json串。
+     * @param min 最小值数组对应key。
+     * @param max 最大值数组对应key。
+     * @return 编码器。
+     */
+    public static Coder generateCoder(Json minMax, String min, String max) {
+        float[] minBlock = minMax.getFloatArray(min);
+        float[] maxBlock = minMax.getFloatArray(max);
+        return new Coder(minBlock, maxBlock);
     }
 
     /**
