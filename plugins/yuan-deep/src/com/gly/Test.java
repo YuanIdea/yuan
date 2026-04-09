@@ -16,13 +16,14 @@ public class Test extends BaseExecutable {
     @Override
     public void start() {
         String root = getRoot();
-        Path rootPath = Paths.get(root);
         String name = getName();
+
+        Path rootPath = Paths.get(root);
         Json json = new Json(name);
         Path filePath = rootPath.resolve(json.getString("inputPathName"));
         int[] inputIndex = json.getIntArray("inputIndex");
         int[] labelIndex = json.getIntArray("labelIndex");
-        Pair<float[][], float[][]> pair = DatasetFloat.readToPair(filePath.toString(), 1, inputIndex, labelIndex);
+        Pair<float[][], float[][]> pair = DataUtil.readToPairFloat(filePath.toString(), 1, inputIndex, labelIndex);
         if (pair != null) {
             String minMaxPath = NetUtil.getMinMaxPath(root, json);
             Json minMax = new Json(minMaxPath);
@@ -37,13 +38,12 @@ public class Test extends BaseExecutable {
                 float[][] allData = DataUtil.hstack(DataUtil.hstack(data, labels), result);
                 Path absoluteSavePath = rootPath.resolve(json.getString("outputPathName"));
                 String[] newHeader = getHeader(filePath, inputIndex, labelIndex);
-                if (allData != null) {
-                    writFloatArray(allData, absoluteSavePath.toString(), newHeader);
-                    System.out.println("Generate test data:" + absoluteSavePath);
-                    Path parent = PathUtil.findExistingParent(absoluteSavePath);
-                    if (parent != null) {
-                        GlobalBus.dispatch(new AddFileEvent((parent.toFile())));
-                    }
+
+                writFloatArray(allData, absoluteSavePath.toString(), newHeader);
+                System.out.println("Generate test data:" + absoluteSavePath);
+                Path parent = PathUtil.findExistingParent(absoluteSavePath);
+                if (parent != null) {
+                    GlobalBus.dispatch(new AddFileEvent((parent.toFile())));
                 }
             } catch (Exception e) {
                 System.out.println(e.getMessage());

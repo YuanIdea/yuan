@@ -61,7 +61,6 @@ public class DataUtil {
     public static float[][] hstack(Object... arrays) {
         if (arrays != null && arrays.length != 0) {
             Integer rows = null;
-
             for(Object arr : arrays) {
                 if (arr instanceof float[][]) {
                     float[][] a = (float[][])arr;
@@ -120,5 +119,4 @@ public class DataUtil {
             return new float[0][0];
         }
     }
-
 }
