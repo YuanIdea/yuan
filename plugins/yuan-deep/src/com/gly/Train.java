@@ -18,6 +18,8 @@ import ai.djl.training.loss.SoftmaxCrossEntropyLoss;
 import ai.djl.training.optimizer.Adam;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.gly.config.Data;
+import com.gly.config.Training;
 import com.gly.io.json.Json;
 import com.gly.model.BaseExecutable;
 import com.gly.util.*;
@@ -29,6 +31,7 @@ import java.nio.file.Paths;
 
 public class Train extends BaseExecutable {
     private final static Device[] maxGpus = new Device[]{Device.cpu()};
+    private Training training;
 
     @Override
     public void start() {
@@ -36,14 +39,15 @@ public class Train extends BaseExecutable {
         String name = getName();
 
         Json json = new Json(name);
-        Json data = json.getSubJson("data");
-        int[] inputIndex = data.getIntArray("inputIndex");
-        int[] labelIndex = data.getIntArray("labelIndex");
-        String filePath = PathUtil.resolveAbsolutePath(root, data.getString("inputPathName"));
+        Data data = Data.parse(json.getJsonNode("data"));
+        int[] inputIndex = data.getInputIndex();
+        int[] labelIndex = data.getLabelIndex();
+        String filePath = PathUtil.resolveAbsolutePath(root, data.getInputPathName());
         Pair<float[][], float[][]> allData = DataUtil.readToPairFloat(filePath, 1, inputIndex, labelIndex);
         if (allData != null) {
             Coder dataCoder = new Coder(allData.first);
             Coder labelCoder = new Coder(allData.second);
+            training = Training.parse(json.getJsonNode("training"));
             try {
                 Json sequence = json.getSubJson("modelConfig");
                 String engine = sequence.getString("engine");
@@ -51,18 +55,17 @@ public class Train extends BaseExecutable {
                     engine = "PyTorch";
                 }
                 try (NDManager manager = NDManager.newBaseManager(engine)) {
-                    Json training = json.getSubJson("training");
                     Dataset dataset = convertToDataset(manager,
                             dataCoder.getEncode(),
                             labelCoder.getEncode(),
-                            training.getInt("batchSize"),
-                            data.getBoolean("shuffle"));
+                            training.getBatchSize(),
+                            data.isShuffle());
                     trainAndSaveModel(name, dataset, dataset);
-                    String minMaxPath = PathUtil.resolveAbsolutePath(root, data.getString("minMaxPathName"));
+                    String minMaxPath = PathUtil.resolveAbsolutePath(root, data.getMinMaxPathName());
                     MinMax.writeMinMax(minMaxPath, dataCoder, labelCoder);
                 }
             } catch (Exception e) {
-                System.out.println("Training error:"+e.getMessage());
+                System.out.println("Training error:" + e.getMessage());
                 e.printStackTrace();
                 throw e;
             }
@@ -79,33 +82,28 @@ public class Train extends BaseExecutable {
     public void trainAndSaveModel(String metadataPathName, Dataset trainingDataset, Dataset validateDataset) {
         try {
             Json json = new Json(metadataPathName);
-            Json training = json.getSubJson("training");
-            int batchSize = training.getInt("batchSize");
-            int numEpochs = training.getInt("epochs");
+            if (training == null) {
+                training = Training.parse(json.getJsonNode("training"));
+            }
             Json sequence = json.getSubJson("modelConfig");
             // Parse input shape from configuration
             JsonNode modelConfig = sequence.getRootNode();
             Shape inputShape = ModelBuilder.parseShape(modelConfig.get("inputShape"));
-            Shape fullShape = ModelBuilder.concatWithBatchSize(batchSize, inputShape);
+            Shape fullShape = ModelBuilder.concatWithBatchSize(training.getBatchSize(), inputShape);
             String modelName = sequence.getString("name");
 
             // Use try-with-resources to automatically close the model
             try (Model model = ModelBuilder.generateModel(sequence)) {
                 // Configure training settings
-                String loss = training.getString("loss");
-                boolean addAccuracy = false;
-                if (training.has("accuracy")){
-                    addAccuracy = training.getBoolean("accuracy");
-                }
-                DefaultTrainingConfig lossConfig = setupTrainingConfig(loss, addAccuracy);
+                DefaultTrainingConfig lossConfig = setupTrainingConfig(training.getLoss(), training.isAccuracy());
                 try (Trainer trainer = model.newTrainer(lossConfig)) {
                     trainer.setMetrics(new Metrics());
                     trainer.initialize(fullShape);
                     System.out.println("Start training " + modelName + "...");
-                    EasyTrain.fit(trainer, numEpochs, trainingDataset, validateDataset);
+                    EasyTrain.fit(trainer, training.getEpochs(), trainingDataset, validateDataset);
                 }
 
-                if (training.has("saveModelPath")) {
+                if (!training.getSaveModelPath().isEmpty()) {
                     saveModel(Paths.get(getRoot()), model, json);
                 }
             }
@@ -127,7 +125,7 @@ public class Train extends BaseExecutable {
         System.out.println("Model saved to: " + modelDir.toAbsolutePath());
     }
 
-    private static DefaultTrainingConfig setupTrainingConfig(String lossName,  boolean addAccuracy) {
+    private static DefaultTrainingConfig setupTrainingConfig(String lossName, boolean addAccuracy) {
         Loss loss;
         lossName = lossName.toLowerCase();
         if ("crossentropy".equals(lossName)) {

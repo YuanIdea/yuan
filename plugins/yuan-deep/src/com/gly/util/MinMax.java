@@ -16,10 +16,16 @@ public class MinMax {
         return PathUtil.resolveAbsolutePath(root, modelPath);
     }
 
-    public static void writeMinMax(String pathName, Coder coder, Coder label) {
+    /**
+     * Write the maximum and minimum values to the configuration file.
+     * @param pathName The file path name for the JSON file containing the maximum and minimum values.
+     * @param data The maximum and minimum values in the data.
+     * @param label The maximum and minimum values in the labels.
+     */
+    public static void writeMinMax(String pathName, Coder data, Coder label) {
         Map<String, Object> jsonMap = new LinkedHashMap<>();
-        jsonMap.put("dataMin", coder.getMinData());
-        jsonMap.put("dataMax", coder.getMaxData());
+        jsonMap.put("dataMin", data.getMinData());
+        jsonMap.put("dataMax", data.getMaxData());
         jsonMap.put("labelMin", label.getMinData());
         jsonMap.put("labelMax", label.getMaxData());
         JsonUtil.writeJson(pathName, jsonMap);

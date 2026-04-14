@@ -1,5 +1,6 @@
 package com.gly.util;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -40,6 +41,26 @@ public class JsonUtil {
             return mapper.readValue(json, valueType);
         } catch (Exception ex) {
             throw new RuntimeException("JSON encoding failed", ex);
+        }
+    }
+
+    /**
+     * Converts a JsonNode object into an instance of the specified Java class.
+     * <p>
+     * This method uses Jackson's tree-to-value conversion internally and is useful
+     * when a JSON tree node has already been parsed.
+     *
+     * @param node      the JsonNode to convert (must not be null)
+     * @param valueType the target class to convert to
+     * @param <T>       the type of the target object
+     * @return the deserialized object of type T
+     * @throws RuntimeException if conversion fails (wraps Jackson JsonProcessingException)
+     */
+    public static <T> T decode(JsonNode node, Class<T> valueType) {
+        try {
+            return mapper.treeToValue(node, valueType);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to convert JsonNode to " + valueType, e);
         }
     }
 
