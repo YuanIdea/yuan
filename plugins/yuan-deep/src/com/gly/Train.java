@@ -26,8 +26,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 public class Train extends BaseExecutable {
     private final static Device[] maxGpus = new Device[]{Device.cpu()};
@@ -61,9 +59,10 @@ public class Train extends BaseExecutable {
                             data.getBoolean("shuffle"));
                     trainAndSaveModel(name, dataset, dataset);
                     String minMaxPath = PathUtil.resolveAbsolutePath(root, data.getString("minMaxPathName"));
-                    writeMinMax(minMaxPath, dataCoder, labelCoder);
+                    MinMax.writeMinMax(minMaxPath, dataCoder, labelCoder);
                 }
             } catch (Exception e) {
+                System.out.println("Training error:"+e.getMessage());
                 e.printStackTrace();
                 throw e;
             }
@@ -158,15 +157,6 @@ public class Train extends BaseExecutable {
                 .optLabels(labels)
                 .setSampling(batchSize, shuffle)
                 .build();
-    }
-
-    private void writeMinMax(String pathName, Coder coder, Coder label) {
-        Map<String, Object> jsonMap = new LinkedHashMap<>();
-        jsonMap.put("dataMin", coder.getMinData());
-        jsonMap.put("dataMax", coder.getMaxData());
-        jsonMap.put("labelMin", label.getMinData());
-        jsonMap.put("labelMax", label.getMaxData());
-        JsonUtil.writeJson(pathName, jsonMap);
     }
 
     @Override

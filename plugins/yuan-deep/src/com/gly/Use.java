@@ -3,8 +3,8 @@ package com.gly;
 import com.gly.io.json.Json;
 import com.gly.model.BaseExecutable;
 import com.gly.util.Coder;
+import com.gly.util.MinMax;
 import com.gly.util.NetUtil;
-import com.gly.util.PathUtil;
 
 import java.util.Arrays;
 
@@ -21,11 +21,11 @@ public class Use extends BaseExecutable {
         String root = getRoot();
         Json json = new Json(jsonName);
         float[][] x = json.getFloat2DArray("data");
-        String minMaxPath = NetUtil.getMinMaxPath(root, json);
+        String minMaxPath = MinMax.getMinMaxPath(root, json);
         Json minMax = new Json(minMaxPath);
         Coder coder = Coder.generateCoder(minMax, "dataMin", "dataMax");
         try {
-            float[][] encodeResult = NetUtil.batchPredict(NetUtil.getModePath(root, json), coder.encode(x));
+            float[][] encodeResult = NetUtil.batchPredict(MinMax.getModePath(root, json), coder.encode(x));
             Coder coderL = Coder.generateCoder(minMax, "labelMin", "labelMax");
             result = coderL.decode(encodeResult);
             if (result != null) {

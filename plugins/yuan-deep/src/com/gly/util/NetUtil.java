@@ -33,13 +33,5 @@ public class NetUtil {
         return outputs.toArray(new float[0][]);
     }
 
-    public static String getMinMaxPath(String root, Json json) {
-        String modelPath = getModePath(root, json);
-        return modelPath + "/minMax.json";
-    }
 
-    public static String getModePath (String root, Json json) {
-        String modelPath = json.getString("modelPath");
-        return PathUtil.resolveAbsolutePath(root, modelPath);
-    }
 }

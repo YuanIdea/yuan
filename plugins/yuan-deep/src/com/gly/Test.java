@@ -25,13 +25,13 @@ public class Test extends BaseExecutable {
         int[] labelIndex = json.getIntArray("labelIndex");
         Pair<float[][], float[][]> pair = DataUtil.readToPairFloat(filePath.toString(), 1, inputIndex, labelIndex);
         if (pair != null) {
-            String minMaxPath = NetUtil.getMinMaxPath(root, json);
+            String minMaxPath = MinMax.getMinMaxPath(root, json);
             Json minMax = new Json(minMaxPath);
             float[][] data = pair.first;
             Coder coder = Coder.generateCoder(minMax, "dataMin", "dataMax");
             float[][] testData = coder.encode(data);
             try {
-                float[][] encodeResult = NetUtil.batchPredict(NetUtil.getModePath(root, json), testData);
+                float[][] encodeResult = NetUtil.batchPredict(MinMax.getModePath(root, json), testData);
                 float[][] labels = pair.second;
                 Coder coderL = Coder.generateCoder(minMax, "labelMin", "labelMax");
                 float[][] result = coderL.decode(encodeResult);
