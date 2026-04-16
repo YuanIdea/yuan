@@ -62,35 +62,26 @@ public class ProcessExecutor extends BaseExecutable {
     }
 
     /**
-     * 启动平台程序。
+     * Start the platform program.
      */
     public void run(Path javaHome) {
         try {
             isRunning.set(true);
             shouldStop.set(false);
 
-            // 构建完整的命令参数列表
-            List<String> command = new ArrayList<>();
-            command.add(javaHome.resolve("bin/java.exe").toString()); // 完整的 Java 路径
-            // 添加调试代理（可选）
-            if (enableDebug) { // 可配置的调试开关
-                int debugPort = 57445; // 随机端口或固定端口
-                command.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=" + debugPort);
-            }
-            command.add("-Dfile.encoding=" + pom.sourceEncoding); // 编码强制指定
-            command.add("-classpath");// 添加 classpath（保留完整路径）
-            command.add(pom.getClassPath()); // 不再做路径替换
-            command.add(pom.mainClass);// 添加主类名
+            // Build the complete command argument list
+            List<String> command = getCommand(javaHome);
             String formattedCmd = CommandFormatter.formatCommand(command);
             System.out.println(formattedCmd + "\n");
 
             ProcessBuilder pb = new ProcessBuilder(command);
-            pb.directory(pom.projectPath.toFile()); //重定向到默认路径。
+            pb.directory(pom.projectPath.toFile()); //Redirect to the default path.
 
             if (YuanConfig.YUAN_PATH.toFile().exists()) {
-                // 获取环境变量并修改PATH
+                // Get environment variables and modify the PATH.
                 Map<String, String> env = pb.environment();
-                env.compute("Path", (k, currentPath) -> YuanConfig.YUAN_PATH + File.pathSeparator + currentPath);
+                env.compute("Path", (k, currentPath) ->
+                        YuanConfig.YUAN_PATH + File.pathSeparator + currentPath);
             }
 
             currentProcess = pb.start();
@@ -102,10 +93,12 @@ public class ProcessExecutor extends BaseExecutable {
             errorThread.setDaemon(true);
             errorThread.start();
 
-            int exitCode = waitForProcess(); // 等待进程结束，同时检查停止标志
+            int exitCode = waitForProcess(); // Wait for the process to end while checking the stop flag.
 
-            outputThread.join(1000); // 等待输出流读取完成，最多等待1秒
-            errorThread.join(1000);  // 确保错误流读取完成，最多等待1秒
+            // Wait for the output stream to finish reading, with a maximum wait of 1 second.
+            outputThread.join(1000);
+            // Ensure the error stream has finished reading, with a maximum wait of 1 second.
+            errorThread.join(1000);
 
             if (shouldStop.get()) {
                 System.out.println("Process has been actively stopped.");
@@ -120,6 +113,21 @@ public class ProcessExecutor extends BaseExecutable {
             outputThread = null;
             errorThread = null;
         }
+    }
+
+    private List<String> getCommand(Path javaHome) {
+        List<String> command = new ArrayList<>();
+        command.add(javaHome.resolve("bin/java.exe").toString()); // Complete path to java.exe.
+        // Add a debugging proxy.
+        if (enableDebug) {
+            int debugPort = 57445;
+            command.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=" + debugPort);
+        }
+        command.add("-Dfile.encoding=" + pom.sourceEncoding); // Specify the encoding method to be used.
+        command.add("-classpath");// Add classpath (keep full paths).
+        command.add(pom.getClassPath());
+        command.add(pom.mainClass);// Add the main class name.
+        return command;
     }
 
     /**
@@ -210,13 +218,6 @@ public class ProcessExecutor extends BaseExecutable {
                 Thread.currentThread().interrupt();
             }
         }
-    }
-
-    /**
-     * Check if the process is running.
-     */
-    public boolean isRunning() {
-        return isRunning.get();
     }
 
     @Override
