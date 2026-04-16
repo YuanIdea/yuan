@@ -39,12 +39,13 @@ public class Test extends BaseExecutable {
                 Path absoluteSavePath = rootPath.resolve(json.getString("outputPathName"));
                 String[] newHeader = getHeader(filePath, inputIndex, labelIndex);
 
-                writFloatArray(allData, absoluteSavePath.toString(), newHeader);
+                writeFloatArray(allData, absoluteSavePath.toString(), newHeader);
                 System.out.println("Generate test data:" + absoluteSavePath);
                 Path parent = PathUtil.findExistingParent(absoluteSavePath);
                 if (parent != null) {
                     GlobalBus.dispatch(new AddFileEvent((parent.toFile())));
                 }
+                setDone(true);
             } catch (Exception e) {
                 System.out.println(e.getMessage());
                 e.printStackTrace();
@@ -53,12 +54,12 @@ public class Test extends BaseExecutable {
     }
 
     /**
-     * 获得输出头文件。
+     * Get the output header file.
      *
-     * @param path       原文件路径名。
-     * @param inputIndex 输入索引。
-     * @param labelIndex 标签索引。
-     * @return 输出头文件。
+     * @param path       The original file path name.
+     * @param inputIndex The input index.
+     * @param labelIndex The label index.
+     * @return The output header file.
      */
     private String[] getHeader(Path path, int[] inputIndex, int[] labelIndex) {
         String encoding = Encoding.detectCharset(path);
@@ -83,7 +84,7 @@ public class Test extends BaseExecutable {
         return newHeader;
     }
 
-    public static void writFloatArray(float[][] data, String filePath, String[] header) {
+    public static void writeFloatArray(float[][] data, String filePath, String[] header) {
         try {
             Path path = Paths.get(filePath);
             if (path.getParent() != null) {

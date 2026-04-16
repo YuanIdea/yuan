@@ -35,6 +35,7 @@ public class Use extends BaseExecutable {
                 }
                 System.out.println(strResult);
             }
+            setDone(true);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             e.printStackTrace();
@@ -47,9 +48,9 @@ public class Use extends BaseExecutable {
     }
 
     /**
-     * 获得预测结果。
+     * Get the prediction result.
      *
-     * @return 预测结果。
+     * @return The prediction result.
      */
     @Override
     public Object getResult() {

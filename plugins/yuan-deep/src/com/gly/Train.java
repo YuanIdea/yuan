@@ -107,6 +107,7 @@ public class Train extends BaseExecutable {
                     saveModel(Paths.get(getRoot()), model, json);
                 }
             }
+            setDone(true);
         } catch (Exception e) {
             System.err.println(e.getMessage());
             e.printStackTrace();
