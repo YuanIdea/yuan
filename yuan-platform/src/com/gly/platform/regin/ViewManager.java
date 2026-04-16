@@ -148,7 +148,8 @@ public class ViewManager {
     @Subscribe
     public void handleRenameEvent(RenameEvent event) {
         RenamePageInfo rpi = event.getRenamePageInfo();
-        //原文件在磁盘中不存在了，需要用新文件判断
+        // The original file no longer exists on disk;
+        // the new file should be used for judgment.
         if (rpi.getFile().isFile()) {
             PageInfo old = new PageInfo(rpi.getOldFile());
             Editor page = (Editor) find(old);
@@ -164,9 +165,9 @@ public class ViewManager {
                     try {
                         File newFile = FileUtil.getChildParentRename(oldParent, rpi.getFile(), openFile);
                         pageDockable.updateName(new PageInfo(newFile));
-                        Logger.info("新文件：" + newFile.getAbsolutePath());
+                        Logger.info("New file: " + newFile.getAbsolutePath());
                     } catch (Exception e) {
-                        Logger.error("文件夹子文件重命名失败：" + e.getMessage());
+                        Logger.error("Failed to rename subfolder file: " + e.getMessage());
                     }
                 }
             }
@@ -176,11 +177,12 @@ public class ViewManager {
     @Subscribe
     public void handleRefreshEvent(RefreshEvent event) {
         if (event.isRootChange()) {
-            // 清空舞台
-            List<PageDockable> pagesToProcess = new ArrayList<>(pageDockables);// 创建副本,避免直接遍历原集合,造成错误。
+            // Clear the stage.
+            // Create a copy to avoid errors caused by directly traversing the original collection.
+            List<PageDockable> pagesToProcess = new ArrayList<>(pageDockables);
             for (PageDockable page : pagesToProcess) {
                 page.setVisible(false);
-                control.removeDockable(page); // 确保此操作会从 pageDockables 中移除元素
+                control.removeDockable(page);
             }
             pageDockables.clear();
 
@@ -270,7 +272,7 @@ public class ViewManager {
     private PageDockable getPage(CDockable dock) {
         if (dock instanceof PageDockable) {
             PageDockable pageDockable = (PageDockable) dock;
-            Logger.info("当前页为：" + pageDockable.getPageInfo().getName());
+            Logger.info("Current page is:" + pageDockable.getPageInfo().getName());
             return pageDockable;
         }
         return null;

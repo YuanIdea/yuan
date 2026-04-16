@@ -11,13 +11,13 @@ public class AlgorithmExecutor {
     private final Object lock = new Object();
 
     /**
-     * 私有构造函数防止外部实例化
+     * Private constructor prevents external instantiation.
      */
     private AlgorithmExecutor() {
     }
 
     /**
-     * 获取单例实例（双重校验锁实现线程安全）
+     * Get the singleton instance.
      */
     public static AlgorithmExecutor getInstance() {
         if (instance == null) {
@@ -31,7 +31,7 @@ public class AlgorithmExecutor {
     }
 
     /**
-     * 同步终止当前算法
+     * Synchronously terminate the current algorithm.
      */
     public void stopCurSolver() {
         synchronized (lock) {
@@ -39,10 +39,10 @@ public class AlgorithmExecutor {
                 return;
             }
 
-            Logger.info("退出当前程序...");
+            Logger.info("Exiting the current program...");
             try {
-                currentWorker.stop();// 请求算法终止
-                waitForTermination(800);// 同步等待算法终止完成
+                currentWorker.stop();// Request algorithm termination.
+                waitForTermination(800);// Synchronously wait for the algorithm to complete termination.
             } finally {
                 currentWorker = null;
             }
@@ -50,20 +50,20 @@ public class AlgorithmExecutor {
     }
 
     /**
-     * 同步等待算法终止
+     * Synchronously wait for algorithm termination.
      */
     private void waitForTermination(long timeoutMs) {
         if (currentWorker == null) {
             return;
         }
         long startTime = System.currentTimeMillis();
-        while (!currentWorker.isDone()) {// 等待算法终止或超时
-            if (System.currentTimeMillis() - startTime > timeoutMs) {// 检查超时
+        while (!currentWorker.isDone()) {// Wait for algorithm termination or timeout.
+            if (System.currentTimeMillis() - startTime > timeoutMs) {// Check for timeout.
                 reset();
                 break;
             }
 
-            try {// 短暂等待避免忙等
+            try {
                 Thread.sleep(50);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -72,20 +72,20 @@ public class AlgorithmExecutor {
             }
         }
 
-        if (currentWorker !=null && currentWorker.isDone()) {
-            Logger.info("算法正常终止");
+        if (currentWorker != null && currentWorker.isDone()) {
+            Logger.info("Algorithm terminated normally.");
         }
     }
 
     /**
-     * 启动新算法
+     * Start a new algorithm.
      */
     public void startNewSolver(ExecutableUnit execUnit) {
         if (execUnit == null) {
             return;
         }
         synchronized (lock) {
-            // 等待当前算法完全终止
+            // Wait for the current algorithm to fully terminate.
             while (isAlgorithmRunning()) {
                 try {
                     lock.wait(100);
@@ -97,14 +97,14 @@ public class AlgorithmExecutor {
             }
 
             GlobalBus.dispatch(new StartEvent(execUnit));
-            // 创建并启动新算法
+            // Create and start a new algorithm.
             currentWorker = new ExecutionWorker(execUnit);
             currentWorker.execute();
         }
     }
 
     /**
-     * 获取当前算法状态
+     * Get the current algorithm status.
      */
     private boolean isAlgorithmRunning() {
         synchronized (lock) {
@@ -113,7 +113,7 @@ public class AlgorithmExecutor {
     }
 
     /**
-     * 重置执行器（用于特殊情况下强制重置状态）
+     * Used to forcibly reset the state under special circumstances.
      */
     private void reset() {
         synchronized (lock) {
