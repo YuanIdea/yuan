@@ -3,12 +3,12 @@ package com.gly;
 import com.gly.event.AddFileEvent;
 import com.gly.event.GlobalBus;
 import com.gly.io.csv.Reader;
+import com.gly.io.csv.Writer;
 import com.gly.io.json.Json;
 import com.gly.model.BaseExecutable;
 import com.gly.util.*;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -39,7 +39,7 @@ public class Test extends BaseExecutable {
                 Path absoluteSavePath = rootPath.resolve(json.getString("outputPathName"));
                 String[] newHeader = getHeader(filePath, inputIndex, labelIndex);
 
-                writeFloatArray(allData, absoluteSavePath.toString(), newHeader);
+                Writer.writeFloatArray(allData, absoluteSavePath.toString(), newHeader);
                 System.out.println("Generate test data:" + absoluteSavePath);
                 Path parent = PathUtil.findExistingParent(absoluteSavePath);
                 if (parent != null) {
@@ -82,47 +82,6 @@ public class Test extends BaseExecutable {
             }
         }
         return newHeader;
-    }
-
-    public static void writeFloatArray(float[][] data, String filePath, String[] header) {
-        try {
-            Path path = Paths.get(filePath);
-            if (path.getParent() != null) {
-                Files.createDirectories(path.getParent());
-            }
-
-            try (
-                    OutputStream os = new FileOutputStream(filePath);
-                    OutputStreamWriter osw = new OutputStreamWriter(os, "UTF-8");
-                    BufferedWriter bw = new BufferedWriter(osw);
-            ) {
-                os.write(239);
-                os.write(187);
-                os.write(191);
-                if (header != null && header.length > 0) {
-                    bw.write(String.join(",", header));
-                    bw.newLine();
-                }
-
-                for (float[] row : data) {
-                    StringBuilder sb = new StringBuilder();
-
-                    for (int i = 0; i < row.length; ++i) {
-                        sb.append(row[i]);
-                        if (i < row.length - 1) {
-                            sb.append(",");
-                        }
-                    }
-
-                    bw.write(sb.toString());
-                    bw.newLine();
-                }
-
-                bw.flush();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
