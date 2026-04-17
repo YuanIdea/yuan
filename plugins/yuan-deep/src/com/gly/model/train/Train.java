@@ -1,4 +1,4 @@
-package com.gly;
+package com.gly.model.train;
 
 import ai.djl.Device;
 import ai.djl.Model;
@@ -18,15 +18,13 @@ import ai.djl.training.loss.SoftmaxCrossEntropyLoss;
 import ai.djl.training.optimizer.Adam;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.gly.ModelBuilder;
 import com.gly.config.Data;
 import com.gly.config.Training;
 import com.gly.io.json.Json;
 import com.gly.model.BaseExecutable;
 import com.gly.util.*;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class Train extends BaseExecutable {
@@ -104,7 +102,7 @@ public class Train extends BaseExecutable {
                 }
 
                 if (!training.getSaveModelPath().isEmpty()) {
-                    saveModel(Paths.get(getRoot()), model, json);
+                    Save.saveModel(Paths.get(getRoot()), model, json);
                 }
             }
             setDone(true);
@@ -112,18 +110,6 @@ public class Train extends BaseExecutable {
             System.err.println(e.getMessage());
             e.printStackTrace();
         }
-    }
-
-    public static void saveModel(Path rootPath, Model model, Json metadata) throws IOException {
-        Json sequence = metadata.getSubJson("modelConfig");
-        Json training = metadata.getSubJson("training");
-        Path modelDir = rootPath.resolve(training.getString("saveModelPath"));
-        // Save the trained model
-        Files.createDirectories(modelDir); // Ensure directory exists
-        model.save(modelDir, sequence.getString("name"));
-        String configPathName = modelDir.resolve("config.json").toString();
-        JsonUtil.writeJsonNode(configPathName, metadata.getJsonNode("modelConfig"));
-        System.out.println("Model saved to: " + modelDir.toAbsolutePath());
     }
 
     private static DefaultTrainingConfig setupTrainingConfig(String lossName, boolean addAccuracy) {

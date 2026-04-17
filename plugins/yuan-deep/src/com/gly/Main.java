@@ -2,6 +2,9 @@ package com.gly;
 
 import com.gly.mnist.Mnist;
 import com.gly.mnist.MnistUse;
+import com.gly.model.test.Test;
+import com.gly.model.train.Train;
+import com.gly.model.use.Use;
 import com.gly.quick.Quick;
 import com.gly.quick.RegressionUse;
 

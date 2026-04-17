@@ -1,4 +1,4 @@
-package com.gly;
+package com.gly.model.use;
 
 import com.gly.io.json.Json;
 import com.gly.model.BaseExecutable;

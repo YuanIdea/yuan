@@ -2,7 +2,7 @@ package com.gly.mnist;
 
 import ai.djl.ndarray.types.Shape;
 import com.gly.ModelBuilder;
-import com.gly.Train;
+import com.gly.model.train.Train;
 import com.gly.io.json.Json;
 
 public class Mnist {

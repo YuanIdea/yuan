@@ -5,7 +5,7 @@ import ai.djl.ndarray.NDManager;
 import ai.djl.ndarray.types.Shape;
 import ai.djl.training.dataset.ArrayDataset;
 import ai.djl.training.dataset.Dataset;
-import com.gly.Train;
+import com.gly.model.train.Train;
 import com.gly.io.json.Json;
 
 public class Quick {
