@@ -19,7 +19,6 @@ import ai.djl.training.optimizer.Adam;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.gly.ModelBuilder;
-import com.gly.config.Data;
 import com.gly.config.Training;
 import com.gly.io.json.Json;
 import com.gly.model.BaseExecutable;
@@ -37,10 +36,10 @@ public class Train extends BaseExecutable {
         String name = getName();
 
         Json json = new Json(name);
-        Data data = Data.parse(json.getJsonNode("data"));
-        int[] inputIndex = data.getInputIndex();
-        int[] labelIndex = data.getLabelIndex();
-        String filePath = PathUtil.resolveAbsolutePath(root, data.getInputPathName());
+        Json data = json.getSubJson("data");
+        int[] inputIndex = data.getIntArray("inputIndex");
+        int[] labelIndex = data.getIntArray("labelIndex");
+        String filePath = PathUtil.resolveAbsolutePath(root, data.getString("inputPathName"));
         Pair<float[][], float[][]> allData = DataUtil.readToPairFloat(filePath, 1, inputIndex, labelIndex);
         if (allData != null) {
             Coder dataCoder = new Coder(allData.first);
@@ -57,9 +56,9 @@ public class Train extends BaseExecutable {
                             dataCoder.getEncode(),
                             labelCoder.getEncode(),
                             training.getBatchSize(),
-                            data.isShuffle());
+                            data.getBoolean("shuffle"));
                     trainAndSaveModel(name, dataset, dataset);
-                    String minMaxPath = PathUtil.resolveAbsolutePath(root, data.getMinMaxPathName());
+                    String minMaxPath = PathUtil.resolveAbsolutePath(root, data.getString("minMaxPathName"));
                     MinMax.writeMinMax(minMaxPath, dataCoder, labelCoder);
                 }
             } catch (Exception e) {
