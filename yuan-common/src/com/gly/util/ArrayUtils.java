@@ -262,6 +262,32 @@ public class ArrayUtils {
         return result;
     }
 
+    public static float[] flatten(float[][] array) {
+        // 处理null输入
+        if (array == null)
+            return new float[0];
+
+        // 计算总元素个数
+        int totalElements = 0;
+        for (float[] row : array) {
+            if (row != null) {
+                totalElements += row.length;
+            }
+        }
+        // 创建结果数组
+        float[] result = new float[totalElements];
+        int index = 0;
+        // 填充数据
+        for (float[] row : array) {
+            if (row != null) {
+                for (float num : row) {
+                    result[index++] = num;
+                }
+            }
+        }
+        return result;
+    }
+
     public static int[] toIntArray(List<Integer> list) {
         int length = list.size();
         int[] arr = new int[length];
@@ -282,6 +308,23 @@ public class ArrayUtils {
             return new double[0][0]; // 空数据返回
         int cols = dataList.get(0).length;
         double[][] result = new double[rows][cols];
+        for (int i = 0; i < rows; ++i) {
+            result[i] = dataList.get(i);
+        }
+        return result;
+    }
+
+    /**
+     * 转换List<double[]>为double[][]
+     * @param dataList 数组列表。
+     * @return 二维数组。
+     */
+    public static float[][] toFloatArray(List<float[]> dataList) {
+        int rows = dataList.size();
+        if (rows == 0)
+            return new float[0][0]; // 空数据返回
+        int cols = dataList.get(0).length;
+        float[][] result = new float[rows][cols];
         for (int i = 0; i < rows; ++i) {
             result[i] = dataList.get(i);
         }

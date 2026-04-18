@@ -44,6 +44,37 @@ public class Reader {
     }
 
     /**
+     * 读取CSV文件中的数据为float[][]，跳过前skip行。
+     *
+     * @param filePath CSV文件路径名。
+     * @param skip 跳过的行数（一般用于跳过表头）。
+     * @param cols 先择的列索引。
+     * @return float[][] 数据数组。
+     */
+    public static float[][] readToFloatArray2(String filePath, int skip, int[] cols)  {
+        try {
+            List<float[]> dataList = new ArrayList<>();
+            try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+                String line;
+                int lineNumber = -1;
+
+                while ((line = br.readLine()) != null) {
+                    ++lineNumber;
+                    if (lineNumber < skip) {
+                        continue; // 跳过
+                    }
+                    String[] tokens = line.split(",");// 分割
+                    dataList.add(getFloatRow(tokens, cols));
+                }
+            }
+            return ArrayUtils.toFloatArray(dataList);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
      * 读取CSV文件中的数据为double[][]，读取[begin, end)行， index列。
      * @param filePath CSV文件路径。
      * @param begin 起始行索引。
@@ -83,6 +114,21 @@ public class Reader {
         double[] row = new double[length];// 每行数据转换为double[]
         for (int i = 0; i < length; ++i) {
             row[i] = Double.parseDouble(tokens[dataIndex[i]].trim());// 去除字符串两端空白后转换
+        }
+        return row;
+    }
+
+    /**
+     * 将指定索引的数据String[]转换成double[]。
+     * @param tokens 需要挑选列的原始字符串数据。
+     * @param dataIndex 挑选数据索引值。
+     * @return 挑选列对应的double[]。
+     */
+    public static float[] getFloatRow(String[] tokens, int[] dataIndex) {
+        int length = dataIndex.length;
+        float[] row = new float[length];// 每行数据转换为float[]
+        for (int i = 0; i < length; ++i) {
+            row[i] = Float.parseFloat(tokens[dataIndex[i]].trim());// 去除字符串两端空白后转换
         }
         return row;
     }

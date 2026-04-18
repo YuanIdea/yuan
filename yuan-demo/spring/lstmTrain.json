@@ -1,0 +1,38 @@
+{
+	"actionType":"train",
+	"modelConfig":
+	{
+		"name": "lstm",
+		"inputShape": [8, 3],
+		"layers":
+		[
+			{"type": "lstm", "units": 32, "numLayers":2},
+			{"type": "flatten"},
+			{"type": "dense", "units": 64, "activation": "relu"},
+			{"type": "dense", "units": 1, "activation": "linear"}
+		]
+	},
+	"training":
+	{
+    	"loss": "mse",
+    	"accuracy": false,
+    	"batchSize": 64,
+    	"epochs": 20,
+    	"saveModelPath": "data/model"
+	},
+  	"data":
+  	{
+		"inputPathName": "data/input/train.csv",
+		"minMaxPathName": "data/model/minMax.json",
+		"block":
+		{
+			"useColIndex": [1, 2, 3],
+			"inputRowCount": 8,
+			"inputColIndex": [0, 1, 2],
+			"inputMaskIndex": [[7, 2]],
+			"labelIndex": [[7, 2]]
+		},
+		
+		"shuffle": true
+	}
+}

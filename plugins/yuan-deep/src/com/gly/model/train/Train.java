@@ -18,8 +18,11 @@ import ai.djl.training.loss.SoftmaxCrossEntropyLoss;
 import ai.djl.training.optimizer.Adam;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.gly.BlockIndex;
+import com.gly.Dataset2;
 import com.gly.ModelBuilder;
 import com.gly.config.Training;
+import com.gly.io.csv.Reader;
 import com.gly.io.json.Json;
 import com.gly.model.BaseExecutable;
 import com.gly.util.*;
@@ -37,35 +40,51 @@ public class Train extends BaseExecutable {
 
         Json json = new Json(name);
         Json data = json.getSubJson("data");
-        int[] inputIndex = data.getIntArray("inputIndex");
-        int[] labelIndex = data.getIntArray("labelIndex");
-        String filePath = PathUtil.resolveAbsolutePath(root, data.getString("inputPathName"));
-        Pair<float[][], float[][]> allData = DataUtil.readToPairFloat(filePath, 1, inputIndex, labelIndex);
-        if (allData != null) {
-            Coder dataCoder = new Coder(allData.first);
-            Coder labelCoder = new Coder(allData.second);
-            training = Training.parse(json.getJsonNode("training"));
-            try {
-                Json sequence = json.getSubJson("modelConfig");
-                String engine = sequence.getString("engine");
-                if (engine.isEmpty()) {
-                    engine = "PyTorch";
-                }
-                try (NDManager manager = NDManager.newBaseManager(engine)) {
-                    Dataset dataset = convertToDataset(manager,
-                            dataCoder.getEncode(),
-                            labelCoder.getEncode(),
-                            training.getBatchSize(),
-                            data.getBoolean("shuffle"));
-                    trainAndSaveModel(name, dataset, dataset);
-                    String minMaxPath = PathUtil.resolveAbsolutePath(root, data.getString("minMaxPathName"));
-                    MinMax.writeMinMax(minMaxPath, dataCoder, labelCoder);
-                }
-            } catch (Exception e) {
-                System.out.println("Training error:" + e.getMessage());
-                e.printStackTrace();
-                throw e;
+        if (data.has("inputIndex")) {
+            int[] inputIndex = data.getIntArray("inputIndex");
+            int[] labelIndex = data.getIntArray("labelIndex");
+            String filePath = PathUtil.resolveAbsolutePath(root, data.getString("inputPathName"));
+            Pair<float[][], float[][]> allData = DataUtil.readToPairFloat(filePath, 1, inputIndex, labelIndex);
+            if (allData != null) {
+                Coder dataCoder = new Coder(allData.first);
+                Coder labelCoder = new Coder(allData.second);
+                boolean shuffle = data.getBoolean("shuffle");
+                startTrain(json, dataCoder.getEncode(), labelCoder.getEncode(), null, shuffle);
             }
+        } else if (data.has("block")) {
+            BlockIndex block = new BlockIndex(data.getSubJson("block"));
+            int[] useColIndex = block.getUseColIndex();
+            String filePath = PathUtil.resolveAbsolutePath(root, data.getString("inputPathName"));
+            float[][] allData = Reader.readToFloatArray2(filePath, 1, useColIndex);
+            if (allData != null) {
+                Coder coder = new Coder(allData);
+                Dataset2 sd = new Dataset2(coder.getEncode(), block);
+                Pair<float[][], float[][]> allSequence = sd.getAllData();
+                String minMaxPath = PathUtil.resolveAbsolutePath(root, data.getString("minMaxPathName"));
+                block.writeMinMaxJson(minMaxPath, coder.getMinData(), coder.getMaxData());
+                boolean shuffle = data.getBoolean("shuffle");
+                Shape shape = new Shape(-1, block.getInputRowCount(), block.getInputColIndex().length);
+                startTrain(json, allSequence.first, allSequence.second, shape, shuffle);
+            }
+        }
+    }
+
+    private void startTrain(Json json, float[][] data, float[][] label, Shape shape, boolean shuffle) {
+        training = Training.parse(json.getJsonNode("training"));
+        try {
+            Json sequence = json.getSubJson("modelConfig");
+            String engine = sequence.getString("engine");
+            if (engine.isEmpty()) {
+                engine = "PyTorch";
+            }
+            try (NDManager manager = NDManager.newBaseManager(engine)) {
+                Dataset dataset = convertToDataset(manager, data, label, shape, training.getBatchSize(), shuffle);
+                trainAndSaveModel(getName(), dataset, dataset);
+            }
+        } catch (Exception e) {
+            System.out.println("Training error:" + e.getMessage());
+            e.printStackTrace();
+            throw e;
         }
     }
 
@@ -133,8 +152,12 @@ public class Train extends BaseExecutable {
     }
 
     public static Dataset convertToDataset(NDManager manager, float[][] featuresArray,
-                                           float[][] labelsArray, int batchSize, boolean shuffle) {
+                                           float[][] labelsArray, Shape targetShape,
+                                           int batchSize, boolean shuffle) {
         NDArray features = manager.create(featuresArray);
+        if (targetShape != null) {
+            features = features.reshape(targetShape);
+        }
         NDArray labels = manager.create(labelsArray);
         return new ArrayDataset.Builder()
                 .setData(features)

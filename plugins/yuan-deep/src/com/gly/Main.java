@@ -27,7 +27,10 @@ public class Main {
                 quick();
                 break;
             case 2:
-                plugin();
+                plugin1();
+                break;
+            case 3:
+                plugin2();
                 break;
         }
     }
@@ -52,7 +55,7 @@ public class Main {
         }
     }
 
-    private static void plugin() {
+    private static void plugin1() {
         String root = "D:/WorkSpace/github/yuan/yuan-demo/quick/";
 
         Train train = new Train();
@@ -67,4 +70,14 @@ public class Main {
         test.init(root, root + "test.json", null);
         test.start();
     }
+
+    private static void plugin2() {
+        String root = "D:/WorkSpace/github/yuan/yuan-demo/spring/";
+
+        Train train = new Train();
+        train.init(root, root + "lstmTrain.json", null);
+        train.start();
+        ;
+    }
+
 }

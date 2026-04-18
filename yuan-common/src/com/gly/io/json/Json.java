@@ -22,24 +22,25 @@ public class Json {
 
     public Json(String filePath) {
         try {
-            // 检查文件是否存在
+            // Check if the file exists
             File file = new File(filePath);
             if (!file.exists()) {
-                System.err.println("文件不存在: " + filePath);
+                System.err.println("File does not exist:" + filePath);
                 return;
             }
 
-            // 检查文件扩展名
+            // Check file extension.
             if (!isJsonExtension(filePath)) {
-                System.err.println("文件扩展名非标准json格式: " + filePath);
+                System.err.println("File extension is not in standard JSON format:" + filePath);
                 return;
             }
 
-            // 尝试解析JSON内容
+            // Attempt to parse JSON content.
             mapper = new ObjectMapper();
             rootNode = mapper.readTree(file);
         } catch (IOException e) {
-            System.err.println("解析" + filePath + "失败：" + e.getMessage());
+            System.err.println("Parsing failed:" + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -145,6 +146,39 @@ public class Json {
                 float[] result = new float[node.size()];
                 for (int i = 0; i < node.size(); ++i) {
                     result[i] = node.get(i).floatValue();
+                }
+                return result;
+            }
+        }
+        return null;
+    }
+
+    public int[][] getInt2DArray(String key) {
+        if (rootNode != null) {
+            JsonNode node = rootNode.get(key);
+            if (node != null && node.isArray()) {
+                int outerSize = node.size();
+                // Get the number of rows in a 2D array
+                if (outerSize == 0) {
+                    return null;
+                }
+                // Assume each inner element is also an array, and all have the same length
+                JsonNode firstInnerNode = node.get(0);
+                if (!firstInnerNode.isArray()) {
+                    return null;  // The structure does not conform to a 2D array
+                }
+                int innerSize = firstInnerNode.size();
+                int[][] result = new int[outerSize][innerSize];
+                for (int i = 0; i < outerSize; ++i) {
+                    JsonNode innerNode = node.get(i);
+                    if (!innerNode.isArray() || innerNode.size() != innerSize) {
+                        // The inner arrays have inconsistent lengths or are not arrays;
+                        // conversion is not possible.
+                        return null;
+                    }
+                    for (int j = 0; j < innerSize; ++j) {
+                        result[i][j] = innerNode.get(j).asInt();
+                    }
                 }
                 return result;
             }

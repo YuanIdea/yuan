@@ -32,6 +32,4 @@ public class NetUtil {
         }
         return outputs.toArray(new float[0][]);
     }
-
-
 }
