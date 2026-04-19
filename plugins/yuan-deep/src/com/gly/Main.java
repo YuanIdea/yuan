@@ -27,10 +27,12 @@ public class Main {
                 quick();
                 break;
             case 2:
-                plugin1();
+                String root1 = "D:/WorkSpace/github/yuan/yuan-demo/quick/";
+                plugin(root1, "train.json", "use.json", "test.json");
                 break;
             case 3:
-                plugin2();
+                String root2 = "D:/WorkSpace/github/yuan/yuan-demo/spring/";
+                plugin(root2, "lstmTrain.json", "lstmUse.json", "");
                 break;
         }
     }
@@ -55,29 +57,24 @@ public class Main {
         }
     }
 
-    private static void plugin1() {
-        String root = "D:/WorkSpace/github/yuan/yuan-demo/quick/";
+    private static void plugin(String root, String trainName, String useName, String testName) {
+        if (!trainName.isEmpty()) {
+            Train train = new Train();
+            train.init(root, root + trainName, null);
+            train.start();
+        }
 
-        Train train = new Train();
-        train.init(root, root + "train.json", null);
-        train.start();
+        if (!useName.isEmpty()) {
+            Use use = new Use();
+            use.init(root, root + useName, null);
+            use.start();
+        }
 
-        Use use = new Use();
-        use.init(root, root + "use.json", null);
-        use.start();
-
-        Test test = new Test();
-        test.init(root, root + "test.json", null);
-        test.start();
-    }
-
-    private static void plugin2() {
-        String root = "D:/WorkSpace/github/yuan/yuan-demo/spring/";
-
-        Train train = new Train();
-        train.init(root, root + "lstmTrain.json", null);
-        train.start();
-        ;
+        if (!testName.isEmpty()) {
+            Test test = new Test();
+            test.init(root, root + testName, null);
+            test.start();
+        }
     }
 
 }

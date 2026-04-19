@@ -12,6 +12,7 @@ public class Coder {
 
     /**
      * 编解码器构造函数。
+     *
      * @param oriData 原始数据。
      */
     public Coder(float[][] oriData) {
@@ -26,9 +27,10 @@ public class Coder {
 
     /**
      * 根据json串创建编码器。
+     *
      * @param minMax minMax的json串。
-     * @param min 最小值数组对应key。
-     * @param max 最大值数组对应key。
+     * @param min    最小值数组对应key。
+     * @param max    最大值数组对应key。
      * @return 编码器。
      */
     public static Coder generateCoder(Json minMax, String min, String max) {
@@ -39,6 +41,7 @@ public class Coder {
 
     /**
      * 编解码器构造函数。
+     *
      * @param minData 所有列的最小值数组
      * @param maxData 所有列的最大值数组
      */
@@ -53,6 +56,7 @@ public class Coder {
 
     /**
      * 归一化编码（全列）。
+     *
      * @param data 需要编码的二维数据
      * @return 编码后的二维数据
      */
@@ -79,6 +83,7 @@ public class Coder {
 
     /**
      * 获取数据每列的最小值和最大值。
+     *
      * @param data 二维输入数据
      * @return 包含[minData, maxData]的列表
      */
@@ -100,6 +105,7 @@ public class Coder {
 
     /**
      * 解码（全列）。
+     *
      * @param data 需要解码的二维数据
      * @return 解码后的二维数据
      */
@@ -126,7 +132,8 @@ public class Coder {
 
     /**
      * 只对选中列进行编码。
-     * @param data 原始二维数据
+     *
+     * @param data        原始二维数据
      * @param selectIndex 需要编码的列索引数组
      * @return 仅包含选中列编码后的二维数据
      */
@@ -144,18 +151,19 @@ public class Coder {
     }
 
     /**
-     * 只对选中列进行解码。
-     * @param data 编码后的二维数据（仅包含选中列）
-     * @param selectIndex 需要解码的列索引数组
-     * @return 解码后的二维数据（仅包含选中列）
+     * Decodes only the selected columns.
+     *
+     * @param data        The encoded 2D data (containing only the selected columns).
+     * @param selectIndex The array of column indices to decode.
+     * @return The decoded 2D data (containing only the selected columns).
      */
-    public float[][] decodePart(float[][] data, int[] selectIndex) {
+    public float[][] decodePart(float[][] data, int[][] selectIndex) {
         int rows = data.length;
-        float[][] decoded = new float[rows][selectIndex.length];
         int cols = selectIndex.length;
+        float[][] decoded = new float[rows][cols];
         for (int i = 0; i < rows; ++i) {
             for (int j = 0; j < cols; ++j) {
-                int colIdx = selectIndex[j];
+                int colIdx = selectIndex[j][1];
                 decoded[i][j] = data[i][j] * range[colIdx] + minData[colIdx];
             }
         }

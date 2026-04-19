@@ -10,7 +10,7 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * Json处理类。
+ * JSON processing class.
  */
 public class Json {
     private JsonNode rootNode;
@@ -44,17 +44,22 @@ public class Json {
         }
     }
 
-    // 辅助方法：检查文件扩展名
-    private boolean isJsonExtension(String path) {
-        String lowerPath = path.toLowerCase();
+    /**
+     * Check file extension.
+     *
+     * @param pathName Path name of the file.
+     * @return Whether it is a JSON file extension.
+     */
+    private boolean isJsonExtension(String pathName) {
+        String lowerPath = pathName.toLowerCase();
         return lowerPath.endsWith(".json") || lowerPath.endsWith(".jsonc");
     }
 
     /**
-     * 解析指定名称的字符串值。
+     * Parses the string value for the specified key.
      *
-     * @param key 解析的字段。
-     * @return 解析出来的值。
+     * @param key The field to parse.
+     * @return The parsed value.
      */
     public String getString(String key) {
         return getString(rootNode, key);
@@ -62,7 +67,7 @@ public class Json {
 
     public boolean getBoolean(String key) {
         if (rootNode != null && rootNode.has(key)) {
-            return rootNode.get(key).asBoolean();// 只读取"name"字段
+            return rootNode.get(key).asBoolean();
         } else {
             return false;
         }
@@ -70,7 +75,7 @@ public class Json {
 
     public int getInt(String key) {
         if (rootNode != null && rootNode.has(key)) {
-            return rootNode.get(key).asInt();// 只读取"name"字段
+            return rootNode.get(key).asInt();
         } else {
             return 0;
         }
@@ -78,7 +83,7 @@ public class Json {
 
     public float getFloat(String key) {
         if (rootNode != null && rootNode.has(key)) {
-            return (float) rootNode.get(key).asDouble();// 只读取"name"字段
+            return (float) rootNode.get(key).asDouble();
         } else {
             return 0f;
         }
@@ -86,23 +91,23 @@ public class Json {
 
     public double getDouble(String key) {
         if (rootNode != null && rootNode.has(key)) {
-            return rootNode.get(key).asDouble();// 只读取"name"字段
+            return rootNode.get(key).asDouble();
         } else {
             return 0;
         }
     }
 
     /**
-     * 解析指定名称的json串。
+     * Parses the JSON string for the specified key.
      *
-     * @param key 解析的字段。
-     * @return 解析出来的json字符串。
+     * @param key The field to parse.
+     * @return The parsed JSON string.
      */
     public String getJsonString(String key) {
         if (rootNode != null) {
             JsonNode node = rootNode.get(key);
             if (node != null) {
-                return node.toString(); // 将JsonNode转成字符串
+                return node.toString();
             } else {
                 return "";
             }
@@ -253,10 +258,10 @@ public class Json {
     }
 
     /**
-     * 获得3维数组,各数组维度要求一致。
+     * Gets a 3-dimensional array. The dimensions of each array must be consistent.
      *
-     * @param key json串键值。
-     * @return 3维数组。
+     * @param key The JSON key.
+     * @return A 3-dimensional array.
      */
     public double[][][] getDouble3DArray(String key) {
         if (rootNode != null) {
@@ -264,51 +269,59 @@ public class Json {
             if (node != null && node.isArray()) {
                 int dim1 = node.size();  // 第1维长度
                 if (dim1 == 0) {
-                    System.err.println("空3维数组");
+                    System.err.println("Empty 3-dimensional array.");
                     return new double[0][0][0];
                 }
 
-                // 检查第2维：要求每个元素都是数组，且第2维长度一致
+                // Check the second dimension: require each element to be an array,
+                // and the lengths of the second dimension to be consistent.
                 int dim2 = -1;
                 for (int i = 0; i < dim1; ++i) {
                     JsonNode midNode = node.get(i);
                     if (!midNode.isArray()) {
-                        System.err.println("第2维非数组结构");
+                        System.err.println("The second dimension is not an array structure.");
                         return null;
                     }
                     if (i == 0) {
-                        dim2 = midNode.size();  // 用第一个元素确定第二维长度
+                        //Use the first element to determine the length of the second dimension.
+                        dim2 = midNode.size();
                     } else if (midNode.size() != dim2) {
-                        System.err.println("第2维长度不一致.\n第1组长度为:" + dim2 + ",第" + (i + 1) + "组长度为:" + midNode.size());
+                        System.err.println("The lengths of the second dimension are inconsistent." +
+                                "\n Length of row 1 is:" + dim2 + ", Length of row " + (i + 1) + "is:"
+                                + midNode.size());
                         return null;
                     }
                 }
 
-                // 空二维数组检查（dim2可能是0）
+                // Empty two-dimensional array check.
                 if (dim2 == 0) {
                     return new double[dim1][0][0];
                 }
 
-                // 检查第3维：要求每个元素都是数组，且第3维长度一致
+                // Check the third dimension: require each element to be an array,
+                // and the lengths of the third dimension to be consistent.
                 int dim3 = -1;
                 for (int i = 0; i < dim1; ++i) {
                     JsonNode midNode = node.get(i);
                     for (int j = 0; j < dim2; ++j) {
                         JsonNode innerNode = midNode.get(j);
                         if (!innerNode.isArray()) {
-                            System.err.println("第3维非数组结构");
+                            System.err.println("The third dimension is not an array structure.");
                             return null;
                         }
                         if (i == 0 && j == 0) {
-                            dim3 = innerNode.size();  // 用第一个元素确定第三维长度
+                            // Use the first element to determine the length of the third dimension.
+                            dim3 = innerNode.size();
                         } else if (innerNode.size() != dim3) {
-                            System.err.println("第3维长度不一致.\n第1行长度为:" + dim3 + ",第" + (j + 1) + "行长度为:" + innerNode.size());
+                            System.err.println("The lengths of the third dimension are inconsistent." +
+                                    "\n Length of row 1 is:" + dim3 + ", Length of row " + (j + 1) + "is:"
+                                    + innerNode.size());
                             return null;
                         }
                     }
                 }
 
-                // 创建并填充3维数组
+                // Create and populate a 3-dimensional array.
                 double[][][] result = new double[dim1][dim2][dim3];
                 for (int i = 0; i < dim1; ++i) {
                     JsonNode midNode = node.get(i);
@@ -326,16 +339,97 @@ public class Json {
     }
 
     /**
-     * 判断json字符串中是否包含指定字段
+     * Gets a 3-dimensional array. The dimensions of each array must be consistent.
      *
-     * @param key 解析的字段。
-     * @return true-存在，false-不存在或解析异常
+     * @param key The JSON key.
+     * @return A 3-dimensional array.
+     */
+    public float[][][] getFloat3DArray(String key) {
+        if (rootNode != null) {
+            JsonNode node = rootNode.get(key);
+            if (node != null && node.isArray()) {
+                int dim1 = node.size();  // 第1维长度
+                if (dim1 == 0) {
+                    System.err.println("Empty 3-dimensional array.");
+                    return new float[0][0][0];
+                }
+
+                // Check the second dimension: require each element to be an array,
+                // and the lengths of the second dimension to be consistent.
+                int dim2 = -1;
+                for (int i = 0; i < dim1; ++i) {
+                    JsonNode midNode = node.get(i);
+                    if (!midNode.isArray()) {
+                        System.err.println("The second dimension is not an array structure.");
+                        return null;
+                    }
+                    if (i == 0) {
+                        //Use the first element to determine the length of the second dimension.
+                        dim2 = midNode.size();
+                    } else if (midNode.size() != dim2) {
+                        System.err.println("The lengths of the second dimension are inconsistent." +
+                                "\n Length of row 1 is:" + dim2 + ", Length of row " + (i + 1) + "is:"
+                                + midNode.size());
+                        return null;
+                    }
+                }
+
+                // Empty two-dimensional array check.
+                if (dim2 == 0) {
+                    return new float[dim1][0][0];
+                }
+
+                // Check the third dimension: require each element to be an array,
+                // and the lengths of the third dimension to be consistent.
+                int dim3 = -1;
+                for (int i = 0; i < dim1; ++i) {
+                    JsonNode midNode = node.get(i);
+                    for (int j = 0; j < dim2; ++j) {
+                        JsonNode innerNode = midNode.get(j);
+                        if (!innerNode.isArray()) {
+                            System.err.println("The third dimension is not an array structure.");
+                            return null;
+                        }
+                        if (i == 0 && j == 0) {
+                            // Use the first element to determine the length of the third dimension.
+                            dim3 = innerNode.size();
+                        } else if (innerNode.size() != dim3) {
+                            System.err.println("The lengths of the third dimension are inconsistent." +
+                                    "\n Length of row 1 is:" + dim3 + ", Length of row " + (j + 1) + "is:"
+                                    + innerNode.size());
+                            return null;
+                        }
+                    }
+                }
+
+                // Create and populate a 3-dimensional array.
+                float[][][] result = new float[dim1][dim2][dim3];
+                for (int i = 0; i < dim1; ++i) {
+                    JsonNode midNode = node.get(i);
+                    for (int j = 0; j < dim2; ++j) {
+                        JsonNode innerNode = midNode.get(j);
+                        for (int k = 0; k < dim3; ++k) {
+                            result[i][j][k] = innerNode.get(k).floatValue();
+                        }
+                    }
+                }
+                return result;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Checks whether the JSON string contains the specified field.
+     *
+     * @param key The field to check.
+     * @return true if exists, false if not exists or parsing exception occurs.
      */
     public boolean has(String key) {
         if (rootNode != null) {
             return rootNode.has(key);
         } else {
-            return false;// 解析失败返回false
+            return false;// Return false if parsing fails
         }
     }
 
@@ -386,15 +480,15 @@ public class Json {
     }
 
     /**
-     * 解析指定名称的字符串值。
+     * Parses the string value for the specified key.
      *
-     * @param rootNode 根节点。
-     * @param key      解析的字段。
-     * @return 解析出来的值。
+     * @param rootNode The root node.
+     * @param key      The field to parse.
+     * @return The parsed value.
      */
     public static String getString(JsonNode rootNode, String key) {
         if (rootNode != null && rootNode.has(key)) {
-            return rootNode.get(key).asText();// 只读取"name"字段
+            return rootNode.get(key).asText();
         } else {
             return "";
         }
@@ -404,16 +498,16 @@ public class Json {
         if (rootNode != null && rootNode.has(key)) {
             Json subJson = new Json();
             subJson.setRootNode(rootNode.get(key));
-            return subJson;// 只读取"name"字段
+            return subJson;
         } else {
             return null;
         }
     }
 
     /**
-     * 写到磁盘中。
+     * Writes to disk.
      *
-     * @param filePath 指定写入的位置。
+     * @param filePath Specifies the location to write to.
      */
     public void writeJsonNode(String filePath) {
         try {
