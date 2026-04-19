@@ -1,5 +1,5 @@
 {
-	"actionType":"use",
+	"actionType": "use",
 	"block":
 	[
 		[
@@ -23,5 +23,5 @@
 			[2, 22, 0.000]
 		]
 	],
-	"modelPath":"data/model/bp"
+	"modelPath": "data/model/bp"
 }

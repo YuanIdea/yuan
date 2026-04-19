@@ -1,5 +1,5 @@
 {
-	"actionType":"train",
+	"actionType": "train",
 	"modelConfig":
 	{
 		"name": "lstm",
