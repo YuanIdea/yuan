@@ -17,7 +17,7 @@
     	"loss": "mse",
     	"accuracy": false,
     	"batchSize": 64,
-    	"epochs": 20,
+    	"epochs": 100,
     	"saveModelPath": "data/model"
 	},
   	"data":

@@ -48,6 +48,8 @@ public class Train extends BaseExecutable {
             if (allData != null) {
                 Coder dataCoder = new Coder(allData.first);
                 Coder labelCoder = new Coder(allData.second);
+                String minMaxPath = PathUtil.resolveAbsolutePath(root, data.getString("minMaxPathName"));
+                MinMax.writeMinMax(minMaxPath, dataCoder, labelCoder);
                 boolean shuffle = data.getBoolean("shuffle");
                 startTrain(json, dataCoder.getEncode(), labelCoder.getEncode(), null, shuffle);
             }
