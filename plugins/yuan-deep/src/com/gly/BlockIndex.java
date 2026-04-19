@@ -7,7 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * 块数据处理。
+ * Use the index of the data.
  */
 public class BlockIndex {
     private final int[] useColIndex;
@@ -33,6 +33,15 @@ public class BlockIndex {
         }
         jsonMap.put("labelIndex", labelIndex);
         JsonUtil.writeJson(minMaxPath, jsonMap);
+    }
+
+    public int[] getUseLabelIndex() {
+        int length = labelIndex.length;
+        int[] result = new int[length];
+        for (int i=0; i < length; ++i) {
+            result[i] = useColIndex[labelIndex[i][1]];
+        }
+        return result;
     }
 
     public int[] getUseColIndex() {

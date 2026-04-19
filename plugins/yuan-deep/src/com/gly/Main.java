@@ -32,7 +32,7 @@ public class Main {
                 break;
             case 3:
                 String root2 = "D:/WorkSpace/github/yuan/yuan-demo/spring/";
-                plugin(root2, "lstmTrain.json", "lstmUse.json", "");
+                plugin(root2, "lstmTrain.json", "lstmUse.json", "lstmTest.json");
                 break;
         }
     }
@@ -76,5 +76,4 @@ public class Main {
             test.start();
         }
     }
-
 }

@@ -1,0 +1,16 @@
+{
+	"actionType": "test",
+	"inputPathName": "data/input/test.csv",
+	"minMaxPathName": "data/model/minMax.json",
+	"block":
+	{
+		"useColIndex": [1, 2, 3],
+		"inputRowCount": 8,
+		"inputColIndex": [0, 1, 2],
+		"inputMaskIndex": [[7, 2]],
+		"labelIndex": [[7, 2]]
+	},
+	"shuffle": false,
+	"modelPath":"data/model",
+	"outputPathName":"data/output/lstm_1000.csv"
+}

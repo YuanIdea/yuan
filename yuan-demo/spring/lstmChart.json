@@ -1,0 +1,11 @@
+{
+	"actionType":"chart",
+	"inputPathName":"data/output/lstm_1000.csv",
+	"inputIndex":[2,3],
+	"lineWidth":[2,1],
+	"style":["b","r-."],
+	"labelX":"样本点",
+	"labelY":"水位(米)",
+	"title":"趵突泉水位预测",
+	"legend":["实际水位","预测水位"]
+}
