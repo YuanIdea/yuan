@@ -1,7 +1,7 @@
 {
 	"actionType": "test",
 	"inputPathName": "data/input/test.csv",
-	"minMaxPathName": "data/model/lstm/minMax.json",
+	"minMaxPathName": "data/model/bp/minMax.json",
 	"block":
 	{
 		"useColIndex": [1, 2, 3],
@@ -11,6 +11,6 @@
 		"labelIndex": [[7, 2]]
 	},
 	"shuffle": false,
-	"modelPath":"data/model/lstm",
-	"outputPathName":"data/output/lstm1000.csv"
+	"modelPath":"data/model/bp",
+	"outputPathName":"data/output/bp1000.csv"
 }

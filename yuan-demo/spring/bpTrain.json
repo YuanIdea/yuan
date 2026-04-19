@@ -2,12 +2,12 @@
 	"actionType":"train",
 	"modelConfig":
 	{
-		"name": "lstm",
+		"name": "bp",
 		"inputShape": [8, 3],
 		"layers":
 		[
-			{"type": "lstm", "units": 32, "numLayers":2},
 			{"type": "flatten"},
+			{"type": "dense", "units": 32, "numLayers":2},
 			{"type": "dense", "units": 64, "activation": "relu"},
 			{"type": "dense", "units": 1, "activation": "linear"}
 		]
@@ -18,12 +18,12 @@
     	"accuracy": false,
     	"batchSize": 64,
     	"epochs": 100,
-    	"saveModelPath": "data/model/lstm"
+    	"saveModelPath": "data/model/bp"
 	},
   	"data":
   	{
 		"inputPathName": "data/input/train.csv",
-		"minMaxPathName": "data/model/lstm/minMax.json",
+		"minMaxPathName": "data/model/bp/minMax.json",
 		"block":
 		{
 			"useColIndex": [1, 2, 3],

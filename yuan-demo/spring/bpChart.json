@@ -1,6 +1,6 @@
 {
 	"actionType": "chart",
-	"inputPathName": "data/output/lstm1000.csv",
+	"inputPathName": "data/output/bp1000.csv",
 	"inputIndex": [2, 3],
 	"lineWidth": [2, 1],
 	"style": ["b", "r-."],
