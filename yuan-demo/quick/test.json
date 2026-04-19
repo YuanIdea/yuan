@@ -1,8 +1,8 @@
 {
-	"actionType":"test",
-	"inputIndex":[0,1],
-	"labelIndex":[2],
-	"modelPath":"data/model/",
-	"inputPathName":"data/input/demo.csv",
-	"outputPathName":"data/output/demo.csv"
+	"actionType": "test",
+	"inputIndex": [0, 1],
+	"labelIndex": [2],
+	"modelPath": "data/model/",
+	"inputPathName": "data/input/demo.csv",
+	"outputPathName": "data/output/demo.csv"
 }

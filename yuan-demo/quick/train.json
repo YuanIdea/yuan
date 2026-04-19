@@ -1,26 +1,27 @@
 {
 	"actionType": "train",
-	
-	"modelConfig": {
+	"modelConfig": 
+	{
 		"name": "mlp",
 		"engine": "PyTorch",
 		"inputShape": [2],
-		"layers": [
+		"layers":
+		[
 			{"type": "dense", "units": 128, "activation": "sigmoid"},
 			{"type": "dense", "units": 64, "activation": "sigmoid"},
 			{"type": "dense", "units": 1}
 		]
     },
-    
-	"training": {
+	"training":
+	{
 		"loss": "mse",
 		"accuracy": false,
 		"epochs": 1000,
 		"batchSize": 64,
 		"saveModelPath": "data/model"
  	 },
- 	 
-	"data":{
+	"data":
+	{
 		"inputPathName": "data/input/demo.csv",
 		"minMaxPathName": "data/model/minMax.json",
 		"inputIndex": [0, 1],
