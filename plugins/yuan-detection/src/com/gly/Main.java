@@ -92,14 +92,19 @@ public class Main {
                 return;
             }
             Mat frame = new Mat();
+            String winName = "Real-time Detection";
             while (cap.read(frame)) {
                 detect(frame, model);
-                HighGui.imshow("Real-time Detection", frame);
-                if (HighGui.waitKey(20) == 27) break; // ESC to exit
+                HighGui.imshow(winName, frame);
+                int key = HighGui.waitKey(20);
+                if (key == 27 || !isWindowVisible(winName)) {
+                    break;
+                }
             }
 
             cap.release();
             HighGui.destroyAllWindows();
+            System.exit(0);
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
@@ -112,7 +117,7 @@ public class Main {
      * @param frame OpenCV Mat (original camera frame)
      * @param model Loaded DJL ZooModel
      */
-    static void detect(Mat frame, ZooModel<Image, DetectedObjects> model) throws  TranslateException {
+    static void detect(Mat frame, ZooModel<Image, DetectedObjects> model) throws TranslateException {
         BufferedImage bufferedImage = matToBufferedImage(frame);
         long startTime = System.currentTimeMillis();
 
@@ -209,5 +214,14 @@ public class Main {
         System.arraycopy(buffer, 0, targetPixels, 0, buffer.length);
 
         return image;
+    }
+
+    private static boolean isWindowVisible(String title) {
+        for (java.awt.Window w : java.awt.Window.getWindows()) {
+            if (w instanceof javax.swing.JFrame && title.equals(((javax.swing.JFrame) w).getTitle())) {
+                return w.isVisible();
+            }
+        }
+        return false;
     }
 }
