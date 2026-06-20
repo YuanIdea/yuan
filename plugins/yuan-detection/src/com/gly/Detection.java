@@ -1,11 +1,17 @@
 package com.gly;
 
+import ai.djl.Device;
 import ai.djl.inference.Predictor;
 import ai.djl.modality.cv.Image;
 import ai.djl.modality.cv.ImageFactory;
 import ai.djl.modality.cv.output.DetectedObjects;
 import ai.djl.modality.cv.output.Rectangle;
+import ai.djl.modality.cv.translator.YoloV8Translator;
+import ai.djl.repository.zoo.Criteria;
+import ai.djl.repository.zoo.ModelZoo;
 import ai.djl.repository.zoo.ZooModel;
+import ai.djl.training.util.ProgressBar;
+import ai.djl.translate.Translator;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 import org.bytedeco.opencv.global.opencv_imgproc;
@@ -16,11 +22,15 @@ import org.bytedeco.opencv.opencv_core.Size;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Detection {
     private static final OpenCVFrameConverter.ToMat CONVERTER = new OpenCVFrameConverter.ToMat();
+    private static ZooModel<Image, DetectedObjects> model = null;
     // COCO dataset class names (80 classes)
     public static final List<String> COCO_CLASSES = Arrays.asList(
             "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck", "boat",
@@ -35,11 +45,46 @@ public class Detection {
             "book", "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush"
     );
 
+    public static ZooModel<Image, DetectedObjects> getModelInstance() {
+        if (model == null) {
+            // 加载模型（放在 startVideo 里，确保每次切换视频源都用新模型？也可以复用）
+            String modelDirPath = "model";
+            String modelUrl = Paths.get(modelDirPath).toUri().toString();
+            Map<String, Object> arguments = new ConcurrentHashMap<>();
+            arguments.put("width", 640);
+            arguments.put("height", 640);
+            arguments.put("resize", true);
+            arguments.put("rescale", true);
+            Translator<Image, DetectedObjects> translator =
+                    YoloV8Translator.builder(arguments)
+                            .optSynset(Detection.COCO_CLASSES)
+                            .optNmsThreshold(0.5f)
+                            .build();
+            Criteria<Image, DetectedObjects> criteria = Criteria.builder()
+                    .setTypes(Image.class, DetectedObjects.class)
+                    .optDevice(Device.cpu())
+                    .optModelUrls(modelUrl)
+                    .optModelName("yolov8s.torchscript")
+                    .optTranslator(translator)
+                    .optProgress(new ProgressBar())
+                    .optEngine("PyTorch")
+                    .build();
+            try {
+                model = ModelZoo.loadModel(criteria);
+                System.out.println("Model loaded successfully");
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
+        }
+        return model;
+    }
+
     static Frame detect(Frame inputFrame, ZooModel<Image, DetectedObjects> model) throws Exception {
+        if (model == null) {
+            return null;
+        }
         Mat mat = CONVERTER.convert(inputFrame);
-
         BufferedImage bufferedImage = matToBufferedImage(mat);
-
         try (Predictor<Image, DetectedObjects> predictor = model.newPredictor()) {
             DetectedObjects results = predictor.predict(
                     ImageFactory.getInstance().fromImage(bufferedImage)

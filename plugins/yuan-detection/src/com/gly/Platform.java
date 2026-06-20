@@ -1,14 +1,5 @@
 package com.gly;
 
-import ai.djl.Device;
-import ai.djl.modality.cv.Image;
-import ai.djl.modality.cv.output.DetectedObjects;
-import ai.djl.modality.cv.translator.YoloV8Translator;
-import ai.djl.repository.zoo.Criteria;
-import ai.djl.repository.zoo.ModelZoo;
-import ai.djl.repository.zoo.ZooModel;
-import ai.djl.training.util.ProgressBar;
-import ai.djl.translate.Translator;
 import org.bytedeco.javacv.CanvasFrame;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.OpenCVFrameGrabber;
@@ -16,9 +7,6 @@ import org.bytedeco.javacv.OpenCVFrameGrabber;
 import javax.swing.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.nio.file.Paths;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class Platform {
     public final CanvasFrame canvas;
@@ -30,7 +18,7 @@ public class Platform {
     public Platform() {
         canvas = new CanvasFrame("Real-time Detection");
         canvas.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        canvas.setCanvasSize(960, 720);           // 设置画布尺寸
+        canvas.setCanvasSize(960, 720);
         canvas.setLocationRelativeTo(null);
         canvas.addWindowListener(new WindowAdapter() {
             @Override
@@ -48,34 +36,8 @@ public class Platform {
     void startVideo(String source) {
         // 先停掉之前的视频
         stopVideo();
-
-        // 加载模型（放在 startVideo 里，确保每次切换视频源都用新模型？也可以复用）
-        String modelDirPath = "model";
-        String modelUrl = Paths.get(modelDirPath).toUri().toString();
-        Map<String, Object> arguments = new ConcurrentHashMap<>();
-        arguments.put("width", 640);
-        arguments.put("height", 640);
-        arguments.put("resize", true);
-        arguments.put("rescale", true);
-        Translator<Image, DetectedObjects> translator =
-                YoloV8Translator.builder(arguments)
-                        .optSynset(Detection.COCO_CLASSES)
-                        .optNmsThreshold(0.5f)
-                        .build();
-        Criteria<Image, DetectedObjects> criteria = Criteria.builder()
-                .setTypes(Image.class, DetectedObjects.class)
-                .optDevice(Device.cpu())
-                .optModelUrls(modelUrl)
-                .optModelName("yolov8s.torchscript")
-                .optTranslator(translator)
-                .optProgress(new ProgressBar())
-                .optEngine("PyTorch")
-                .build();
-
+        Detection.getModelInstance();
         try {
-            ZooModel<Image, DetectedObjects> model = ModelZoo.loadModel(criteria);
-            System.out.println("Model loaded successfully. Starting video source: " + source);
-
             if (source.equals("0")) {
                 grabber = new OpenCVFrameGrabber(0);
             } else {
@@ -93,7 +55,7 @@ public class Platform {
                         if (frame == null)
                             break;
                         if (startDetect) {
-                            Detection.detect(frame, model);
+                            Detection.detect(frame, Detection.getModelInstance());
                         }
                         if (canvas.isShowing()) {
                             canvas.showImage(frame);
