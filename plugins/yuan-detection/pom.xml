@@ -50,12 +50,6 @@
             <version>${djl.version}</version>
             <scope>compile</scope>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.openpnp</groupId>-->
-<!--            <artifactId>opencv</artifactId>-->
-<!--            <version>4.9.0-0</version>-->
-<!--        </dependency>-->
-        <!-- 新增 JavaCV（内含 OpenCV + FFmpeg） -->
         <dependency>
             <groupId>org.bytedeco</groupId>
             <artifactId>javacv</artifactId>
