@@ -34,7 +34,6 @@ public class Platform {
 
 
     void startVideo(String source) {
-        // 先停掉之前的视频
         stopVideo();
         Detection.getModelInstance();
         try {
@@ -43,13 +42,16 @@ public class Platform {
             } else {
                 grabber = new OpenCVFrameGrabber(source);
             }
-            grabber.setImageWidth(1280);
-            grabber.setImageHeight(720);
+
             grabber.start();
             canvas.setCanvasSize(grabber.getImageWidth(), grabber.getImageHeight());
             running = true;
             videoThread = new Thread(() -> {
                 try {
+                    double fps = 33;
+                    // 计算每帧应播放的毫秒数
+                    long frameDelayMs = (long) (1000 / fps);
+                    long lastFrameTime = 0;
                     while (running && canvas.isShowing()) {
                         Frame frame = grabber.grab();
                         if (frame == null)
@@ -60,7 +62,9 @@ public class Platform {
                         if (canvas.isShowing()) {
                             canvas.showImage(frame);
                         }
+                        lastFrameTime = sleep(frameDelayMs, lastFrameTime);
                     }
+                    releaseResources();
                 } catch (Exception e) {
                     System.err.println("Video thread error: " + e.getMessage());
                 } finally {
@@ -78,18 +82,37 @@ public class Platform {
         }
     }
 
+    private static long sleep(long frameDelayMs, long lastFrameTime) {
+        // 计算当前时间
+        long currentTime = System.currentTimeMillis();
+        if (lastFrameTime == 0) {
+            lastFrameTime = currentTime;
+        } else {
+            // 计算应该等待的时间
+            long elapsed = currentTime - lastFrameTime;
+            long waitTime = frameDelayMs - elapsed;
+            // 如果处理时间小于帧间隔，等待剩余时间
+            if (waitTime > 0) {
+                try {
+                    Thread.sleep(waitTime);
+                } catch (InterruptedException e) {
+                    System.out.println(e.getMessage());
+                }
+            }
+            lastFrameTime = System.currentTimeMillis();
+        }
+        return lastFrameTime;
+    }
+
     void stopVideo() {
         running = false;   // 告知线程退出
         if (videoThread != null && videoThread.isAlive()) {
+            releaseResources();
             videoThread.interrupt();  // 打断可能的阻塞
         }
-        // 资源释放会在 video thread 的 finally 中执行，
-        // 但为保证立即停止，也可以在这里尝试调用 grabber.stop()
-        // 注意线程安全，一般由同一线程关闭 grabber 更稳妥
     }
 
     private void releaseResources() {
-        // 确保在视频线程中调用，避免 grabber 被多线程操作
         if (grabber != null) {
             try {
                 grabber.stop();
@@ -99,7 +122,5 @@ public class Platform {
             }
             grabber = null;
         }
-        // 模型可以在这里关闭，但 ZooModel 是 try-with-resources 在 startVideo 里？注意模型生命周期
-        // 为了简化，模型在 startVideo 的 try 块结束时已关闭，如果要在 stopVideo 里显式关闭，需保存引用
     }
 }
