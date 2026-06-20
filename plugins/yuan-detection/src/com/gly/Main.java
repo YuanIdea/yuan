@@ -11,15 +11,18 @@ import ai.djl.repository.zoo.Criteria;
 import ai.djl.repository.zoo.ModelZoo;
 import ai.djl.repository.zoo.ZooModel;
 import ai.djl.training.util.ProgressBar;
-import ai.djl.translate.TranslateException;
 import ai.djl.translate.Translator;
-import nu.pattern.OpenCV;
-import org.opencv.core.*;
-import org.opencv.highgui.HighGui;
-import org.opencv.imgproc.Imgproc;
-import org.opencv.videoio.VideoCapture;
+import org.bytedeco.javacv.*;
+import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_imgproc.*;
+import org.bytedeco.javacv.OpenCVFrameConverter;
 
 import java.awt.image.BufferedImage;
+
+import org.bytedeco.javacv.*;
+import org.bytedeco.opencv.opencv_core.*;
+import org.bytedeco.opencv.opencv_imgproc.*;
+
 import java.awt.image.DataBufferByte;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -27,15 +30,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import ai.djl.modality.Classifications.Classification;
+import org.bytedeco.javacv.*;
+import org.bytedeco.opencv.opencv_core.Mat;
+import org.bytedeco.opencv.global.opencv_imgproc;   // 所有 imgproc 函数都在这里
+import org.bytedeco.opencv.opencv_core.*;
 
-import static org.opencv.videoio.Videoio.CAP_ANY;
+
+import javax.swing.*;
 
 /**
  * Real-time object detection using YOLOv8 with DJL (Deep Java Library) and OpenCV.
  * The model is loaded from a TorchScript file and runs on CPU.
  */
 public class Main {
+    private static final OpenCVFrameConverter.ToMat CONVERTER = new OpenCVFrameConverter.ToMat();
     // COCO dataset class names (80 classes)
     private static final List<String> COCO_CLASSES = Arrays.asList(
             "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck", "boat",
@@ -50,9 +58,6 @@ public class Main {
             "book", "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush"
     );
 
-    static {
-        OpenCV.loadShared();
-    }
 
     public static void main(String[] args) {
         // Model directory path (relative to the current working directory)
@@ -85,73 +90,53 @@ public class Main {
         // Load the model and start video capture
         try (ZooModel<Image, DetectedObjects> model = ModelZoo.loadModel(criteria)) {
             System.out.println("Model loaded successfully. Starting camera...");
+            OpenCVFrameGrabber grabber = new OpenCVFrameGrabber(0);
+            grabber.start();
+            OpenCVFrameConverter.ToMat converter = new OpenCVFrameConverter.ToMat();
+            CanvasFrame canvas = new CanvasFrame("Real-time Detection");
+            canvas.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
-            VideoCapture cap = new VideoCapture(CAP_ANY);
-            if (!cap.isOpened()) {
-                System.err.println("Failed to open camera.");
-                return;
-            }
-            Mat frame = new Mat();
-            String winName = "Real-time Detection";
-            while (cap.read(frame)) {
-                detect(frame, model);
-                HighGui.imshow(winName, frame);
-                int key = HighGui.waitKey(20);
-                if (key == 27 || !isWindowVisible(winName)) {
+            while (canvas.isShowing()) {
+                Frame frame = grabber.grab();
+                if (frame == null)
                     break;
-                }
+                Frame result = detect(frame, model);
+                canvas.showImage(result);
             }
 
-            cap.release();
-            HighGui.destroyAllWindows();
+            grabber.stop();
+            canvas.dispose();
             System.exit(0);
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
     }
 
-    /**
-     * Performs object detection on a frame and draws bounding boxes.
-     * Handles coordinate mapping from model input size (640x640) to original frame size.
-     *
-     * @param frame OpenCV Mat (original camera frame)
-     * @param model Loaded DJL ZooModel
-     */
-    static void detect(Mat frame, ZooModel<Image, DetectedObjects> model) throws TranslateException {
-        BufferedImage bufferedImage = matToBufferedImage(frame);
-        long startTime = System.currentTimeMillis();
+    static Frame detect(Frame inputFrame, ZooModel<Image, DetectedObjects> model) throws Exception {
+        Mat mat = CONVERTER.convert(inputFrame);
+
+        BufferedImage bufferedImage = matToBufferedImage(mat);
 
         try (Predictor<Image, DetectedObjects> predictor = model.newPredictor()) {
-            // Run inference
             DetectedObjects results = predictor.predict(
                     ImageFactory.getInstance().fromImage(bufferedImage)
             );
 
-            // Original frame dimensions
-            int imgWidth = frame.width();
-            int imgHeight = frame.height();
-            // Model input dimensions (must match the translator configuration)
+            int imgWidth = inputFrame.imageWidth;
+            int imgHeight = inputFrame.imageHeight;
             int modelWidth = 640;
             int modelHeight = 640;
-
-            // Scaling factors because the model input is stretched to 640x640
             float scaleX = (float) imgWidth / modelWidth;
             float scaleY = (float) imgHeight / modelHeight;
 
-            // Iterate over results (each element is a Classification, but we need DetectedObject)
-            for (Classification classification : results.items()) {
-                // Safely cast to DetectedObject to access bounding box
-                if (classification instanceof DetectedObjects.DetectedObject) {
-                    DetectedObjects.DetectedObject obj = (DetectedObjects.DetectedObject) classification;
-                    Rectangle rect = obj.getBoundingBox().getBounds(); // Coordinates in model space (640x640)
-
-                    // Map coordinates back to original frame space
+            for (var item : results.items()) {
+                if (item instanceof DetectedObjects.DetectedObject) {
+                    DetectedObjects.DetectedObject obj = (DetectedObjects.DetectedObject) item;
+                    Rectangle rect = obj.getBoundingBox().getBounds();
                     int x = (int) (rect.getX() * scaleX);
                     int y = (int) (rect.getY() * scaleY);
                     int w = (int) (rect.getWidth() * scaleX);
                     int h = (int) (rect.getHeight() * scaleY);
-
-                    // Clamp to image boundaries (optional)
                     x = Math.max(0, Math.min(x, imgWidth - 1));
                     y = Math.max(0, Math.min(y, imgHeight - 1));
                     w = Math.max(1, Math.min(w, imgWidth - x));
@@ -159,69 +144,61 @@ public class Main {
 
                     String label = String.format("%s: %.2f", obj.getClassName(), obj.getProbability());
 
-                    // Draw bounding box
-                    Imgproc.rectangle(frame,
+                    opencv_imgproc.rectangle(mat,
                             new Point(x, y),
                             new Point(x + w, y + h),
-                            new Scalar(0, 255, 0), 2);
+                            new Scalar(0, 255, 0, 0), 2,
+                            opencv_imgproc.LINE_8, 0);
 
-                    // Prepare for text drawing (using baseline array)
                     int[] baseline = new int[1];
-                    Size textSize = Imgproc.getTextSize(label, Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, 2, baseline);
-                    int baselineY = baseline[0];
+                    Size textSize = opencv_imgproc.getTextSize(label,
+                            opencv_imgproc.FONT_HERSHEY_SIMPLEX, 0.5, 2, baseline);
 
-                    // Draw label with black background for readability
                     Point textOrg = new Point(x, y - 5);
-                    if (textOrg.y - textSize.height < 0) {
-                        textOrg.y = y + textSize.height + 5; // move below if above top
+                    if (textOrg.y() - textSize.height() < 0) {
+                        textOrg = new Point(x, y + (int) textSize.height() + 5);
                     }
-                    Imgproc.rectangle(frame,
-                            new Point(textOrg.x, textOrg.y - textSize.height - 2),
-                            new Point(textOrg.x + textSize.width, textOrg.y + baselineY + 2),
-                            new Scalar(0, 0, 0), -1);
-                    Imgproc.putText(frame, label, textOrg,
-                            Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, new Scalar(0, 255, 0), 1);
+
+                    opencv_imgproc.rectangle(mat,
+                            new Point(textOrg.x(), textOrg.y() - textSize.height() - 2),
+                            new Point(textOrg.x() + textSize.width(), textOrg.y() + baseline[0] + 2),
+                            new Scalar(0, 0, 0, 0),
+                            -1,
+                            opencv_imgproc.LINE_8, 0);
+                    
+                    opencv_imgproc.putText(mat, label, textOrg,
+                            opencv_imgproc.FONT_HERSHEY_SIMPLEX, 0.5,
+                            new Scalar(0, 255, 0, 0),
+                            1,
+                            opencv_imgproc.LINE_AA, false);
+
                 }
             }
         }
 
-        long elapsed = System.currentTimeMillis() - startTime;
-        double fps = 1000.0 / elapsed;
-        //System.out.printf("Inference time: %d ms, FPS: %.2f%n", elapsed, fps);
+        return CONVERTER.convert(mat);
     }
 
-    /**
-     * Converts an OpenCV Mat (BGR) to a BufferedImage (TYPE_3BYTE_BGR).
-     *
-     * @param mat Input OpenCV Mat
-     * @return Corresponding BufferedImage
-     */
     static BufferedImage matToBufferedImage(Mat mat) {
-        // Convert grayscale to BGR if necessary
-        if (mat.channels() == 1) {
-            Mat gray = new Mat();
-            Imgproc.cvtColor(mat, gray, Imgproc.COLOR_GRAY2BGR);
-            mat = gray;
+        if (!mat.isContinuous()) {
+            mat = mat.clone();
+        }
+
+        int channels = mat.channels();
+        if (channels == 1) {
+            Mat bgrMat = new Mat();
+            opencv_imgproc.cvtColor(mat, bgrMat, opencv_imgproc.COLOR_GRAY2BGR);
+            mat = bgrMat;
         }
 
         int type = BufferedImage.TYPE_3BYTE_BGR;
         int bufferSize = mat.channels() * mat.cols() * mat.rows();
         byte[] buffer = new byte[bufferSize];
-        mat.get(0, 0, buffer);
+        mat.data().get(buffer);
 
         BufferedImage image = new BufferedImage(mat.cols(), mat.rows(), type);
-        final byte[] targetPixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
+        byte[] targetPixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
         System.arraycopy(buffer, 0, targetPixels, 0, buffer.length);
-
         return image;
-    }
-
-    private static boolean isWindowVisible(String title) {
-        for (java.awt.Window w : java.awt.Window.getWindows()) {
-            if (w instanceof javax.swing.JFrame && title.equals(((javax.swing.JFrame) w).getTitle())) {
-                return w.isVisible();
-            }
-        }
-        return false;
     }
 }
