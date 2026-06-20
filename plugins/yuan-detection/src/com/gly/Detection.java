@@ -79,9 +79,9 @@ public class Detection {
         return model;
     }
 
-    static Frame detect(Frame inputFrame, ZooModel<Image, DetectedObjects> model) throws Exception {
+    static void detect(Frame inputFrame, ZooModel<Image, DetectedObjects> model) throws Exception {
         if (model == null) {
-            return null;
+            return;
         }
         Mat mat = CONVERTER.convert(inputFrame);
         BufferedImage bufferedImage = matToBufferedImage(mat);
@@ -143,8 +143,6 @@ public class Detection {
                 }
             }
         }
-
-        return CONVERTER.convert(mat);
     }
 
     static BufferedImage matToBufferedImage(Mat mat) {

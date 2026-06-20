@@ -42,14 +42,13 @@ public class Platform {
             } else {
                 grabber = new OpenCVFrameGrabber(source);
             }
-
+    
             grabber.start();
             canvas.setCanvasSize(grabber.getImageWidth(), grabber.getImageHeight());
             running = true;
             videoThread = new Thread(() -> {
                 try {
                     double fps = 33;
-                    // 计算每帧应播放的毫秒数
                     long frameDelayMs = (long) (1000 / fps);
                     long lastFrameTime = 0;
                     while (running && canvas.isShowing()) {
@@ -68,7 +67,6 @@ public class Platform {
                 } catch (Exception e) {
                     System.err.println("Video thread error: " + e.getMessage());
                 } finally {
-                    // 循环退出后释放资源
                     releaseResources();
                 }
             });
@@ -107,8 +105,8 @@ public class Platform {
     void stopVideo() {
         running = false;   // 告知线程退出
         if (videoThread != null && videoThread.isAlive()) {
-            releaseResources();
             videoThread.interrupt();  // 打断可能的阻塞
+            releaseResources();
         }
     }
 
