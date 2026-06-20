@@ -43,5 +43,18 @@ public class Menu {
         });
         openMenu.add(fileItem);
         menuBar.add(openMenu);
+
+        operate();
+    }
+
+    /**
+     * 操作菜单。
+     */
+    private void operate() {
+        JMenu operate = new JMenu("操作");
+        menuBar.add(operate);
+        JMenuItem trace = new JMenuItem("图像追踪");
+        trace.addActionListener(e -> platform.startDetect = ! platform.startDetect);
+        operate.add(trace);
     }
 }

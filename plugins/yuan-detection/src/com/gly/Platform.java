@@ -25,23 +25,23 @@ public class Platform {
     private OpenCVFrameGrabber grabber;
     private volatile boolean running = false;   // 控制循环是否继续
     private Thread videoThread;
+    public boolean startDetect = false;
 
     public Platform() {
         canvas = new CanvasFrame("Real-time Detection");
-        canvas.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         canvas.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         canvas.setCanvasSize(960, 720);           // 设置画布尺寸
         canvas.setLocationRelativeTo(null);
         canvas.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                stopVideo();  // 窗口关闭时安全停止
+                stopVideo();
             }
         });
+        canvas.setVisible(true);
 
         Menu menu = new Menu(this);
         menu.buildMenus();
-        canvas.setVisible(true);
     }
 
 
@@ -90,10 +90,13 @@ public class Platform {
                 try {
                     while (running && canvas.isShowing()) {
                         Frame frame = grabber.grab();
-                        if (frame == null) break;
-                        Frame result = Detection.detect(frame, model);
+                        if (frame == null)
+                            break;
+                        if (startDetect) {
+                            Detection.detect(frame, model);
+                        }
                         if (canvas.isShowing()) {
-                            canvas.showImage(result);
+                            canvas.showImage(frame);
                         }
                     }
                 } catch (Exception e) {
@@ -105,7 +108,6 @@ public class Platform {
             });
             videoThread.setDaemon(true);
             videoThread.start();
-
         } catch (Exception e) {
             System.err.println("Failed to start video: " + e.getMessage());
             JOptionPane.showMessageDialog(canvas,
