@@ -16,7 +16,7 @@ public class Platform {
     public Platform() {
         canvas = new CanvasFrame("Real-time Detection");
         canvas.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        canvas.setCanvasSize(960, 720);
+        canvas.setCanvasSize(500, 300);
         canvas.setLocationRelativeTo(null);
         canvas.addWindowListener(new WindowAdapter() {
             @Override
@@ -30,47 +30,23 @@ public class Platform {
         menu.buildMenus();
     }
 
-
     void startVideo(String source) {
         stopVideo();
         Detection.getModelInstance();
         try {
             if (source.equals("0")) {
                 grabber = new OpenCVFrameGrabber(0);
-            } else if (source.startsWith("rtsp")){
+            } else if (source.toLowerCase().startsWith("rtsp")) {
                 System.out.println(source);
                 grabber = new FFmpegFrameGrabber(source);
             } else {
                 grabber = new OpenCVFrameGrabber(source);
             }
-    
+
             grabber.start();
             canvas.setCanvasSize(grabber.getImageWidth(), grabber.getImageHeight());
             running = true;
-            videoThread = new Thread(() -> {
-                try {
-                    double fps = 30;
-                    long frameDelayMs = (long) (1000 / fps);
-                    long lastFrameTime = 0;
-                    while (running && canvas.isShowing()) {
-                        Frame frame = grabber.grab();
-                        if (frame == null)
-                            break;
-                        if (startDetect) {
-                            Detection.detect(frame, Detection.getModelInstance());
-                        }
-                        if (canvas.isShowing()) {
-                            canvas.showImage(frame);
-                        }
-                        lastFrameTime = sleep(frameDelayMs, lastFrameTime);
-                    }
-                    releaseResources();
-                } catch (Exception e) {
-                    System.err.println("Video thread error: " + e.getMessage());
-                } finally {
-                    releaseResources();
-                }
-            });
+            videoThread = new Thread(this::cameraLoop);
             videoThread.setDaemon(true);
             videoThread.start();
         } catch (Exception e) {
@@ -78,6 +54,31 @@ public class Platform {
             JOptionPane.showMessageDialog(canvas,
                     "无法打开视频源: " + e.getMessage(),
                     "错误", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void cameraLoop() {
+        try {
+            double fps = 30;
+            long frameDelayMs = (long) (1000 / fps);
+            long lastFrameTime = 0;
+            while (running && canvas.isShowing()) {
+                Frame frame = grabber.grab();
+                if (frame == null)
+                    break;
+                if (startDetect) {
+                    Detection.detect(frame, Detection.getModelInstance());
+                }
+                if (canvas.isShowing()) {
+                    canvas.showImage(frame);
+                }
+                lastFrameTime = sleep(frameDelayMs, lastFrameTime);
+            }
+            releaseResources();
+        } catch (Exception e) {
+            System.err.println("Video thread error: " + e.getMessage());
+        } finally {
+            releaseResources();
         }
     }
 
