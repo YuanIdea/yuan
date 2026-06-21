@@ -37,7 +37,6 @@ public class Platform {
             if (source.equals("0")) {
                 grabber = new OpenCVFrameGrabber(0);
             } else if (source.toLowerCase().startsWith("rtsp")) {
-                System.out.println(source);
                 grabber = new FFmpegFrameGrabber(source);
             } else {
                 grabber = new OpenCVFrameGrabber(source);
@@ -59,7 +58,10 @@ public class Platform {
 
     private void cameraLoop() {
         try {
-            double fps = 30;
+            double fps = grabber.getFrameRate();
+            if (fps <= 0) {
+                fps = 30;
+            }
             long frameDelayMs = (long) (1000 / fps);
             long lastFrameTime = 0;
             while (running && canvas.isShowing()) {
