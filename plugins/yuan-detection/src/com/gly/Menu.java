@@ -27,19 +27,7 @@ public class Menu {
         cameraItem.addActionListener(e -> platform.startVideo("0"));
         openMenu.add(cameraItem);
 
-        JMenuItem fileItem = new JMenuItem("本地视频");
-        fileItem.addActionListener(e -> {
-            // Dialog 是自定义的文件选择器，请确保可用
-            File file = Dialog.open(platform.canvas, System.getProperty("user.dir"));
-            if (file != null && file.exists()) {
-                platform.canvas.setTitle(file.getName());
-                platform.startVideo(file.getAbsolutePath());
-            } else {
-                JOptionPane.showMessageDialog(platform.canvas,
-                        "无法打开视频文件",
-                        "错误", JOptionPane.ERROR_MESSAGE);
-            }
-        });
+        JMenuItem fileItem = getJMenuItem();
         openMenu.add(fileItem);
         menuBar.add(openMenu);
 
@@ -56,6 +44,22 @@ public class Menu {
         operate();
     }
 
+    private JMenuItem getJMenuItem() {
+        JMenuItem fileItem = new JMenuItem("本地视频");
+        fileItem.addActionListener(e -> {
+            File file = Dialog.open(platform.canvas, System.getProperty("user.dir"));
+            if (file != null && file.exists()) {
+                platform.canvas.setTitle(file.getName());
+                platform.startVideo(file.getAbsolutePath());
+            } else {
+                JOptionPane.showMessageDialog(platform.canvas,
+                        "无法打开视频文件",
+                        "错误", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        return fileItem;
+    }
+
     /**
      * 操作菜单。
      */
@@ -63,7 +67,7 @@ public class Menu {
         JMenu operate = new JMenu("操作");
         menuBar.add(operate);
         JMenuItem trace = new JMenuItem("目标追踪");
-        trace.addActionListener(e -> platform.startDetect = ! platform.startDetect);
+        trace.addActionListener(e -> platform.startDetect = !platform.startDetect);
         operate.add(trace);
     }
 }
