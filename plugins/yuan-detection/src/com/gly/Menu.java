@@ -23,11 +23,11 @@ public class Menu {
 
         // Open 菜单
         JMenu openMenu = new JMenu("打开视频");
-        JMenuItem cameraItem = new JMenuItem("打开本地摄像头");
+        JMenuItem cameraItem = new JMenuItem("本地摄像头");
         cameraItem.addActionListener(e -> platform.startVideo("0"));
         openMenu.add(cameraItem);
 
-        JMenuItem fileItem = new JMenuItem("打开本地视频");
+        JMenuItem fileItem = new JMenuItem("本地视频");
         fileItem.addActionListener(e -> {
             // Dialog 是自定义的文件选择器，请确保可用
             File file = Dialog.open(platform.canvas, System.getProperty("user.dir"));
@@ -43,11 +43,14 @@ public class Menu {
         openMenu.add(fileItem);
         menuBar.add(openMenu);
 
-        JMenuItem openIP = new JMenuItem("打开网络摄像头");
+        JMenuItem openIP = new JMenuItem("网络摄像头");
         openMenu.add(openIP);
         openIP.addActionListener(e -> {
             IPCamera ipc = new IPCamera(platform.canvas);
-            platform.startVideo(ipc.getCameraUrl());
+            String url = ipc.getCameraUrl();
+            if (!url.isEmpty()) {
+                platform.startVideo(url);
+            }
         });
 
         operate();
@@ -59,7 +62,7 @@ public class Menu {
     private void operate() {
         JMenu operate = new JMenu("操作");
         menuBar.add(operate);
-        JMenuItem trace = new JMenuItem("图像追踪");
+        JMenuItem trace = new JMenuItem("目标追踪");
         trace.addActionListener(e -> platform.startDetect = ! platform.startDetect);
         operate.add(trace);
     }

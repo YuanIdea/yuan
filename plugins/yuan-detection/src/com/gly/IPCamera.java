@@ -40,7 +40,7 @@ public class IPCamera {
         // 协议选择
         JLabel protocolLabel = new JLabel("协议:");
         protocolCombo = new JComboBox<>(new String[]{
-                "RTSP", "HTTP", "自定义URL"
+                "RTSP", "自定义URL"
         });
 
         // 通道选择（用于多通道摄像头）
@@ -48,6 +48,7 @@ public class IPCamera {
         channelField = new JTextField("1");
 
         JButton connectButton = new JButton("连接");
+        JButton cancelButton = new JButton("取消");
 
         configDialog.add(ipLabel);
         configDialog.add(ipField);
@@ -62,15 +63,21 @@ public class IPCamera {
         configDialog.add(channelLabel);
         configDialog.add(channelField);
         configDialog.add(connectButton);
+        configDialog.add(cancelButton);
 
         connectButton.addActionListener(e -> {
             cameraUrl = streamUrl();
             configDialog.dispose();
         });
 
+        cancelButton.addActionListener(e -> {
+            cameraUrl = "";
+            configDialog.dispose();
+        });
+
         configDialog.pack();
         configDialog.setLocationRelativeTo(null);
-        configDialog.setSize(300, 300);
+        configDialog.setSize(400, 300);
         configDialog.setVisible(true);
     }
 
@@ -89,9 +96,6 @@ public class IPCamera {
         if ("RTSP".equals(protocol)) {
             // 海康威视格式
             return String.format("rtsp://%s:%s@%s:%s/Streaming/Channels/101", user, password, ip, port, channel);
-        } else if ("HTTP".equals(protocol)) {
-            // HTTP MJPEG 流
-            return String.format("http://%s:%s@%s:%s", user, password, ip, port);
         } else {
             // 自定义URL
             return String.format("rtsp://%s:%s@%s:%s/custom/path", user, password, ip, port);
