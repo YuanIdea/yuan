@@ -36,10 +36,12 @@ public class Platform {
         try {
             if (source.equals("0")) {
                 grabber = new OpenCVFrameGrabber(0);
-            } else if (source.toLowerCase().startsWith("rtsp")) {
-                grabber = new FFmpegFrameGrabber(source);
             } else {
-                grabber = new OpenCVFrameGrabber(source);
+                grabber = new FFmpegFrameGrabber(source);
+                grabber.setFrameRate(0);
+                grabber.setAudioStream(0);
+                grabber.setImageMode(FrameGrabber.ImageMode.COLOR); // 直接给 BGR 格式，与 OpenCV 习惯一致
+                grabber.setPixelFormat(org.bytedeco.ffmpeg.global.avutil.AV_PIX_FMT_BGR24);
             }
 
             grabber.start();
@@ -59,6 +61,7 @@ public class Platform {
     private void cameraLoop() {
         try {
             double fps = grabber.getFrameRate();
+            System.out.println(fps);
             if (fps <= 0) {
                 fps = 30;
             }
