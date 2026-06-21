@@ -10,7 +10,7 @@ public class Menu {
     public Menu(Platform platform) {
         this.platform = platform;
         menuBar = new JMenuBar();
-        this.platform.canvas.setJMenuBar(menuBar);
+        this.platform.frame.setJMenuBar(menuBar);
     }
 
     void buildMenus() {
@@ -34,7 +34,7 @@ public class Menu {
         JMenuItem openIP = new JMenuItem("网络摄像头");
         openMenu.add(openIP);
         openIP.addActionListener(e -> {
-            IPCamera ipc = new IPCamera(platform.canvas);
+            IPCamera ipc = new IPCamera(platform.frame);
             String url = ipc.getCameraUrl();
             if (!url.isEmpty()) {
                 platform.startVideo(url);
@@ -47,12 +47,12 @@ public class Menu {
     private JMenuItem getJMenuItem() {
         JMenuItem fileItem = new JMenuItem("本地视频");
         fileItem.addActionListener(e -> {
-            File file = Dialog.open(platform.canvas, System.getProperty("user.dir"));
+            File file = Dialog.open(platform.frame, System.getProperty("user.dir"));
             if (file != null && file.exists()) {
-                platform.canvas.setTitle(file.getName());
+                platform.frame.setTitle(file.getName());
                 platform.startVideo(file.getAbsolutePath());
             } else {
-                JOptionPane.showMessageDialog(platform.canvas,
+                JOptionPane.showMessageDialog(platform.frame,
                         "无法打开视频文件",
                         "错误", JOptionPane.ERROR_MESSAGE);
             }
