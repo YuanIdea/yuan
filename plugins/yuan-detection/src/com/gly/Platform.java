@@ -1,8 +1,6 @@
 package com.gly;
 
-import org.bytedeco.javacv.CanvasFrame;
-import org.bytedeco.javacv.Frame;
-import org.bytedeco.javacv.OpenCVFrameGrabber;
+import org.bytedeco.javacv.*;
 
 import javax.swing.*;
 import java.awt.event.WindowAdapter;
@@ -10,7 +8,7 @@ import java.awt.event.WindowEvent;
 
 public class Platform {
     public final CanvasFrame canvas;
-    private OpenCVFrameGrabber grabber;
+    private FrameGrabber grabber;
     private volatile boolean running = false;   // 控制循环是否继续
     private Thread videoThread;
     public boolean startDetect = false;
@@ -39,6 +37,9 @@ public class Platform {
         try {
             if (source.equals("0")) {
                 grabber = new OpenCVFrameGrabber(0);
+            } else if (source.startsWith("rtsp")){
+                System.out.println(source);
+                grabber = new FFmpegFrameGrabber(source);
             } else {
                 grabber = new OpenCVFrameGrabber(source);
             }
@@ -48,7 +49,7 @@ public class Platform {
             running = true;
             videoThread = new Thread(() -> {
                 try {
-                    double fps = 33;
+                    double fps = 30;
                     long frameDelayMs = (long) (1000 / fps);
                     long lastFrameTime = 0;
                     while (running && canvas.isShowing()) {

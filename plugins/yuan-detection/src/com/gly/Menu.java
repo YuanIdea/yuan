@@ -29,7 +29,6 @@ public class Menu {
 
         JMenuItem fileItem = new JMenuItem("打开本地视频");
         fileItem.addActionListener(e -> {
-
             // Dialog 是自定义的文件选择器，请确保可用
             File file = Dialog.open(platform.canvas, System.getProperty("user.dir"));
             if (file != null && file.exists()) {
@@ -43,6 +42,13 @@ public class Menu {
         });
         openMenu.add(fileItem);
         menuBar.add(openMenu);
+
+        JMenuItem openIP = new JMenuItem("打开网络摄像头");
+        openMenu.add(openIP);
+        openIP.addActionListener(e -> {
+            IPCamera ipc = new IPCamera(platform.canvas);
+            platform.startVideo(ipc.getCameraUrl());
+        });
 
         operate();
     }
