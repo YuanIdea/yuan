@@ -16,10 +16,9 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 
 public class Platform {
-    // 【替换】主窗口改为标准的 Swing JFrame，为了兼容你原有的 Menu 菜单
     public final JFrame frame;
 
-    // 【新增】JavaFX 的视频渲染面板
+    // JavaFX 的视频渲染面板
     private final JFXPanel jfxPanel;
     private ImageView imageView;
 
@@ -29,10 +28,9 @@ public class Platform {
     public boolean startDetect = false;
 
     public Platform() {
-        // 1. 初始化主窗口（保留 Swing 框架，为菜单做准备）
         frame = new JFrame("Real-time Detection");
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        frame.setSize(500, 300);
+        frame.setSize(800, 600);
         frame.setLocationRelativeTo(null);
         frame.addWindowListener(new WindowAdapter() {
             @Override
@@ -41,17 +39,17 @@ public class Platform {
             }
         });
 
-        // 2. 初始化 JavaFX 嵌入面板（放在窗口正中间）
+        // 初始化 JavaFX 嵌入面板（放在窗口正中间）
         jfxPanel = new JFXPanel();
         frame.add(jfxPanel, BorderLayout.CENTER);
 
-        // 3. 在 JavaFX 线程里初始化视频渲染组件
+        // 在 JavaFX 线程里初始化视频渲染组件
         javafx.application.Platform.runLater(() -> {
             imageView = new ImageView();
             StackPane root = new StackPane(imageView); // 把 imageView 放进去
             jfxPanel.setScene(new Scene(root));
 
-            // 【修正点】：绑定到 root 的属性，而不是 jfxPanel
+            // 绑定到 root 的属性
             imageView.fitWidthProperty().bind(root.widthProperty());
             imageView.fitHeightProperty().bind(root.heightProperty());
 
@@ -60,7 +58,7 @@ public class Platform {
 
         frame.setVisible(true);
 
-        // 4. 构建菜单（需要到 Menu 类里微调，见下文提示）
+        // 构建菜单
         Menu menu = new Menu(this);
         menu.buildMenus();
     }
@@ -75,7 +73,7 @@ public class Platform {
                 grabber = new FFmpegFrameGrabber(source);
                 grabber.setFrameRate(0);
                 grabber.setAudioStream(0);
-                grabber.setImageMode(FrameGrabber.ImageMode.COLOR); // 保持 BGR 格式给 OpenCV 检测用
+                grabber.setImageMode(FrameGrabber.ImageMode.COLOR);
             }
 
             grabber.start();
@@ -100,30 +98,29 @@ public class Platform {
             long frameDelayMs = (long) (1000 / fps);
             long lastFrameTime = 0;
 
-            // 【核心修正】：把 OpenCVFrameConverter.ToImage 替换为 Java2DFrameConverter
-            Java2DFrameConverter converter = new Java2DFrameConverter();
+            try (Java2DFrameConverter converter = new Java2DFrameConverter()) {
 
-            while (running && frame.isShowing()) {
-                Frame grabFrame = grabber.grab();
-                if (grabFrame == null) break;
+                while (running && frame.isShowing()) {
+                    Frame grabFrame = grabber.grab();
+                    if (grabFrame == null) break;
 
-                if (startDetect) {
-                    Detection.detect(grabFrame, Detection.getModelInstance());
+                    if (startDetect) {
+                        Detection.detect(grabFrame, Detection.getModelInstance());
+                    }
+
+                    BufferedImage bufImg = converter.convert(grabFrame);
+                    if (bufImg != null) {
+                        WritableImage fxImage = SwingFXUtils.toFXImage(bufImg, null);
+                        // 安全地将渲染推送到 JavaFX 的 UI 线程
+                        javafx.application.Platform.runLater(() -> {
+                            if (imageView != null) {
+                                imageView.setImage(fxImage);
+                            }
+                        });
+                    }
+
+                    lastFrameTime = sleep(frameDelayMs, lastFrameTime);
                 }
-
-                // 【核心升级】：这里把 BGR 转成 BufferedImage，再转成 JavaFX 专用的 WritableImage
-                BufferedImage bufImg = converter.convert(grabFrame);
-                if (bufImg != null) {
-                    WritableImage fxImage = SwingFXUtils.toFXImage(bufImg, null);
-                    // 安全地将渲染推送到 JavaFX 的 UI 线程
-                    javafx.application.Platform.runLater(() -> {
-                        if (imageView != null) {
-                            imageView.setImage(fxImage);
-                        }
-                    });
-                }
-
-                lastFrameTime = sleep(frameDelayMs, lastFrameTime);
             }
             releaseResources();
         } catch (Exception e) {
