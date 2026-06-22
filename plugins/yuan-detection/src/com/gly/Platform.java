@@ -71,7 +71,6 @@ public class Platform {
                 grabber = new OpenCVFrameGrabber(0);
             } else {
                 grabber = new FFmpegFrameGrabber(source);
-                grabber.setFrameRate(0);
                 grabber.setAudioStream(0);
                 grabber.setImageMode(FrameGrabber.ImageMode.COLOR);
             }
@@ -122,7 +121,6 @@ public class Platform {
                     lastFrameTime = sleep(frameDelayMs, lastFrameTime);
                 }
             }
-            releaseResources();
         } catch (Exception e) {
             System.err.println("Video thread error: " + e.getMessage());
         } finally {
