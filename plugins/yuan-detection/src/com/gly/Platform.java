@@ -6,6 +6,7 @@ import javafx.scene.Scene;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.StackPane;
+import org.bytedeco.ffmpeg.global.avutil;
 import org.bytedeco.javacv.*;
 import org.bytedeco.javacv.Frame;
 
@@ -46,7 +47,7 @@ public class Platform {
         // 在 JavaFX 线程里初始化视频渲染组件
         javafx.application.Platform.runLater(() -> {
             imageView = new ImageView();
-            StackPane root = new StackPane(imageView); // 把 imageView 放进去
+            StackPane root = new StackPane(imageView);
             jfxPanel.setScene(new Scene(root));
 
             // 绑定到 root 的属性
@@ -64,6 +65,7 @@ public class Platform {
     }
 
     void startVideo(String source) {
+        avutil.av_log_set_level(avutil.AV_LOG_ERROR);
         stopVideo();
         Detection.getModelInstance();
         try {
@@ -92,16 +94,16 @@ public class Platform {
         try {
             double fps = grabber.getFrameRate();
             if (fps <= 0) {
-                fps = 30;
+                fps = 33;
             }
             long frameDelayMs = (long) (1000 / fps);
             long lastFrameTime = 0;
 
             try (Java2DFrameConverter converter = new Java2DFrameConverter()) {
-
                 while (running && frame.isShowing()) {
                     Frame grabFrame = grabber.grab();
-                    if (grabFrame == null) break;
+                    if (grabFrame == null)
+                        break;
 
                     if (startDetect) {
                         Detection.detect(grabFrame, Detection.getModelInstance());
@@ -112,23 +114,27 @@ public class Platform {
                         WritableImage fxImage = SwingFXUtils.toFXImage(bufImg, null);
                         // 安全地将渲染推送到 JavaFX 的 UI 线程
                         javafx.application.Platform.runLater(() -> {
-                            if (imageView != null) {
+                            if (imageView != null && running) {
                                 imageView.setImage(fxImage);
                             }
                         });
                     }
-
-                    lastFrameTime = sleep(frameDelayMs, lastFrameTime);
+                    try {
+                        lastFrameTime = sleep(frameDelayMs, lastFrameTime);
+                    } catch (InterruptedException e) {
+                        running = false;
+                        break;
+                    }
                 }
             }
         } catch (Exception e) {
             System.err.println("Video thread error: " + e.getMessage());
         } finally {
-            releaseResources();
+            stopVideo();
         }
     }
 
-    private static long sleep(long frameDelayMs, long lastFrameTime) {
+    private long sleep(long frameDelayMs, long lastFrameTime) throws Exception {
         long currentTime = System.currentTimeMillis();
         if (lastFrameTime == 0) {
             lastFrameTime = currentTime;
@@ -136,11 +142,7 @@ public class Platform {
             long elapsed = currentTime - lastFrameTime;
             long waitTime = frameDelayMs - elapsed;
             if (waitTime > 0) {
-                try {
-                    Thread.sleep(waitTime);
-                } catch (InterruptedException e) {
-                    System.out.println(e.getMessage());
-                }
+                Thread.sleep(waitTime);
             }
             lastFrameTime = System.currentTimeMillis();
         }
@@ -148,11 +150,34 @@ public class Platform {
     }
 
     void stopVideo() {
+        if (!running)
+            return;
+
         running = false;
-        if (videoThread != null && videoThread.isAlive()) {
+        // 先中断线程
+        if (videoThread != null) {
             videoThread.interrupt();
-            releaseResources();
         }
+
+        // 释放采集器资源
+        releaseResources();
+
+        // 清空画面
+        javafx.application.Platform.runLater(() -> {
+            if (imageView != null) {
+                imageView.setImage(null);
+            }
+        });
+
+        // 等待线程结束
+        try {
+            if (videoThread != null) {
+                videoThread.join(500);
+            }
+        } catch (InterruptedException ignored) {
+        }
+
+        videoThread = null;
     }
 
     private void releaseResources() {
@@ -162,8 +187,9 @@ public class Platform {
                 grabber.release();
             } catch (Exception e) {
                 System.err.println("Error stopping grabber: " + e.getMessage());
+            } finally {
+                grabber = null;
             }
-            grabber = null;
         }
     }
 }
