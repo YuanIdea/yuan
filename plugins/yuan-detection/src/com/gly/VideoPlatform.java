@@ -32,6 +32,7 @@ public class VideoPlatform {
     private volatile boolean running = false;
     private Thread videoThread;
     public boolean startDetect = false;
+    boolean chinese = true;
 
     public VideoPlatform() {
         frame = new JFrame("Real-time Detection");
@@ -109,11 +110,11 @@ public class VideoPlatform {
                     Frame grabFrame = grabber.grab();
                     if (grabFrame == null) break;
 
-                    if (startDetect) {
-                        Detection.detect(grabFrame, predictor);
+                    BufferedImage bufImg = converter.convert(grabFrame);
+                    if (startDetect && bufImg != null) {
+                        bufImg = Detection.detect(grabFrame, predictor, chinese);  // 直接得到画好的图
                     }
 
-                    BufferedImage bufImg = converter.convert(grabFrame);
                     if (bufImg != null) {
                         WritableImage fxImage = SwingFXUtils.toFXImage(bufImg, null);
                         javafx.application.Platform.runLater(() -> {

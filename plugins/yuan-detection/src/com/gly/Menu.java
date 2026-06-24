@@ -16,6 +16,9 @@ public class Menu {
     void buildMenus() {
         // File 菜单
         JMenu fileMenu = new JMenu("文件");
+        JMenuItem chineseItem = new JMenuItem("中文标签");
+        chineseItem.addActionListener(e -> platform.chinese = !platform.chinese);
+        fileMenu.add(chineseItem);
         JMenuItem exitItem = new JMenuItem("退出");
         exitItem.addActionListener(e -> platform.stopVideo());
         fileMenu.add(exitItem);
