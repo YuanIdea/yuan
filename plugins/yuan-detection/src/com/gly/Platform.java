@@ -1,5 +1,8 @@
 package com.gly;
 
+import ai.djl.inference.Predictor;
+import ai.djl.modality.cv.Image;
+import ai.djl.modality.cv.output.DetectedObjects;
 import javafx.embed.swing.JFXPanel;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Scene;
@@ -15,6 +18,7 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+
 
 public class Platform {
     public final JFrame frame;
@@ -91,46 +95,43 @@ public class Platform {
     }
 
     private void cameraLoop() {
+        Predictor<Image, DetectedObjects> predictor = null;
         try {
             double fps = grabber.getFrameRate();
-            if (fps <= 0) {
-                fps = 33;
-            }
+            if (fps <= 0) fps = 33;
             long frameDelayMs = (long) (1000 / fps);
             long lastFrameTime = 0;
 
+            predictor = Detection.getModelInstance().newPredictor();
             try (Java2DFrameConverter converter = new Java2DFrameConverter()) {
                 while (running && frame.isShowing()) {
                     Frame grabFrame = grabber.grab();
-                    if (grabFrame == null)
-                        break;
+                    if (grabFrame == null) break;
 
                     if (startDetect) {
-                        Detection.detect(grabFrame, Detection.getModelInstance());
+                        Detection.detect(grabFrame, predictor);
                     }
 
                     BufferedImage bufImg = converter.convert(grabFrame);
                     if (bufImg != null) {
                         WritableImage fxImage = SwingFXUtils.toFXImage(bufImg, null);
-                        // 安全地将渲染推送到 JavaFX 的 UI 线程
                         javafx.application.Platform.runLater(() -> {
                             if (imageView != null && running) {
                                 imageView.setImage(fxImage);
                             }
                         });
                     }
-                    try {
-                        lastFrameTime = sleep(frameDelayMs, lastFrameTime);
-                    } catch (InterruptedException e) {
-                        running = false;
-                        break;
-                    }
+                    lastFrameTime = sleep(frameDelayMs, lastFrameTime);
                 }
+            } catch (InterruptedException e) {
+                // 被 stopVideo() 的中断唤醒，正常退出
             }
         } catch (Exception e) {
             System.err.println("Video thread error: " + e.getMessage());
         } finally {
-            stopVideo();
+            if (predictor != null) predictor.close();
+            releaseResources();            // 在这里安全释放 grabber
+            running = false;
         }
     }
 
@@ -152,32 +153,29 @@ public class Platform {
     void stopVideo() {
         if (!running)
             return;
-
         running = false;
-        // 先中断线程
+
+        // 中断可能阻塞在 grab() 的视频线程
         if (videoThread != null) {
             videoThread.interrupt();
         }
 
-        // 释放采集器资源
-        releaseResources();
-
-        // 清空画面
-        javafx.application.Platform.runLater(() -> {
-            if (imageView != null) {
-                imageView.setImage(null);
-            }
-        });
-
-        // 等待线程结束
+        // 等待视频线程自行结束（它会在 finally 里释放 grabber）
         try {
             if (videoThread != null) {
-                videoThread.join(500);
+                videoThread.join(1000);    // 最多等 1 秒
             }
         } catch (InterruptedException ignored) {
         }
 
         videoThread = null;
+
+        // 清空画面（此时 grabber 已安全释放）
+        javafx.application.Platform.runLater(() -> {
+            if (imageView != null) {
+                imageView.setImage(null);
+            }
+        });
     }
 
     private void releaseResources() {

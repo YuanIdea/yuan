@@ -79,68 +79,63 @@ public class Detection {
         return model;
     }
 
-    static void detect(Frame inputFrame, ZooModel<Image, DetectedObjects> model) throws Exception {
-        if (model == null) {
-            return;
-        }
+    static void detect(Frame inputFrame, Predictor<Image, DetectedObjects> predictor) throws Exception {
         Mat mat = CONVERTER.convert(inputFrame);
         BufferedImage bufferedImage = matToBufferedImage(mat);
-        try (Predictor<Image, DetectedObjects> predictor = model.newPredictor()) {
-            DetectedObjects results = predictor.predict(
-                    ImageFactory.getInstance().fromImage(bufferedImage)
-            );
+        DetectedObjects results = predictor.predict(
+                ImageFactory.getInstance().fromImage(bufferedImage)
+        );
 
-            int imgWidth = inputFrame.imageWidth;
-            int imgHeight = inputFrame.imageHeight;
-            int modelWidth = 640;
-            int modelHeight = 640;
-            float scaleX = (float) imgWidth / modelWidth;
-            float scaleY = (float) imgHeight / modelHeight;
+        int imgWidth = inputFrame.imageWidth;
+        int imgHeight = inputFrame.imageHeight;
+        int modelWidth = 640;
+        int modelHeight = 640;
+        float scaleX = (float) imgWidth / modelWidth;
+        float scaleY = (float) imgHeight / modelHeight;
 
-            for (var item : results.items()) {
-                if (item instanceof DetectedObjects.DetectedObject) {
-                    DetectedObjects.DetectedObject obj = (DetectedObjects.DetectedObject) item;
-                    Rectangle rect = obj.getBoundingBox().getBounds();
-                    int x = (int) (rect.getX() * scaleX);
-                    int y = (int) (rect.getY() * scaleY);
-                    int w = (int) (rect.getWidth() * scaleX);
-                    int h = (int) (rect.getHeight() * scaleY);
-                    x = Math.max(0, Math.min(x, imgWidth - 1));
-                    y = Math.max(0, Math.min(y, imgHeight - 1));
-                    w = Math.max(1, Math.min(w, imgWidth - x));
-                    h = Math.max(1, Math.min(h, imgHeight - y));
+        for (var item : results.items()) {
+            if (item instanceof DetectedObjects.DetectedObject) {
+                DetectedObjects.DetectedObject obj = (DetectedObjects.DetectedObject) item;
+                Rectangle rect = obj.getBoundingBox().getBounds();
+                int x = (int) (rect.getX() * scaleX);
+                int y = (int) (rect.getY() * scaleY);
+                int w = (int) (rect.getWidth() * scaleX);
+                int h = (int) (rect.getHeight() * scaleY);
+                x = Math.max(0, Math.min(x, imgWidth - 1));
+                y = Math.max(0, Math.min(y, imgHeight - 1));
+                w = Math.max(1, Math.min(w, imgWidth - x));
+                h = Math.max(1, Math.min(h, imgHeight - y));
 
-                    String label = String.format("%s: %.2f", obj.getClassName(), obj.getProbability());
+                String label = String.format("%s: %.2f", obj.getClassName(), obj.getProbability());
 
-                    opencv_imgproc.rectangle(mat,
-                            new Point(x, y),
-                            new Point(x + w, y + h),
-                            new Scalar(0, 255, 0, 0), 2,
-                            opencv_imgproc.LINE_8, 0);
+                opencv_imgproc.rectangle(mat,
+                        new Point(x, y),
+                        new Point(x + w, y + h),
+                        new Scalar(0, 255, 0, 0), 2,
+                        opencv_imgproc.LINE_8, 0);
 
-                    int[] baseline = new int[1];
-                    Size textSize = opencv_imgproc.getTextSize(label,
-                            opencv_imgproc.FONT_HERSHEY_SIMPLEX, 0.5, 2, baseline);
+                int[] baseline = new int[1];
+                Size textSize = opencv_imgproc.getTextSize(label,
+                        opencv_imgproc.FONT_HERSHEY_SIMPLEX, 0.5, 2, baseline);
 
-                    Point textOrg = new Point(x, y - 5);
-                    if (textOrg.y() - textSize.height() < 0) {
-                        textOrg = new Point(x, y + (int) textSize.height() + 5);
-                    }
-
-                    opencv_imgproc.rectangle(mat,
-                            new Point(textOrg.x(), textOrg.y() - textSize.height() - 2),
-                            new Point(textOrg.x() + textSize.width(), textOrg.y() + baseline[0] + 2),
-                            new Scalar(0, 0, 0, 0),
-                            -1,
-                            opencv_imgproc.LINE_8, 0);
-
-                    opencv_imgproc.putText(mat, label, textOrg,
-                            opencv_imgproc.FONT_HERSHEY_SIMPLEX, 0.5,
-                            new Scalar(0, 255, 0, 0),
-                            1,
-                            opencv_imgproc.LINE_AA, false);
-
+                Point textOrg = new Point(x, y - 5);
+                if (textOrg.y() - textSize.height() < 0) {
+                    textOrg = new Point(x, y + (int) textSize.height() + 5);
                 }
+
+                opencv_imgproc.rectangle(mat,
+                        new Point(textOrg.x(), textOrg.y() - textSize.height() - 2),
+                        new Point(textOrg.x() + textSize.width(), textOrg.y() + baseline[0] + 2),
+                        new Scalar(0, 0, 0, 0),
+                        -1,
+                        opencv_imgproc.LINE_8, 0);
+
+                opencv_imgproc.putText(mat, label, textOrg,
+                        opencv_imgproc.FONT_HERSHEY_SIMPLEX, 0.5,
+                        new Scalar(0, 255, 0, 0),
+                        1,
+                        opencv_imgproc.LINE_AA, false);
+
             }
         }
     }
