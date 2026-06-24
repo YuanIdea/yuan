@@ -31,6 +31,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Detection {
     private static final OpenCVFrameConverter.ToMat CONVERTER = new OpenCVFrameConverter.ToMat();
     private static ZooModel<Image, DetectedObjects> model = null;
+    private static final Scalar GREEN = new Scalar(0, 255, 0, 0);
+    private static final Scalar BLACK = new Scalar(0, 0, 0, 0);
+    private static final int[] BASELINE = new int[1];
+
     // COCO dataset class names (80 classes)
     public static final List<String> COCO_CLASSES = Arrays.asList(
             "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck", "boat",
@@ -82,61 +86,35 @@ public class Detection {
     static void detect(Frame inputFrame, Predictor<Image, DetectedObjects> predictor) throws Exception {
         Mat mat = CONVERTER.convert(inputFrame);
         BufferedImage bufferedImage = matToBufferedImage(mat);
-        DetectedObjects results = predictor.predict(
-                ImageFactory.getInstance().fromImage(bufferedImage)
-        );
+        DetectedObjects results = predictor.predict(ImageFactory.getInstance().fromImage(bufferedImage));
 
         int imgWidth = inputFrame.imageWidth;
         int imgHeight = inputFrame.imageHeight;
-        int modelWidth = 640;
-        int modelHeight = 640;
-        float scaleX = (float) imgWidth / modelWidth;
-        float scaleY = (float) imgHeight / modelHeight;
+        float scaleX = (float) imgWidth / 640;
+        float scaleY = (float) imgHeight / 640;
 
         for (var item : results.items()) {
-            if (item instanceof DetectedObjects.DetectedObject) {
-                DetectedObjects.DetectedObject obj = (DetectedObjects.DetectedObject) item;
-                Rectangle rect = obj.getBoundingBox().getBounds();
-                int x = (int) (rect.getX() * scaleX);
-                int y = (int) (rect.getY() * scaleY);
-                int w = (int) (rect.getWidth() * scaleX);
-                int h = (int) (rect.getHeight() * scaleY);
-                x = Math.max(0, Math.min(x, imgWidth - 1));
-                y = Math.max(0, Math.min(y, imgHeight - 1));
-                w = Math.max(1, Math.min(w, imgWidth - x));
-                h = Math.max(1, Math.min(h, imgHeight - y));
+            if (!(item instanceof DetectedObjects.DetectedObject)) continue;
+            DetectedObjects.DetectedObject obj = (DetectedObjects.DetectedObject) item;
+            Rectangle rect = obj.getBoundingBox().getBounds();
+            int x = Math.max(0, Math.min((int) (rect.getX() * scaleX), imgWidth - 1));
+            int y = Math.max(0, Math.min((int) (rect.getY() * scaleY), imgHeight - 1));
+            int w = Math.max(1, Math.min((int) (rect.getWidth() * scaleX), imgWidth - x));
+            int h = Math.max(1, Math.min((int) (rect.getHeight() * scaleY), imgHeight - y));
 
-                String label = String.format("%s: %.2f", obj.getClassName(), obj.getProbability());
+            opencv_imgproc.rectangle(mat, new Point(x, y), new Point(x + w, y + h), GREEN, 2, opencv_imgproc.LINE_8, 0);
 
-                opencv_imgproc.rectangle(mat,
-                        new Point(x, y),
-                        new Point(x + w, y + h),
-                        new Scalar(0, 255, 0, 0), 2,
-                        opencv_imgproc.LINE_8, 0);
-
-                int[] baseline = new int[1];
-                Size textSize = opencv_imgproc.getTextSize(label,
-                        opencv_imgproc.FONT_HERSHEY_SIMPLEX, 0.5, 2, baseline);
-
-                Point textOrg = new Point(x, y - 5);
-                if (textOrg.y() - textSize.height() < 0) {
-                    textOrg = new Point(x, y + (int) textSize.height() + 5);
-                }
-
-                opencv_imgproc.rectangle(mat,
-                        new Point(textOrg.x(), textOrg.y() - textSize.height() - 2),
-                        new Point(textOrg.x() + textSize.width(), textOrg.y() + baseline[0] + 2),
-                        new Scalar(0, 0, 0, 0),
-                        -1,
-                        opencv_imgproc.LINE_8, 0);
-
-                opencv_imgproc.putText(mat, label, textOrg,
-                        opencv_imgproc.FONT_HERSHEY_SIMPLEX, 0.5,
-                        new Scalar(0, 255, 0, 0),
-                        1,
-                        opencv_imgproc.LINE_AA, false);
-
+            String label = String.format("%s: %.2f", obj.getClassName(), obj.getProbability());
+            Size textSize = opencv_imgproc.getTextSize(label, opencv_imgproc.FONT_HERSHEY_SIMPLEX, 0.5, 2, BASELINE);
+            Point textOrg = new Point(x, y - 5);
+            if (textOrg.y() - textSize.height() < 0) {
+                textOrg = new Point(x, y + (int) textSize.height() + 5);
             }
+            opencv_imgproc.rectangle(mat,
+                    new Point(textOrg.x(), textOrg.y() - textSize.height() - 2),
+                    new Point(textOrg.x() + textSize.width(), textOrg.y() + BASELINE[0] + 2),
+                    BLACK, -1, opencv_imgproc.LINE_8, 0);
+            opencv_imgproc.putText(mat, label, textOrg, opencv_imgproc.FONT_HERSHEY_SIMPLEX, 0.5, GREEN, 1, opencv_imgproc.LINE_AA, false);
         }
     }
 
