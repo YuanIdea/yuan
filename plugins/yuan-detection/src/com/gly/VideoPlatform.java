@@ -3,6 +3,7 @@ package com.gly;
 import ai.djl.inference.Predictor;
 import ai.djl.modality.cv.Image;
 import ai.djl.modality.cv.output.DetectedObjects;
+import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.Scene;
@@ -20,7 +21,7 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 
 
-public class Platform {
+public class VideoPlatform {
     public final JFrame frame;
 
     // JavaFX 的视频渲染面板
@@ -32,7 +33,7 @@ public class Platform {
     private Thread videoThread;
     public boolean startDetect = false;
 
-    public Platform() {
+    public VideoPlatform() {
         frame = new JFrame("Real-time Detection");
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.setSize(800, 600);
@@ -49,7 +50,7 @@ public class Platform {
         frame.add(jfxPanel, BorderLayout.CENTER);
 
         // 在 JavaFX 线程里初始化视频渲染组件
-        javafx.application.Platform.runLater(() -> {
+        Platform.runLater(() -> {
             imageView = new ImageView();
             StackPane root = new StackPane(imageView);
             jfxPanel.setScene(new Scene(root));

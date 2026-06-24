@@ -4,10 +4,10 @@ import javax.swing.*;
 import java.io.File;
 
 public class Menu {
-    private final Platform platform;
+    private final VideoPlatform platform;
     private final JMenuBar menuBar;
 
-    public Menu(Platform platform) {
+    public Menu(VideoPlatform platform) {
         this.platform = platform;
         menuBar = new JMenuBar();
         this.platform.frame.setJMenuBar(menuBar);
