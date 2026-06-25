@@ -1,8 +1,5 @@
 package com.gly;
 
-import ai.djl.inference.Predictor;
-import ai.djl.modality.cv.Image;
-import ai.djl.modality.cv.output.DetectedObjects;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.embed.swing.SwingFXUtils;
@@ -32,6 +29,7 @@ public class VideoPlatform {
     private volatile boolean running = false;
     private Thread videoThread;
     public boolean startDetect = false;
+    private Detection detection;
     boolean chinese = true;
 
     public VideoPlatform() {
@@ -97,14 +95,13 @@ public class VideoPlatform {
     }
 
     private void cameraLoop() {
-        Predictor<Image, DetectedObjects> predictor = null;
+        detection = new Detection();
         try {
             double fps = grabber.getFrameRate();
             if (fps <= 0) fps = 33;
             long frameDelayMs = (long) (1000 / fps);
             long lastFrameTime = 0;
 
-            predictor = Detection.getModelInstance().newPredictor();
             try (Java2DFrameConverter converter = new Java2DFrameConverter()) {
                 while (running && frame.isShowing()) {
                     Frame grabFrame = grabber.grab();
@@ -112,7 +109,7 @@ public class VideoPlatform {
 
                     BufferedImage bufImg = converter.convert(grabFrame);
                     if (startDetect && bufImg != null) {
-                        bufImg = Detection.detect(grabFrame, predictor, chinese);  // 直接得到画好的图
+                        bufImg = detection.detect(grabFrame, chinese);  // 直接得到画好的图
                     }
 
                     if (bufImg != null) {
@@ -131,7 +128,7 @@ public class VideoPlatform {
         } catch (Exception e) {
             System.err.println("Video thread error: " + e.getMessage());
         } finally {
-            if (predictor != null) predictor.close();
+            detection.close();
             releaseResources();            // 在这里安全释放 grabber
             running = false;
         }
@@ -190,6 +187,12 @@ public class VideoPlatform {
             } finally {
                 grabber = null;
             }
+        }
+    }
+
+    public void changeSaveState() {
+        if (detection != null) {
+            detection.isSaveImage = !detection.isSaveImage;
         }
     }
 }

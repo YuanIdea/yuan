@@ -72,5 +72,9 @@ public class Menu {
         JMenuItem trace = new JMenuItem("目标追踪");
         trace.addActionListener(e -> platform.startDetect = !platform.startDetect);
         operate.add(trace);
+
+        JMenuItem save = new JMenuItem("保存分类截图");
+        save.addActionListener(e -> platform.changeSaveState());
+        operate.add(save);
     }
 }

@@ -15,20 +15,30 @@ import ai.djl.translate.Translator;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.Java2DFrameConverter;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Detection {
+    Predictor<Image, DetectedObjects> predictor;
+    private static int count = -1;
     private static ZooModel<Image, DetectedObjects> model = null;
+    boolean isSaveImage;
+
+    public Detection() {
+        predictor = Detection.getModelInstance().newPredictor();
+        isSaveImage = false;
+    }
 
     // COCO dataset class names (80 classes)
-    public static final List<String> COCO_CLASSES = Arrays.asList(
+    private static final List<String> COCO_CLASSES = Arrays.asList(
             "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck", "boat",
             "traffic light", "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat",
             "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe", "backpack",
@@ -56,7 +66,7 @@ public class Detection {
     private static final Map<String, String> EN_TO_CN = new HashMap<>();
 
     static {
-        for (int i = 0; i < COCO_CLASSES.size(); i++) {
+        for (int i = 0; i < COCO_CLASSES.size(); ++i) {
             EN_TO_CN.put(COCO_CLASSES.get(i), COCO_CLASSES_C.get(i));
         }
     }
@@ -95,7 +105,7 @@ public class Detection {
         return model;
     }
 
-    public static BufferedImage detect(Frame inputFrame, Predictor<Image, DetectedObjects> predictor, boolean chinese) throws Exception {
+    public BufferedImage detect(Frame inputFrame, boolean chinese) throws Exception {
         BufferedImage image;
         // Frame → BufferedImage（推理用）
         try (Java2DFrameConverter converter = new Java2DFrameConverter()) {
@@ -118,43 +128,92 @@ public class Detection {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             FontMetrics fm = g.getFontMetrics();
 
-            for (var item : results.items()) {
-                if (!(item instanceof DetectedObjects.DetectedObject)) continue;
-                DetectedObjects.DetectedObject obj = (DetectedObjects.DetectedObject) item;
+            List<Item> items = new ArrayList<>();
+            for (var objD : results.items()) {
+                if (!(objD instanceof DetectedObjects.DetectedObject)) continue;
+                DetectedObjects.DetectedObject obj = (DetectedObjects.DetectedObject) objD;
                 Rectangle rect = obj.getBoundingBox().getBounds();
 
-                int x = Math.max(0, Math.min((int) (rect.getX() * scaleX), imgWidth - 1));
-                int y = Math.max(0, Math.min((int) (rect.getY() * scaleY), imgHeight - 1));
-                int w = Math.max(1, Math.min((int) (rect.getWidth() * scaleX), imgWidth - x));
-                int h = Math.max(1, Math.min((int) (rect.getHeight() * scaleY), imgHeight - y));
+                Item item = new Item();
+                item.x = Math.max(0, Math.min((int) (rect.getX() * scaleX), imgWidth - 1));
+                item.y = Math.max(0, Math.min((int) (rect.getY() * scaleY), imgHeight - 1));
+                item.w = Math.max(1, Math.min((int) (rect.getWidth() * scaleX), imgWidth - item.x));
+                item.h = Math.max(1, Math.min((int) (rect.getHeight() * scaleY), imgHeight - item.y));
+                item.probability = obj.getProbability();
 
-                // 绿色矩形框
-                g.setColor(Color.GREEN);
-                g.setStroke(new BasicStroke(2));
-                g.drawRect(x, y, w, h);
-
-                String className = obj.getClassName();          // "class-3"
+                item.className = obj.getClassName();          // "class-3"
                 if (chinese) {
-                    className = EN_TO_CN.get(className);
+                    item.className = EN_TO_CN.get(item.className);
                 }
-                // 中文标签
-                String label = String.format("%s: %.2f", className, obj.getProbability());
-                int textWidth = fm.stringWidth(label);
-                int textHeight = fm.getHeight();
+                items.add(item);
 
-                int by = y - textHeight - 2;
-                if (by < 0) by = y + h + 2;   // 上方放不下就放下方
-
-                // 背景
-                g.setColor(Color.white);
-                g.fillRect(x, by, textWidth + 4, textHeight + 2);
-                // 文字
-                g.setColor(Color.black);
-                g.drawString(label, x + 2, by + fm.getAscent() + 1);
+                if (isSaveImage) {
+                    BufferedImage croppedImage = image.getSubimage(item.x, item.y, item.w, item.h);
+                    save(croppedImage, item.className);
+                }
             }
-
+            for (Item item : items) {
+                drawRect(g, item);
+                drawLabel(g, fm, item);
+            }
             g.dispose();
         }
         return image;
+    }
+
+    private void drawRect(Graphics2D g, Item item) {
+        // 绿色矩形框
+        g.setColor(Color.GREEN);
+        g.setStroke(new BasicStroke(2));
+        g.drawRect(item.x, item.y, item.w, item.h);
+    }
+
+    private void drawLabel(Graphics2D g, FontMetrics fm, Item item) {
+        // 中文标签
+        String label = String.format("%s: %.2f", item.className, item.probability);
+        int textWidth = fm.stringWidth(label);
+        int textHeight = fm.getHeight();
+
+        int by = item.y - textHeight - 2;
+        if (by < 0) by = item.y + item.h + 2;   // 上方放不下就放下方
+
+        // 背景
+        g.setColor(Color.white);
+        g.fillRect(item.x, by, textWidth + 4, textHeight + 2);
+        // 文字
+        g.setColor(Color.black);
+        g.drawString(label, item.x + 2, by + fm.getAscent() + 1);
+    }
+
+    private void save(BufferedImage croppedImage, String className) {
+        try {
+            Path path = Paths.get("./data/" + className);
+            Path name = path.resolve("m_" + (++count) + ".jpg");
+            if (!Files.exists(path)) {
+                createPathFile(name);
+            }
+            ImageIO.write(croppedImage, "jpg", name.toFile());
+            System.out.println(name.toFile());
+        } catch (IOException e) {
+            System.err.println("保存图像失败: " + e.getMessage());
+        }
+    }
+
+    private void createPathFile(Path file) {
+        try {
+            Path parent = file.getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+            Files.createFile(file);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public void close() {
+        if (predictor != null) {
+            predictor.close();
+        }
     }
 }
