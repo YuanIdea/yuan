@@ -66,7 +66,8 @@ public class Detection {
     private static final Map<String, String> EN_TO_CN = new HashMap<>();
 
     static {
-        for (int i = 0; i < COCO_CLASSES.size(); ++i) {
+        int length = COCO_CLASSES.size();
+        for (int i = 0; i < length; ++i) {
             EN_TO_CN.put(COCO_CLASSES.get(i), COCO_CLASSES_C.get(i));
         }
     }
@@ -141,7 +142,7 @@ public class Detection {
                 item.h = Math.max(1, Math.min((int) (rect.getHeight() * scaleY), imgHeight - item.y));
                 item.probability = obj.getProbability();
 
-                item.className = obj.getClassName();          // "class-3"
+                item.className = obj.getClassName();
                 if (chinese) {
                     item.className = EN_TO_CN.get(item.className);
                 }
