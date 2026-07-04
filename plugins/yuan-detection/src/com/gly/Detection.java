@@ -5,7 +5,6 @@ import ai.djl.inference.Predictor;
 import ai.djl.modality.cv.Image;
 import ai.djl.modality.cv.ImageFactory;
 import ai.djl.modality.cv.output.DetectedObjects;
-import ai.djl.modality.cv.output.Rectangle;
 import ai.djl.modality.cv.translator.YoloV8Translator;
 import ai.djl.repository.zoo.Criteria;
 import ai.djl.repository.zoo.ModelZoo;
@@ -74,7 +73,6 @@ public class Detection {
 
     public static ZooModel<Image, DetectedObjects> getModelInstance() {
         if (model == null) {
-            // 加载模型（放在 startVideo 里，确保每次切换视频源都用新模型？也可以复用）
             String modelDirPath = "model";
             String modelUrl = Paths.get(modelDirPath).toUri().toString();
             Map<String, Object> arguments = new ConcurrentHashMap<>();
@@ -106,15 +104,15 @@ public class Detection {
         return model;
     }
 
-    public BufferedImage detect(Frame inputFrame, boolean chinese) throws Exception {
+    public BufferedImage detect(Frame frame, boolean chinese) throws Exception {
         BufferedImage image;
-        // Frame → BufferedImage（推理用）
+        // Frame → BufferedImage
         try (Java2DFrameConverter converter = new Java2DFrameConverter()) {
-            image = converter.convert(inputFrame);
+            image = converter.convert(frame);
             if (image == null) return null;
 
-            int imgWidth = inputFrame.imageWidth;
-            int imgHeight = inputFrame.imageHeight;
+            int imgWidth = frame.imageWidth;
+            int imgHeight = frame.imageHeight;
 
             // DJL 推理
             DetectedObjects results = predictor.predict(ImageFactory.getInstance().fromImage(image));
@@ -123,7 +121,6 @@ public class Detection {
             float scaleX = (float) imgWidth / 640;
             float scaleY = (float) imgHeight / 640;
 
-            // 用 Graphics2D 绘制框和中文标签
             Graphics2D g = image.createGraphics();
             // 抗锯齿设置
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -131,18 +128,10 @@ public class Detection {
 
             List<Item> items = new ArrayList<>();
             for (var objD : results.items()) {
-                if (!(objD instanceof DetectedObjects.DetectedObject)) continue;
+                if (!(objD instanceof DetectedObjects.DetectedObject))
+                    continue;
                 DetectedObjects.DetectedObject obj = (DetectedObjects.DetectedObject) objD;
-                Rectangle rect = obj.getBoundingBox().getBounds();
-
-                Item item = new Item();
-                item.x = Math.max(0, Math.min((int) (rect.getX() * scaleX), imgWidth - 1));
-                item.y = Math.max(0, Math.min((int) (rect.getY() * scaleY), imgHeight - 1));
-                item.w = Math.max(1, Math.min((int) (rect.getWidth() * scaleX), imgWidth - item.x));
-                item.h = Math.max(1, Math.min((int) (rect.getHeight() * scaleY), imgHeight - item.y));
-                item.probability = obj.getProbability();
-
-                item.className = obj.getClassName();
+                Item item = new Item(obj, scaleX, scaleY, imgWidth, imgHeight);
                 if (chinese) {
                     item.className = EN_TO_CN.get(item.className);
                 }

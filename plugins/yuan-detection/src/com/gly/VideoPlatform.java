@@ -114,7 +114,7 @@ public class VideoPlatform {
 
                     if (bufImg != null) {
                         WritableImage fxImage = SwingFXUtils.toFXImage(bufImg, null);
-                        javafx.application.Platform.runLater(() -> {
+                        Platform.runLater(() -> {
                             if (imageView != null && running) {
                                 imageView.setImage(fxImage);
                             }
