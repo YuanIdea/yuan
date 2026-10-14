@@ -5,6 +5,7 @@ book:
   title: "元智能平台"
   subtitle: "版本 1.08"
   author: "杨国梁"
+  output-file: yuan          # 产出自定义文件名（PDF 为 _book/yuan.pdf；默认用 book.title）
   cover-image: chapter/media/image2.png   # 封面 logo（与 Word 原版同一张图）
   downloads: pdf
   chapters:
