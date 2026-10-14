@@ -22,6 +22,11 @@ number-depth: 4
 toc: true
 toc-depth: 3
 
+# 交叉引用文字：图/代码（代码清单统一用「代码」，编号全自动生成）
+language:
+  crossref-fig-title: "图"
+  crossref-lst-title: "代码"
+
 # 语法高亮主题：Quarto 内置的 github 自适应主题（亮/暗色自动切换），
 # HTML 与 PDF 共用；也可换成 atom-one / ayu / breeze 等。
 syntax-highlighting: github
@@ -41,8 +46,10 @@ format:
            鼠标选中、Ctrl+C、右上角复制按钮得到的都是纯代码，不带行号。 */
         pre.numberSource {
           margin-left: 2.6em;
-          border-left: 1px solid rgba(127, 127, 127, 0.4);
-          padding-left: 4px;
+        }
+        /* 图注居中 */
+        figcaption.quarto-float-caption {
+          text-align: center;
         }
         pre.numberSource code {
           counter-reset: source-line 0;
@@ -94,9 +101,8 @@ format:
       text: |
         % 图片编号由正文手工标注（图 2-1、图 3-5 …），
         % 关掉 LaTeX 自动生成的 "图 N:" 前缀，避免双重编号。
-        \usepackage{caption}
-        \captionsetup[figure]{labelformat=empty}
-        \captionsetup[table]{labelformat=empty}
+        % 图与代码题注使用 Quarto 原生交叉引用编号（图 2.1 / 代码 3.1），
+        % 这里不再需要任何 captionsetup 压制。
         % 代码块：长行自动折行（fvextra），避免溢出页面被裁掉
         \usepackage{fvextra}
         \DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
