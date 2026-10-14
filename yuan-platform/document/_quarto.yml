@@ -22,10 +22,13 @@ number-depth: 4
 toc: true
 toc-depth: 3
 
-# 交叉引用文字：图/代码（代码清单统一用「代码」，编号全自动生成）
+# 交叉引用文字：图/代码/章节（编号全自动生成）
+# 章引用写法 `@sec-x 章` -> 「第二章」；节引用 `@sec-x` -> 「3.1.3」
 language:
   crossref-fig-title: "图"
   crossref-lst-title: "代码"
+  crossref-ch-prefix: "第"
+  crossref-sec-prefix: ""
 
 # 语法高亮主题：Quarto 内置的 github 自适应主题（亮/暗色自动切换），
 # HTML 与 PDF 共用；也可换成 atom-one / ayu / breeze 等。
@@ -99,10 +102,11 @@ format:
     code-line-numbers: true
     include-in-header:
       text: |
-        % 图片编号由正文手工标注（图 2-1、图 3-5 …），
-        % 关掉 LaTeX 自动生成的 "图 N:" 前缀，避免双重编号。
+        % 章编号用阿拉伯数字：「第五章」→「第5章」
+        % 章标题、目录、正文交叉引用三处同步生效。
+        \ctexset{chapter/number={\arabic{chapter}}}
         % 图与代码题注使用 Quarto 原生交叉引用编号（图 2.1 / 代码 3.1），
-        % 这里不再需要任何 captionsetup 压制。
+        % 无需任何 captionsetup 压制。
         % 代码块：长行自动折行（fvextra），避免溢出页面被裁掉
         \usepackage{fvextra}
         \DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}

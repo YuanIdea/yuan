@@ -1,4 +1,4 @@
-# 引言
+# 引言 {#sec-introduction}
 
 Yuan是专门为Ai研发的平台，由北京力控元通科技有限公司山东分公司支持开源，并维护到1.0.6版本。后续版本由作者杨国梁独立维护。
 
@@ -8,22 +8,22 @@ Yuan是专门为AI算法研发、设计、运行、发布和应用而设计，�
 
 Yuan平台插件实现了Java调用Yolov8s实现视频检测功能。
 
-## 平台简介
+## 平台简介 {#sec-platform-intro}
 
-[第1章](#引言) 引言部分。
+@sec-introduction 章 引言部分。
 
-[第2章](environment.qmd#配置环境) 介绍了Yuan的环境配置。
+@sec-environment 章 介绍了Yuan的环境配置。
 
-[第3章](quickstart.qmd#快速入门) 介绍了怎么快速入门使用Yuan，并使用Yuan安装了yuan-common到仓库，运行了yuan-platform源文件。
+@sec-quickstart 章 介绍了怎么快速入门使用Yuan，并使用Yuan安装了yuan-common到仓库，运行了yuan-platform源文件。
 
-[第4章](plugins.qmd#添加插件) 介绍了Yuan如何添加自定义插件。
+@sec-plugins 章 介绍了Yuan如何添加自定义插件。
 
-[第5章](video-detection.qmd#视频检测) 介绍了Java实现视频检测。
+@sec-video-detection 章 介绍了Java实现视频检测。
 
-## 联系
+## 联系 {#sec-contact}
 
 系统技术支持，请联系杨国梁：<Guoliang-Yang@hotmail.com>
 
 v1.06以前版本业务合作，请联系尤从国（北京力控元通科技有限公司山东分公司）：youcongguo@126.com。v1.0.6后，由杨国梁以独立身份维护。
 
-本文最新修改时间为2026年6月19日。
+本文最新修改时间为2026年10月14日。

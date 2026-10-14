@@ -1,8 +1,8 @@
-# 添加插件
+# 添加插件 {#sec-plugins}
 
-在添加插件前，首先，参考[第2章](environment.qmd#配置环境)配置平台运行时必要的环境。然后，参考[第3章](quickstart.qmd#快速入门)的[3.1.1](quickstart.qmd#安装yuan-common) 节安装插件依赖的yuan-common。
+在添加插件前，首先，参考 @sec-environment 章 配置平台运行时必要的环境。然后，参考 @sec-quickstart 章 的 @sec-install-common 节安装插件依赖的yuan-common。
 
-## 快速使用插件
+## 快速使用插件 {#sec-use-plugin}
 
 Yuan平台中已经自带了一个绘图插件可以直接使用，其存放目录为 \\yuan\\yuan-platform\\target\\artifacts\\yuan\\plugins\\。平台启动时，在“输出”面板中如果出现了“Plugin loaded successfully:com.gly.Chart”，则说明插件可以直接使用。
 
@@ -19,7 +19,7 @@ Yuan平台中也提供了一个默认的yuan-chart插件测试项目。使用元
 </project>
 ```
 
-## 创建插件
+## 创建插件 {#sec-create-plugin}
 
 以plot-chart插件为例，yuan平台的插件的pom.xml中只显示了必须包含yuan-common依赖，实现yuan平台规定的插件接口。 @lst-225175111 中，plot-chart依赖的yuan-common版本是1.0.8。
 
@@ -36,9 +36,9 @@ Yuan平台中也提供了一个默认的yuan-chart插件测试项目。使用元
 
 插件的入口类必须实现yuan-common中定义的ExecutableUnit接口。例如，plot-chart插件的入口类Chart.java继承了yuan-common中的抽象类BaseExecutable，而BaseExecutable实现了ExecutableUnit接口。
 
-此外，自定义的入口类中，如果使用json配置文件，可以自行封装解析逻辑。实现完成后，就可以通过[4.2](#创建插件) 节介绍的方法添加自己实现的插件了。
+此外，自定义的入口类中，如果使用json配置文件，可以自行封装解析逻辑。实现完成后，就可以通过 @sec-create-plugin 节介绍的方法添加自己实现的插件了。
 
-## 编译和发布插件
+## 编译和发布插件 {#sec-build-plugin}
 
 使用Yuan打开yuan\\plugins\\yuan-chart项目，选择Maven面板中的Package命令，如 @fig-225169142 所示，运行成功后在yuan\\plugins\\yuan-chart\\target目录下就会生成一个plot-chart-1.0.0.jar文件。
 

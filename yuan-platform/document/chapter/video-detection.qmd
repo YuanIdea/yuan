@@ -1,18 +1,18 @@
-# 视频检测
+# 视频检测 {#sec-video-detection}
 
 本项目当前支持对MP4视频，笔记本自带摄像头，网络摄像头的目标追踪，以中文和英文方式显示标签。支持对视频中的目标图像，自动分类抠图。
 
 在使用视频检测前，到 <https://github.com/YuanIdea/yuan> 下载源码，其中，`yuan\plugins\yuan-detection` 目录下为Java版的视频检测项目。
 
-## 环境配置
+## 环境配置 {#sec-env-config}
 
 本章介绍如何通过DJL在java中调用yolov8进行推理。Deep Java Library是由亚马逊（Amazon）提供的一个深度学习工具包，能够让java开发者在java上调用目前主流的深度学习框架，像pytorch、tensorflow、mxnet、paddlepaddle,也包括onnx格式的模型。
 
-### 环境
+### 环境 {#sec-env}
 
 YuanIdea1.8 or Idea、pytorch-native-cpu-2.7.1、java11、Deep Java Library0.36.0、yolov8s、javacv1.5.11
 
-### 导出yolov8s模型
+### 导出yolov8s模型 {#sec-export-model}
 
 本章节直接使用yolov8s的预训练模型，导出模型前，用户需要自行下载yolov8s.pt文件放在与导出 @lst-232760312 同目录下，模型导出脚本是 @lst-232760312 。
 
@@ -57,29 +57,29 @@ Process finished with exit code 0
 
 将自己导出的或者是上面网址中下载的yolov8s.torchscript文件，放在yuan-detection/model/目录下。
 
-## 启动程序
+## 启动程序 {#sec-start-program}
 
 可以使用YuanIdea或者IntelliJ IDEA运行yuan-detection，运行效果如 @fig-232787387 所示。
 
 ![视频检测](media/image24.png){#fig-232787387 width="4.61in"}
 
-### 打视频源
+### 打视频源 {#sec-video-source}
 
 当前支持三种视频源，本地的MP4，笔记本自带的摄像头，网络摄像头。
 
-#### 视频
+#### 视频 {#sec-video}
 
 选择“打开视频”菜单下的“本地视频”，选择一个提前录制好的mp4视频，效果如 @fig-232956430 。
 
 ![播放MP4](media/image25.png){#fig-232956430 width="5.75in"}
 
-#### 本地摄像头
+#### 本地摄像头 {#sec-local-camera}
 
 选择“打开视频”菜单下的“本摄像头”。选择“操作”菜单下的“目标追踪”，如 @fig-232957462 为笔记本摄像头的目标追踪。
 
 ![本地摄像头](media/image26.png){#fig-232957462 width="5.75in"}
 
-#### 网络摄像头
+#### 网络摄像头 {#sec-network-camera}
 
 选择“打开视频”菜单下的“网络摄像头”。在 @fig-232959808 中先择“RTSP”协议，配置网络摄像头的连接信息。
 
@@ -89,7 +89,7 @@ Process finished with exit code 0
 
 ![摄像头目标追踪](media/image28.png){#fig-232958597 width="3.81in"}
 
-### 目标追踪
+### 目标追踪 {#sec-object-tracking}
 
 打开任意一种视频源，例如 @fig-232956430 ，选择“操作”菜单下的“目标追踪”，为效果 @fig-232956809 。
 
@@ -97,11 +97,11 @@ Process finished with exit code 0
 
 再次点击“目标追踪”菜单，可以取消目标追踪功能，回到普通视频状态，如 @fig-232956430 所示。
 
-### 切换中英文标签
+### 切换中英文标签 {#sec-switch-label}
 
 点击“文件”下的“中文标签”菜单，实现中英文标签的实时切换，在显示目标追踪标签时，可以看到中英文标签效果。
 
-### 分类截图
+### 分类截图 {#sec-capture}
 
 点击“操作”下的“保存分类截图”菜单，可以启动将追踪的分类保存到磁盘功能，保存为当前项目的data文件夹下。例如，将 @fig-232956809 中的内容分类保存效果为 @fig-233318331 。
 
