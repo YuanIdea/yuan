@@ -1,0 +1,29 @@
+# 引言
+
+Yuan是专门为Ai研发的平台，由北京力控元通科技有限公司山东分公司支持开源，并维护到1.0.6版本。后续版本由作者杨国梁独立维护。
+
+系统分为平台和算法库两部分，Yuan平台是元智能系统中的平台部分，简称为Yuan。Yuan当前包括yuan-common和yuan-platform两部分。yuan-common提供通用的接口和工具等内容，可以被扩展插件和yuan-platform使用。yuan-platform是平台主体部分。
+
+Yuan是专门为AI算法研发、设计、运行、发布和应用而设计，当前支持Java和Python编辑和运行，只在Windows操作系统测试过。支持Java标准的Maven项目的编辑、编译、运行、打包、安装到仓库，添加自定义插件等基本的功能。支持Python的编辑、运行等功能。
+
+Yuan平台插件实现了Java调用Yolov8s实现视频检测功能。
+
+## 平台简介
+
+[第1章](#引言) 引言部分。
+
+[第2章](02-environment.qmd#配置环境) 介绍了Yuan的环境配置。
+
+[第3章](03-quickstart.qmd#快速入门) 介绍了怎么快速入门使用Yuan，并使用Yuan安装了yuan-common到仓库，运行了yuan-platform源文件。
+
+[第4章](04-plugins.qmd#添加插件) 介绍了Yuan如何添加自定义插件。
+
+[第5章](05-video-detection.qmd#视频检测) 介绍了Java实现视频检测。
+
+## 联系
+
+系统技术支持，请联系杨国梁：<Guoliang-Yang@hotmail.com>
+
+v1.06以前版本业务合作，请联系尤从国（北京力控元通科技有限公司山东分公司）：youcongguo@126.com。v1.0.6后，由杨国梁以独立身份维护。
+
+本文最新修改时间为2026年6月19日。

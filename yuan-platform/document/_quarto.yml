@@ -1,0 +1,110 @@
+project:
+  type: book
+
+book:
+  title: "元智能平台"
+  subtitle: "使用手册 · 版本 1.08"
+  author: "杨国梁"
+  date: "2026年6月"
+  downloads: pdf
+  chapters:
+    - index.qmd
+    - chapter/introduction.qmd
+    - chapter/environment.qmd
+    - chapter/quickstart.qmd
+    - chapter/plugins.qmd
+    - chapter/video-detection.qmd
+
+lang: zh-CN
+number-sections: true
+number-depth: 4
+toc: true
+toc-depth: 3
+
+# 语法高亮主题：Quarto 内置的 github 自适应主题（亮/暗色自动切换），
+# HTML 与 PDF 共用；也可换成 atom-one / ayu / breeze 等。
+syntax-highlighting: github
+
+format:
+  html:
+    fig-align: center
+    code-copy: true          # 右上角复制按钮
+    code-line-numbers: true  # 显示行号（行号由 CSS 伪元素生成，复制不带行号）
+    code-overflow: wrap      # 长代码行自动折行，不出横向滚动条
+    code-block-bg: true
+    include-in-header:
+      text: |
+        <style>
+        /* 代码块行号（Quarto 未内置该样式，需手动提供，与 pandoc 官方行号 CSS 一致）：
+           行号由 CSS 计数器 + 伪元素生成，不属于正文文本层，
+           鼠标选中、Ctrl+C、右上角复制按钮得到的都是纯代码，不带行号。 */
+        pre.numberSource {
+          margin-left: 2.6em;
+          border-left: 1px solid rgba(127, 127, 127, 0.4);
+          padding-left: 4px;
+        }
+        pre.numberSource code {
+          counter-reset: source-line 0;
+        }
+        pre.numberSource code > span {
+          position: relative;
+          left: -4em;
+          counter-increment: source-line;
+        }
+        pre.numberSource code > span > a:first-child::before {
+          content: counter(source-line);
+          position: relative;
+          left: -1em;
+          display: inline-block;
+          width: 3em;
+          padding: 0 4px;
+          text-align: right;
+          vertical-align: baseline;
+          border: none;
+          text-decoration: none;
+          color: #9e9e9e;
+          font-size: 0.85em;
+          -webkit-touch-callout: none;
+          -webkit-user-select: none;
+          -khtml-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          user-select: none;
+        }
+        </style>
+  pdf:
+    documentclass: ctexbook
+    classoption:
+      - "UTF8"
+      - "12pt"
+      - "oneside"
+      - "openany"
+    papersize: a4
+    pdf-engine: xelatex
+    geometry:
+      - "margin=2.2cm"
+    linestretch: 1.3
+    mathfont: "Latin Modern Math"
+    colorlinks: true
+    linkcolor: "blue!50!black"
+    fig-pos: "H"
+    code-line-numbers: true
+    include-in-header:
+      text: |
+        % 图片编号由正文手工标注（图 2-1、图 3-5 …），
+        % 关掉 LaTeX 自动生成的 "图 N:" 前缀，避免双重编号。
+        \usepackage{caption}
+        \captionsetup[figure]{labelformat=empty}
+        \captionsetup[table]{labelformat=empty}
+        % 代码块：长行自动折行（fvextra），避免溢出页面被裁掉
+        \usepackage{fvextra}
+        \DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+        % 行号样式：小号灰色等宽字体，右侧留出呼吸空间。
+        % accsupp 为行号写入空的 PDF ActualText：
+        % 行号仍然可见，但复制 / 取词时不会进入剪贴板。
+        \usepackage{accsupp}
+        \newcommand{\nolinecopy}[1]{\BeginAccSupp{method=escape,ActualText={}}#1\EndAccSupp{}}
+        \renewcommand{\theFancyVerbLine}{\nolinecopy{\textcolor{black!45}{\small\ttfamily\arabic{FancyVerbLine}}}}
+        \fvset{numbers=left, numbersep=10pt, xleftmargin=3.2em, breaklines, breakanywhere, breakautoindent}
+        \setlength{\parindent}{2em}    % 段首缩进 2 个汉字宽
+        \setlength{\parskip}{0pt}      % 段间不留额外垂直空白（中文书传统）
