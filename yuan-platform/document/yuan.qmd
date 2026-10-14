@@ -1,0 +1,412 @@
+---
+title: "元智能平台"
+subtitle: "使用手册 · 版本 1.08"
+author: "杨国梁"
+date: "2026年6月"
+lang: zh-CN
+number-sections: true
+toc: true
+toc-depth: 3
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    logo: media/image2.png
+    fig-align: center
+    code-fold: false
+    embed-resources: false
+  pdf:
+    documentclass: ctexbook
+    classoption: ["UTF8", "12pt", "oneside", "openany"]
+    papersize: a4
+    pdf-engine: xelatex
+    geometry: ["margin=2.2cm"]
+    linestretch: 1.3
+    mathfont: "Latin Modern Math"
+    colorlinks: true
+    linkcolor: "blue!50!black"
+    fig-pos: "H"
+    keep-tex: false
+    include-in-header:
+      text: |
+        % 图片编号由正文手工标注（图 2-1、图 3-5 …），
+        % 这里关掉 LaTeX 自动生成的 "图 N:" 前缀，避免双重编号。
+        \usepackage{caption}
+        \captionsetup[figure]{labelformat=empty}
+        \captionsetup[table]{labelformat=empty}
+        \setlength{\parindent}{2em}    % 段首缩进 2 个汉字宽
+        \setlength{\parskip}{0pt}      % 段间不留额外垂直空白（中文书传统）
+---
+
+# 引言
+
+Yuan是专门为Ai研发的平台，由北京力控元通科技有限公司山东分公司支持开源，并维护到1.0.6版本。后续版本由作者杨国梁独立维护。
+
+系统分为平台和算法库两部分，Yuan平台是元智能系统中的平台部分，简称为Yuan。Yuan当前包括yuan-common和yuan-platform两部分。yuan-common提供通用的接口和工具等内容，可以被扩展插件和yuan-platform使用。yuan-platform是平台主体部分。
+
+Yuan是专门为AI算法研发、设计、运行、发布和应用而设计，当前支持Java和Python编辑和运行，只在Windows操作系统测试过。支持Java标准的Maven项目的编辑、编译、运行、打包、安装到仓库，添加自定义插件等基本的功能。支持Python的编辑、运行等功能。
+
+Yuan平台插件实现了Java调用Yolov8s实现视频检测功能。
+
+## 平台简介
+
+[第1章](#引言) 引言部分。
+
+[第2章](#配置环境) 介绍了Yuan的环境配置。
+
+[第3章](#快速入门) 介绍了怎么快速入门使用Yuan，并使用Yuan安装了yuan-common到仓库，运行了yuan-platform源文件。
+
+[第4章](#添加插件) 介绍了Yuan如何添加自定义插件。
+
+[第5章](#视频检测) 介绍了Java实现视频检测。
+
+## 联系
+
+系统技术支持，请联系杨国梁：<Guoliang-Yang@hotmail.com>
+
+v1.06以前版本业务合作，请联系尤从国（北京力控元通科技有限公司山东分公司）：youcongguo@126.com。v1.0.6后，由杨国梁以独立身份维护。
+
+本文最新修改时间为2026年6月19日。
+
+# 配置环境
+
+Yuan当前测试了Window操作系统的使用。Yuan使用了apache-maven-3.9.0和jdk-11，发布文件中内置了apache-maven-3.9.0。通过[2.1](#检验是否安装) 节检验安装情况，运行Java时，通常，发布文件中没有提供内置的jdk-11，则需要用户自己安装，并配置环境变量，具体可参见[2.2](#安装jdk-11) 节。
+
+## 检验是否安装
+
+Win + R 键输入cmd，如[图 2-1](#_Ref218410705)所示。进入到Windows控制台，然后输入 `java -version`，出现 `'java' 不是内部或外部命令，也不是可运行的程序或批处理文件`，说明未安装。
+
+![图 2-1 打开命令行](media/image3.png){#_Ref218410705 width="3.83in"}
+
+如果出现了类似[图 2-10](#_Ref218410927)的提示信息，说明安装成功，可以跳过[2.2](#安装jdk-11) 节，直接使用Yuan。
+
+## 安装jdk-11
+
+本节基于jdk-11，演示下载安装和配置过程。如果已经安装可以跳过本节。
+
+### 下载
+
+官网地址 <https://www.oracle.com/java/technologies/downloads/>，借鉴[图 2-2](#_Ref218411699)寻找jdk-11 的版本，并下载安装。需要自己注册一个Oracle账号，下载的时候需要登录。本文选择的版本是jdk-11.0.25_windows-x64_bin.exe。jdk-11.0.2版本在编译Yuan时出现了英文代码注释乱码问题，建议使用jdk-11.0.25。
+
+![图 2-2 找到jdk-11](media/image4.png){#_Ref218411699 width="5.75in"}
+
+### 安装
+
+双击打开下载好的文件，出现[图 2-3](#_Ref218412540)，点击下一步。
+
+![图 2-3 进入安装界面。](media/image5.png){#_Ref218412540 width="4.43in"}
+
+在[图 2-4](#_Ref218412595)中，选择合适的安装目录。
+
+![图 2-4 选择安装目录](media/image6.png){#_Ref218412595 width="4.19in"}
+
+### 配置环境变量
+
+本文以Win11为例演示添加jdk环境变量。不同系统的环境变量设置方式，可通过网络查询具体方法。
+
+![图 2-5 电脑属性](media/image7.png){#_Ref218418013 width="2.25in"}
+
+右击"此电脑"选择属性，如[图 2-5](#_Ref218418013)所示，在弹出的如[图 2-6](#_Ref218418029)设置窗口中搜索"环境变量"，选择"编辑系统环境变量"。
+
+![图 2-6 选择系统环境变量](media/image8.png){#_Ref218418029 width="2.26in"}
+
+在弹出的[图 2-7](#_Ref218418049)的"系统属性"中，点击环境变量按钮。
+
+![图 2-7 选择环境变量](media/image9.png){#_Ref218418049 width="2.47in"}
+
+#### 添加JAVA_HOME
+
+在系统变量中点击新建，设置变量名为 JAVA_HOME，变量值填入刚刚安装的 JDK 的路径，[图 2-8](#_Ref218413125) 中的"变量值"用自己电脑jdk的实际路径替代。
+
+![图 2-8 添加JAVA_HOME](media/image10.png){#_Ref218413125 width="5.11in"}
+
+#### 配置Path
+
+Path变量中包含了系统可以执行的文件路径。当你在命令行中输入 java 或 javac 命令时，操作系统会根据 Path环境变量的配置查找可执行文件。
+
+![图 2-9 环境变量](media/image11.png){#_Ref218433298 width="4.13in"}
+
+在[图 2-9](#_Ref218433298)"环境变量"对话框中，找到并选中"系统变量"区域中的 Path 变量，然后点击"编辑"， 添加 `%JAVA_HOME%\bin` 到 Path 中。
+
+![图 2-10 安装jdk-11成功](media/image12.png){#_Ref218410927 width="4.89in"}
+
+按照[2.1](#检验是否安装) 节检验安装，如果出现了类似[图 2-10](#_Ref218410927)的提示信息，说明安装成功，可以跳过[2.2](#安装jdk-11) 节，直接使用Yuan。
+
+# 快速入门
+
+按[第2章](#配置环境)配置了平台运行环境后，在 <https://github.com/YuanIdea/yuan> 下载Yuan源码，双击后出现[图 3-1](#_Ref218415989)平台界面，不同的版本会略有差异。注意，不要直接使用 `yuan\yuan-platform\target\artifacts\yuan\yuan.exe`，因为使用这个目录下的可执行文件时，打包yuan-platform会因 `yuan-platform.jar` 正被 `yuan.exe` 占用而出错，需要先把 `yuan\yuan-platform\target\artifacts\yuan` 拷贝到其它目录后再打开。
+
+![图 3-1 平台界面](media/image13.png){#_Ref218415989 width="5.75in"}
+
+## 运行平台
+
+本节介绍在Yuan平台内编译，安装依赖和打包Yuan平台。
+
+### 安装yuan-common
+
+选择平台中的"文件"→"打开目录"菜单栏。选择yuan-common的根目录。在右边的maven停靠窗口的"生存期"中，双击"compile"命令，运行效果如[图 3-2](#_Ref218416554)所示。在底部的输出停靠窗口中，会出现"✓ compile succeeded!"等编译信息。
+
+![图 3-2 编译yuan-common](media/image14.png){#_Ref218416554 width="5.42in"}
+
+点击"install"命令，将yuan-common安装到仓库，成功后输出面板如[图 3-3](#_Ref218416817)所示。
+
+![图 3-3 安装到仓库](media/image15.png){#_Ref218416817 width="4.25in"}
+
+### 运行yuan-platform
+
+安装完yuan-platform后，就可以运行yuan-platform了。同样，可以使用工具栏的"打开目录"按钮，打开yuan-platform的根目录。点击工具栏的绿色三角"运行"按钮，可以看到编译和运行yuan-platform源码后的效果为[图 3-4](#_Ref218417268)。
+
+![图 3-4 运行yuan-platform](media/image16.png){#_Ref218417268 width="5.52in"}
+
+### 打包yuan-platform
+
+右边的maven停靠窗口的Lifecycle中，双击"package"命令后，将yuan-platform打包到了yuan-platform/target/artifacts/yuan/yuan-platform-1.0.8.jar中，在命令行中切换到yuan-platform/target/artifacts/yuan目录后使用java -jar yuan-platform-1.0.8.jar命令，同样可以打开[图 3-1](#_Ref218415989)所示界面。
+
+## 运行Maven项目
+
+Yuan平台支持对标准类型Maven项目，以yuan平台使用的第３方docking-frames为例，在当前要运行的"工程"资源管理中添加配置文件.yuan/project.xml，见[配置 3-1](#_Ref208924315)。
+
+[]{#_Ref208924315}
+**配置 3-1 project.xml**
+
+```xml
+<?xml version='1.0'?>
+<project>
+<type>maven</type>
+<jdk>D:\Program Files\Java\jdk-1.8</jdk>
+</project>
+```
+
+其中，type指定了是maven类型的项目，jdk指定了当前工程中使用的jdk存储路径，docking-frames选择jdk-1.8版本进行编译，如果没有设置jdk标签，默认使用的是JAVA_HOME中指定的JDK，见[2.2.3.1](#添加java_home) 节。
+
+在右边的Maven停靠面板中选择docking-frames-demo-chess，将需要的依赖添加到仓库后，点击运行按钮出现[图 3-5](#_Ref221197588)。
+
+![图 3-5 运行第３方开源Java工程。](media/image17.png){#_Ref221197588 width="5.75in"}
+
+注意，在运行工程前，需要将所有的本地依赖，使用Maven中的install暗装到仓库。通常，在使用yuan平台打开包含pom.xml的根目录时，平台会默认创建一个.yuan/project.xml的配置文件，用户可以根据需要修改配置内容。
+
+## 运行Python
+
+使用Yuan平台运行Python代码前，需要自行安装python环境，Yuan只提供了编辑和运行Python的功能。安装Python成功后，在命令行中输入python命令，如果类似现出[图 3-6](#_Ref221202022)所示Python版本信息，则安装成功。
+
+![图 3-6 python已安装效果](media/image18.png){#_Ref221202022 width="5.75in"}
+
+在yuan平台打开项目后，添加配置文件.yuan/project.xml，见[配置 3-2](#_Ref221202525)。
+
+[]{#_Ref221202525}
+**配置 3-2 project.xml**
+
+```xml
+<?xml version='1.0'?>
+<project>
+<type>python</type>
+<pythonHome>D:/ProgramData/anaconda3/envs/python310</pythonHome>
+</project>
+```
+
+其中，type指定了是Python类型的项目，pythonHome指定了当前工程中使用的python.exe存储路径。
+
+![图 3-7 图像识别](media/image19.png){#_Ref221202964 width="3.77in"}
+
+[图 3-7](#_Ref221202964)演示了就是Yuan平台中，通过Python调用yolov模型，进行图像识别的过程。
+
+## Launch4生成EXE
+
+本文使用了一款Launch4j工具将Yun 的JAR包封装为Windows原生可执行文件.exe。如果不需要生成.exe，可以跳过本节。
+
+### Launch4j简介
+
+Launch4j是一款开源工具，可将Java应用程序的JAR包封装为Windows原生可执行文件(exe)，解决用户端无JRE环境时的运行问题。其优势在于支持自定义图标、JRE版本绑定、启动参数配置等，且生成的EXE文件兼容性强。
+
+下载路径为\[https://sourceforge.net/projects/launch4j/files/launch4j-3/3.50/\]，选择launch4j-3.50-win32.exe进行下载。双击下载的 launch4j-3.50-win32.exe自行安装。
+
+### 环境准备
+
+Java环境：确保本地已安装JDK/JRE，并配置好环境变量，见[2.2](#安装jdk-11) 节。
+
+JAR文件：需打包的Java程序需已编译为可执行JAR，见[3.1.3](#打包yuan-platform) 节。
+
+### 详细打包步骤
+
+启动安装好的 Launch4j，打开配置文件yuan\\yuan-platform\\target\\artifacts\\ yuan_jdk.xml，其中Basic选项卡如[图 3-8](#_Ref225091624)所示。
+
+![图 3-8 配置yuan_jdk.xml](media/image20.png){#_Ref225091624 width="4.49in"}
+
+其中，Output file：设置生成的 EXE 路径；Jar：选择待打包的 JAR 文件路径；Icon（可选）：添加 EXE 图标（需 .ico 格式）。
+
+进入JRE选项卡，根据设置JRE的路径，如[图 3-9](#_Ref225092893)所示。
+
+![图 3-9 JRE信息](media/image21.png){#_Ref225092893 width="4.91in"}
+
+Min JRE version：填写最低兼容的JRE版本。Bundled JRE path：指定相对路径。JVM Options：可以添加需要的参数，譬如-Dfile.encoding=UTF-8。
+
+其它参数根据需要自行调整，配置完成后，点击Build wrapper按钮后，yuan\\yuan-platform\\target\\artifacts\\yuan路径下可以看到生成的yuan-1.0.8.exe。
+
+## 小结
+
+本节介绍了Yuan的使用，并在Yuan内编译安装了yuan-common到仓库。并在Yuan中编译运行了yuan-platform，以及生成yuan.exe可执行文件。演示了Yuan的具体使用。当前Yuan只支持标准的Maven项目和简单的Python运行。
+
+# 添加插件
+
+在添加插件前，首先，参考[第2章](#配置环境)配置平台运行时必要的环境。然后，参考[第3章](#快速入门)的[3.1.1](#安装yuan-common) 节安装插件依赖的yuan-common。
+
+## 快速使用插件
+
+Yuan平台中已经自带了一个绘图插件可以直接使用，其存放目录为 `D:\WorkSpace\github\yuan\yuan-platform\target\artifacts\yuan\plugins\`。平台启动时，在"输出"面板中如果出现了"✅ Plugin loaded successfully:com.gly.Chart"，则说明插件可以直接使用。
+
+Yuan平台中也提供了一个默认的yuan-chart插件测试项目。使用元智能平台打开\\yuan\\yuan-demo\\quick项目，打开"chart.json"文件。点击工具栏中的三角形的运行按钮，运行效果如[图 4-1](#_Ref225164289)所示。
+
+![图 4-1 插件测试项目](media/image22.png){#_Ref225164289 width="3.77in"}
+
+在yuan\\yuan-demo\\quick\\.yuan\\project.xml目录下配置文件内容为[配置 4-1](#_Ref225164699)，如果没有此配置文件，工具栏的"运行"按钮无法使用。
+
+[]{#_Ref225164699}
+**配置 4-1 project.xml**
+
+```xml
+<project>
+<type>model</type>
+</project>
+```
+
+## 创建插件
+
+以plot-chart插件为例，yuan平台的插件的pom.xml中只显示了必须包含yuan-common依赖，实现yuan平台规定的插件接口。[配置 4-2](#_Ref225175111)中，plot-chart依赖的yuan-common版本是1.0.8。
+
+[]{#_Ref225175111}
+**配置 4-2 pom.xml**
+
+```xml
+<dependency>
+<groupId>yuan</groupId>
+<artifactId>yuan-common</artifactId>
+<version>1.0.8</version>
+</dependency>
+```
+
+插件的源文件需要放在src/com/gly目录下，例如plot-char的入口类Chart.java的包名为"package com.gly"。
+
+插件的入口类必须实现yuan-common中定义的ExecutableUnit接口。例如，plot-chart插件的入口类Chart.java继承了yuan-common中的抽象类BaseExecutable，而BaseExecutable实现了ExecutableUnit接口。
+
+此外，自定义的入口类中，如果使用json配置文件，可以自行封装解析逻辑。实现完成后，就可以通过[4.2](#创建插件) 节介绍的方法添加自己实现的插件了。
+
+## 编译和发布插件
+
+使用Yuan打开yuan\\plugins\\yuan-chart项目，选择Maven面板中的Package命令，如[图 4-2](#_Ref225169142)所示，运行成功后在yuan\\plugins\\yuan-chart\\target目录下就会生成一个plot-chart-1.0.0.jar文件。
+
+![图 4-2 yuan-chart生成jar](media/image23.png){#_Ref225169142 width="5.17in"}
+
+yuan\\yuan-platform\\target\\artifacts\\yuan\\plugins\\plot-chart\\lib将生成的plot-chart-1.0.0.jar拷贝到yuan\\yuan-platform\\target\\artifacts\\yuan\\plugins\\plot-chart\\lib目录后，重新启动Yuan平台，插件就添加完成。如果想将插件去掉，只需要将plot-char文件夹整体删除就可以了。
+
+# 视频检测
+
+本项目当前支持对MP4视频，笔记本自带摄像头，网络摄像头的目标追踪，以中文和英文方式显示标签。支持对视频中的目标图像，自动分类抠图。
+
+在使用视频检测前，到 <https://github.com/YuanIdea/yuan> 下载源码，其中，`yuan\plugins\yuan-detection` 目录下为Java版的视频检测项目。
+
+## 环境配置
+
+本章介绍如何通过DJL在java中调用yolov8进行推理。Deep Java Library是由亚马逊（Amazon）提供的一个深度学习工具包，能够让java开发者在java上调用目前主流的深度学习框架，像pytorch、tensorflow、mxnet、paddlepaddle,也包括onnx格式的模型。
+
+### 环境
+
+YuanIdea1.8 or Idea、pytorch-native-cpu-2.7.1、java11、Deep Java Library0.36.0、yolov8s、javacv1.5.11
+
+### 导出yolov8s模型
+
+本章节直接使用yolov8s的预训练模型，导出模型前，用户需要自行下载yolov8s.pt文件放在与导出[代码 5-1](#_Ref232760312)同目录下，模型导出脚本是[代码 5-1](#_Ref232760312)。
+
+[]{#_Ref232760312}
+**代码 5-1 export.py**
+
+```python
+from ultralytics import YOLO
+
+
+def export_torchscript_model():
+    model_path = "yolov8s.pt"
+    input_size = 640
+
+    model = YOLO(model_path)
+    model.export(
+        format="torchscript",
+        imgsz=input_size,
+        device="cpu",
+        half=False,
+        dynamic=False,
+        simplify=True
+    )
+
+
+export_torchscript_model()
+```
+
+导出成功后显示信息为下面所示，注意，本文版本python3.13，torch-2.9.1。
+
+```text
+Ultralytics 8.3.250 Python-3.13.11 torch-2.9.1+cu128 CPU (AMD Ryzen AI 9 HX 370 w/ Radeon 890M)
+YOLOv8s summary (fused): 72 layers, 11,156,544 parameters, 0 gradients, 28.6 GFLOPs
+PyTorch: starting from 'yolov8s.pt' with input shape (1, 3, 640, 640) BCHW and output shape(s) (1, 84, 8400) (21.5 MB)
+TorchScript: starting export with torch 2.9.1+cu128...
+TorchScript: export success 2.1s, saved as 'yolov8s.torchscript' (43.0 MB)
+Export complete (2.8s)
+Results saved to D:\WorkSpace\fish
+Predict: yolo predict task=detect model=yolov8s.torchscript imgsz=640
+Validate: yolo val task=detect model=yolov8s.torchscript imgsz=640 data=coco.yaml
+Visualize: https://netron.app
+Process finished with exit code 0
+```
+
+将自己导出的或者是上面网址中下载的yolov8s.torchscript文件，放在yuan-detection/model/目录下。
+
+## 启动程序
+
+可以使用YuanIdea或者IntelliJ IDEA运行yuan-detection，运行效果如[图 5-1](#_Ref232787387)所示。
+
+![图 5-1 视频检测](media/image24.png){#_Ref232787387 width="4.61in"}
+
+### 打视频源
+
+当前支持三种视频源，本地的MP4，笔记本自带的摄像头，网络摄像头。
+
+#### 视频
+
+选择"打开视频"菜单下的"本地视频"，选择一个提前录制好的mp4视频，效果如[图 5-2](#_Ref232956430)。
+
+![图 5-2 播放MP4](media/image25.png){#_Ref232956430 width="5.75in"}
+
+#### 本地摄像头
+
+选择"打开视频"菜单下的"本摄像头"。选择"操作"菜单下的"目标追踪"，如[图 5-3](#_Ref232957462)为笔记本摄像头的目标追踪。
+
+![图 5-3 本地摄像头](media/image26.png){#_Ref232957462 width="5.75in"}
+
+#### 网络摄像头
+
+选择"打开视频"菜单下的"网络摄像头"。在[图 5-4](#_Ref232959808)中先择"RTSP"协议，配置网络摄像头的连接信息。
+
+![图 5-4 网络摄像头配置](media/image27.png){#_Ref232959808 width="3.66in"}
+
+选择"操作"菜单下的"目标追踪"，[图 5-5](#_Ref232958597)为海康网络摄像头的的目标追踪。
+
+![图 5-5 摄像头目标追踪](media/image28.png){#_Ref232958597 width="3.81in"}
+
+### 目标追踪
+
+打开任意一种视频源，例如[图 5-2](#_Ref232956430)，选择"操作"菜单下的"目标追踪"，为效果[图 5-6](#_Ref232956809)。
+
+![图 5-6 视频目标追踪](media/image29.png){#_Ref232956809 width="5.75in"}
+
+再次点击"目标追踪"菜单，可以取消目标追踪功能，回到普通视频状态，如[图 5-2](#_Ref232956430)所示。
+
+### 切换中英文标签
+
+点击"文件"下的"中文标签"菜单，实现中英文标签的实时切换，在显示目标追踪标签时，可以看到中英文标签效果。
+
+### 分类截图
+
+点击"操作"下的"保存分类截图"菜单，可以启动将追踪的分类保存到磁盘功能，保存为当前项目的data文件夹下。例如，将[图 5-6](#_Ref232956809)中的内容分类保存效果为[图 5-7](#_Ref233318331)。
+
+![图 5-7 分类截图](media/image30.png){#_Ref233318331 width="5.75in"}
+
