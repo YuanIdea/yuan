@@ -1,5 +1,5 @@
 # 前言 {.unnumbered}
 
-本文档是元智能平台（Yuan）的使用手册，对应版本 1.08。全书按章组织：[第2章](02-environment.qmd#配置环境)介绍环境配置，[第3章](03-quickstart.qmd#快速入门)介绍平台的快速入门与基本使用，[第4章](04-plugins.qmd#添加插件)介绍如何添加自定义插件，[第5章](05-video-detection.qmd#视频检测)介绍基于 Yolov8s 的视频检测插件。
+本文档是元智能平台（Yuan）的使用手册，对应版本 1.08。全书按章组织：[第2章](chapter/environment.qmd#配置环境)介绍环境配置，[第3章](chapter/quickstart.qmd#快速入门)介绍平台的快速入门与基本使用，[第4章](chapter/plugins.qmd#添加插件)介绍如何添加自定义插件，[第5章](chapter/video-detection.qmd#视频检测)介绍基于 Yolov8s 的视频检测插件。
 
-联系方式、版本与维护信息见[第1章](01-introduction.qmd#引言)末尾的"联系"一节。
+联系方式、版本与维护信息见[第1章](chapter/introduction.qmd#引言)末尾的“联系”一节。

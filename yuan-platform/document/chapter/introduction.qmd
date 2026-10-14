@@ -12,13 +12,13 @@ Yuan平台插件实现了Java调用Yolov8s实现视频检测功能。
 
 [第1章](#引言) 引言部分。
 
-[第2章](02-environment.qmd#配置环境) 介绍了Yuan的环境配置。
+[第2章](environment.qmd#配置环境) 介绍了Yuan的环境配置。
 
-[第3章](03-quickstart.qmd#快速入门) 介绍了怎么快速入门使用Yuan，并使用Yuan安装了yuan-common到仓库，运行了yuan-platform源文件。
+[第3章](quickstart.qmd#快速入门) 介绍了怎么快速入门使用Yuan，并使用Yuan安装了yuan-common到仓库，运行了yuan-platform源文件。
 
-[第4章](04-plugins.qmd#添加插件) 介绍了Yuan如何添加自定义插件。
+[第4章](plugins.qmd#添加插件) 介绍了Yuan如何添加自定义插件。
 
-[第5章](05-video-detection.qmd#视频检测) 介绍了Java实现视频检测。
+[第5章](video-detection.qmd#视频检测) 介绍了Java实现视频检测。
 
 ## 联系
 

@@ -1,16 +1,16 @@
 # 添加插件
 
-在添加插件前，首先，参考[第2章](02-environment.qmd#配置环境)配置平台运行时必要的环境。然后，参考[第3章](03-quickstart.qmd#快速入门)的[3.1.1](03-quickstart.qmd#安装yuan-common) 节安装插件依赖的yuan-common。
+在添加插件前，首先，参考[第2章](environment.qmd#配置环境)配置平台运行时必要的环境。然后，参考[第3章](quickstart.qmd#快速入门)的[3.1.1](quickstart.qmd#安装yuan-common) 节安装插件依赖的yuan-common。
 
 ## 快速使用插件
 
-Yuan平台中已经自带了一个绘图插件可以直接使用，其存放目录为 `D:\WorkSpace\github\yuan\yuan-platform\target\artifacts\yuan\plugins\`。平台启动时，在"输出"面板中如果出现了"✅ Plugin loaded successfully:com.gly.Chart"，则说明插件可以直接使用。
+Yuan平台中已经自带了一个绘图插件可以直接使用，其存放目录为 `D:\WorkSpace\github\yuan\yuan-platform\target\artifacts\yuan\plugins\`。平台启动时，在“输出”面板中如果出现了“✅ Plugin loaded successfully:com.gly.Chart”，则说明插件可以直接使用。
 
-Yuan平台中也提供了一个默认的yuan-chart插件测试项目。使用元智能平台打开\\yuan\\yuan-demo\\quick项目，打开"chart.json"文件。点击工具栏中的三角形的运行按钮，运行效果如[图 4-1](#_Ref225164289)所示。
+Yuan平台中也提供了一个默认的yuan-chart插件测试项目。使用元智能平台打开\\yuan\\yuan-demo\\quick项目，打开“chart.json”文件。点击工具栏中的三角形的运行按钮，运行效果如[图 4-1](#_Ref225164289)所示。
 
 ![图 4-1 插件测试项目](media/image22.png){#_Ref225164289 width="3.77in"}
 
-在yuan\\yuan-demo\\quick\\.yuan\\project.xml目录下配置文件内容为[配置 4-1](#_Ref225164699)，如果没有此配置文件，工具栏的"运行"按钮无法使用。
+在yuan\\yuan-demo\\quick\\.yuan\\project.xml目录下配置文件内容为[配置 4-1](#_Ref225164699)，如果没有此配置文件，工具栏的“运行”按钮无法使用。
 
 []{#_Ref225164699}
 
@@ -34,7 +34,7 @@ Yuan平台中也提供了一个默认的yuan-chart插件测试项目。使用元
 </dependency>
 ```
 
-插件的源文件需要放在src/com/gly目录下，例如plot-char的入口类Chart.java的包名为"package com.gly"。
+插件的源文件需要放在src/com/gly目录下，例如plot-char的入口类Chart.java的包名为“package com.gly”。
 
 插件的入口类必须实现yuan-common中定义的ExecutableUnit接口。例如，plot-chart插件的入口类Chart.java继承了yuan-common中的抽象类BaseExecutable，而BaseExecutable实现了ExecutableUnit接口。
 

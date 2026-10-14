@@ -3,9 +3,9 @@ project:
 
 book:
   title: "元智能平台"
-  subtitle: "使用手册 · 版本 1.08"
+  subtitle: "版本 1.08"
   author: "杨国梁"
-  date: "2026年6月"
+  cover-image: chapter/media/image2.png   # 封面 logo（与 Word 原版同一张图）
   downloads: pdf
   chapters:
     - index.qmd
@@ -99,12 +99,29 @@ format:
         % 代码块：长行自动折行（fvextra），避免溢出页面被裁掉
         \usepackage{fvextra}
         \DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
-        % 行号样式：小号灰色等宽字体，右侧留出呼吸空间。
-        % accsupp 为行号写入空的 PDF ActualText：
-        % 行号仍然可见，但复制 / 取词时不会进入剪贴板。
-        \usepackage{accsupp}
-        \newcommand{\nolinecopy}[1]{\BeginAccSupp{method=escape,ActualText={}}#1\EndAccSupp{}}
-        \renewcommand{\theFancyVerbLine}{\nolinecopy{\textcolor{black!45}{\small\ttfamily\arabic{FancyVerbLine}}}}
-        \fvset{numbers=left, numbersep=10pt, xleftmargin=3.2em, breaklines, breakanywhere, breakautoindent}
+        % ---------- 代码行号 ----------
+        % 行号为灰色等宽小字（右对齐），纯文字、零额外资源。
+        % 注意：不要用 /Artifact BDC/EMC 标记——Chrome 的 PDF 渲染器
+        % 会因标记不配对而把后续代码内容整个吞掉（本地实测）。
+        \newcommand{\lnogray}[1]{\textcolor{black!45}{\small\ttfamily #1}}
+        \renewcommand{\theFancyVerbLine}{\lnogray{\arabic{FancyVerbLine}}}
+        \fvset{numbers=left, numbersep=12pt, xleftmargin=3.8em, breaklines, breakanywhere, breakautoindent}
+        % ---------- 封面：仿 Word 原版，logo 在上、标题在下 ----------
+        \usepackage{graphicx}
+        \makeatletter
+        \renewcommand{\maketitle}{%
+          \begin{titlepage}%
+            \centering
+            \vspace*{0.22\textheight}
+            {\includegraphics[width=2cm]{chapter/media/image2.png}\par}%
+            \vspace{1.6cm}
+            {\Huge \@title \par}%
+            \vskip 5em
+            {\large \@author \par}%
+            {\large \@date \par}%
+            \vfill
+          \end{titlepage}%
+        }
+        \makeatother
         \setlength{\parindent}{2em}    % 段首缩进 2 个汉字宽
         \setlength{\parskip}{0pt}      % 段间不留额外垂直空白（中文书传统）
